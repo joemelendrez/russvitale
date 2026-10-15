@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ALL_RELEASES } from "@/data/releaseKey";
-import { parsePlayerLink, rowLink } from "@/data/players";
+import { expandSoundcloud, parsePlayerLink, parseYoutubeLink, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
 
 const today = () => new Date().toLocaleDateString("en-CA");
 
@@ -167,7 +167,7 @@ function Dashboard({ email }) {
 
       <Card title="Song links">
         <p className="text-sm text-white/70">
-          {linkCount === null ? "Loading..." : `${linkCount} saved from the site.`} Open the site in edit mode to paste Spotify or SoundCloud links into releases
+          {linkCount === null ? "Loading..." : `${linkCount} saved from the site.`} Open the site in edit mode to paste Spotify, YouTube Music or SoundCloud links into releases
           without a player.
         </p>
         {/* A full page load, so the site picks up edit mode as it opens. */}
@@ -205,7 +205,9 @@ function Dashboard({ email }) {
                     <p className="truncate font-semibold">{drop.title}</p>
                     <p className="text-xs text-white/50">
                       {drop.released_on}
-                      {drop.spotify_id ? ` · Spotify ${drop.kind}` : drop.soundcloud_url ? " · SoundCloud" : " · no player"}
+                      {drop.spotify_id ? ` · Spotify ${drop.kind}` : drop.soundcloud_url ? " · SoundCloud" : ""}
+                      {drop.youtube_id ? " · YouTube" : ""}
+                      {!drop.spotify_id && !drop.soundcloud_url && !drop.youtube_id ? " · no player" : ""}
                       {drop.note ? ` · ${drop.note}` : ""}
                     </p>
                   </div>
@@ -234,11 +236,12 @@ function Dashboard({ email }) {
   );
 }
 
-const blankDrop = () => ({ title: "", link: "", released_on: today(), note: "", show_banner: true });
+const blankDrop = () => ({ title: "", link: "", youtube: "", released_on: today(), note: "", show_banner: true });
 
 const formFromDrop = (drop) => ({
   title: drop.title,
   link: rowLink(drop),
+  youtube: rowYoutubeLink(drop),
   released_on: drop.released_on,
   note: drop.note ?? "",
   show_banner: drop.show_banner,
@@ -263,20 +266,32 @@ function DropForm({ drop, onSaved, onCancel }) {
       ...f,
       title: release.title,
       link: release.spotify ? `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}` : release.soundcloud ?? f.link,
+      youtube: releaseYoutubeLink(release) || f.youtube,
     }));
   };
 
   const save = async (e) => {
     e.preventDefault();
     setError(null);
-    const parsed = form.link.trim() ? parsePlayerLink(form.link) : null;
-    if (form.link.trim() && !parsed) return setError("That doesn't look like a Spotify or SoundCloud link.");
+    const found = form.link.trim() ? parsePlayerLink(form.link) : null;
+    if (form.link.trim() && (!found || found.youtube_id)) return setError("The first link box takes a Spotify or SoundCloud link. YouTube links go in the box below it.");
+    const youtube = form.youtube.trim() ? parseYoutubeLink(form.youtube) : null;
+    if (form.youtube.trim() && !youtube) return setError("That doesn't look like a YouTube or YouTube Music link.");
     setStatus("saving");
+    let parsed = found;
+    try {
+      parsed = await expandSoundcloud(found);
+    } catch (err) {
+      setStatus(null);
+      return setError(err.message);
+    }
     const row = {
       title: form.title.trim(),
       kind: parsed?.kind ?? null,
       spotify_id: parsed?.spotify_id ?? null,
       soundcloud_url: parsed?.soundcloud_url ?? null,
+      youtube_kind: youtube?.kind ?? null,
+      youtube_id: youtube?.id ?? null,
       released_on: form.released_on,
       note: form.note.trim() || null,
       show_banner: form.show_banner,
@@ -324,6 +339,19 @@ function DropForm({ drop, onSaved, onCancel }) {
           placeholder="https://open.spotify.com/track/... or soundcloud.com/..."
           value={form.link}
           onChange={set("link")}
+          className={input}
+        />
+      </div>
+      <div>
+        <label htmlFor={`drop-youtube-${id}`} className="mb-1 block text-sm text-white/70">
+          YouTube Music link (optional, for listeners who pick YouTube Music)
+        </label>
+        <input
+          id={`drop-youtube-${id}`}
+          inputMode="url"
+          placeholder="https://music.youtube.com/watch?v=..."
+          value={form.youtube}
+          onChange={set("youtube")}
           className={input}
         />
       </div>

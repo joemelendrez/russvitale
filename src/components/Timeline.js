@@ -6,6 +6,7 @@ import { singlesWithDrops } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
 import EraSection from "./EraSection";
 import YearSection from "./YearSection";
+import ListenToggle from "./ListenToggle";
 
 export const TAB_EVENT = "russ:music-tab";
 
@@ -17,7 +18,7 @@ const TABS = [
 const COPY = {
   albums: {
     title: "Seven eras. One rule: do it yourself.",
-    sub: "Every album and EP, era by era. Hover any cover to play it right here. The page changes color as each era takes over.",
+    sub: "Every album and EP, era by era. Hover any cover to play it right here, on Spotify, YouTube Music or SoundCloud. The page changes color as each era takes over.",
   },
   singles: {
     title: "Every single, year by year.",
@@ -82,7 +83,7 @@ export default function Timeline() {
 
       {/* Sticky tab switch, so you can flip timelines from anywhere in the section. */}
       <div id="music-tabs" className="sticky top-16 z-30 scroll-mt-16 py-3">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 sm:px-6">
           <div role="tablist" aria-label="Timeline" className="inline-flex rounded-full border border-era-fg/15 bg-era-bg/90 p-1 shadow-lg">
             {TABS.map((t) => (
               <button
@@ -103,6 +104,7 @@ export default function Timeline() {
               </button>
             ))}
           </div>
+          <ListenToggle />
         </div>
       </div>
 
