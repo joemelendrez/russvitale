@@ -6,6 +6,7 @@ import { singlesWithDrops } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
 import EraSection from "./EraSection";
 import YearSection from "./YearSection";
+import Link from "next/link";
 import ListenToggle from "./ListenToggle";
 
 export const TAB_EVENT = "russ:music-tab";
@@ -18,7 +19,7 @@ const TABS = [
 const COPY = {
   albums: {
     title: "Seven eras. One rule: do it yourself.",
-    sub: "Every album and EP, era by era. Hover any cover to play it right here, on Spotify, YouTube Music or SoundCloud. The page changes color as each era takes over.",
+    sub: "Every album and EP, era by era. Hover any cover to play it right here, on Spotify, YouTube Music or SoundCloud (pick with the round button). The page changes color as each era takes over.",
   },
   singles: {
     title: "Every single, year by year.",
@@ -83,28 +84,37 @@ export default function Timeline() {
 
       {/* Sticky tab switch, so you can flip timelines from anywhere in the section. */}
       <div id="music-tabs" className="sticky top-16 z-30 scroll-mt-16 py-3">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 sm:px-6">
-          <div role="tablist" aria-label="Timeline" className="inline-flex rounded-full border border-era-fg/15 bg-era-bg/90 p-1 shadow-lg">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                role="tab"
-                aria-selected={tab === t.key}
-                aria-controls="music-panel"
-                onClick={() => choose(t.key)}
-                className={`relative rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${
-                  tab === t.key ? "text-era-bg" : "text-era-fg/70 hover:text-era-fg"
-                }`}
-              >
-                {tab === t.key && (
-                  <motion.span layoutId="music-tab-pill" className="absolute inset-0 rounded-full bg-era-accent" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
-                )}
-                <span className="relative">{t.label}</span>
-              </button>
-            ))}
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
+          <div className="flex items-center gap-2">
+            <div role="tablist" aria-label="Timeline" className="inline-flex rounded-full border border-era-fg/15 bg-era-bg/90 p-1 shadow-lg">
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === t.key}
+                  aria-controls="music-panel"
+                  onClick={() => choose(t.key)}
+                  className={`relative rounded-full px-4 py-2 text-xs sm:px-5 font-semibold uppercase tracking-[0.2em] transition-colors ${
+                    tab === t.key ? "text-era-bg" : "text-era-fg/70 hover:text-era-fg"
+                  }`}
+                >
+                  {tab === t.key && (
+                    <motion.span layoutId="music-tab-pill" className="absolute inset-0 rounded-full bg-era-accent" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+                  )}
+                  <span className="relative">{t.label}</span>
+                </button>
+              ))}
+            </div>
+            <ListenToggle />
           </div>
-          <ListenToggle />
+          <Link
+            href="/music"
+            className="rounded-full border border-era-fg/15 bg-era-bg/90 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-era-fg/80 shadow-lg transition-colors hover:text-era-fg"
+          >
+            <span className="sm:hidden">All</span>
+            <span className="hidden sm:inline">Full discography</span> <span aria-hidden="true">&rarr;</span>
+          </Link>
         </div>
       </div>
 

@@ -1,10 +1,10 @@
 "use client";
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { useSpotifyLinks } from "./SpotifyLinks";
-import { useListenOn } from "@/lib/listenOn";
+import { clearNowPlaying, serviceOfPlayer, setNowPlaying, useListenOn } from "@/lib/listenOn";
 import PlayerFrame from "./PlayerFrame";
 
 // On phones a card is too small to hold a player, so tapping a cover
@@ -39,6 +39,13 @@ function PhonePlayerBar({ current, onClose }) {
   const service = useListenOn();
   const player = release && playerFor(release, service);
   const listen = release && listenLink(release, service);
+  const playingOn = serviceOfPlayer(player);
+
+  // The Play on button shows the service the bar is playing on.
+  useEffect(() => {
+    if (playingOn) setNowPlaying("phone", playingOn);
+    else clearNowPlaying("phone");
+  }, [playingOn, current]);
 
   return (
     <AnimatePresence>

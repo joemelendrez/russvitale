@@ -28,6 +28,11 @@ function subscribe(callback) {
 
 export function setListenOn(service) {
   memory = service;
+  // A new pick replaces whatever service the button was showing.
+  if (nowPlaying) {
+    nowPlaying = null;
+    playingListeners.forEach((fn) => fn());
+  }
   try {
     localStorage.setItem(KEY, service);
   } catch {}
@@ -36,4 +41,41 @@ export function setListenOn(service) {
 
 export function useListenOn() {
   return useSyncExternalStore(subscribe, read, () => "spotify");
+}
+
+// The service of whatever is playing right now, when that isn't the pick
+// (a song only on SoundCloud plays there for a Spotify listener). The Play on
+// button shows it while it plays, then goes back to the pick. Not saved.
+let nowPlaying = null; // { owner, service }
+const playingListeners = new Set();
+
+function subscribePlaying(callback) {
+  playingListeners.add(callback);
+  return () => playingListeners.delete(callback);
+}
+
+export function setNowPlaying(owner, service) {
+  if (nowPlaying?.owner === owner && nowPlaying.service === service) return;
+  nowPlaying = service ? { owner, service } : null;
+  playingListeners.forEach((fn) => fn());
+}
+
+// Clears it only if this owner set it, so a card closing doesn't clear another's.
+export function clearNowPlaying(owner) {
+  if (nowPlaying?.owner !== owner) return;
+  nowPlaying = null;
+  playingListeners.forEach((fn) => fn());
+}
+
+export function useNowPlayingService() {
+  return useSyncExternalStore(
+    subscribePlaying,
+    () => nowPlaying?.service ?? null,
+    () => null
+  );
+}
+
+// "spotify-album-…" → "spotify"
+export function serviceOfPlayer(player) {
+  return player ? player.key.split("-")[0] : null;
 }

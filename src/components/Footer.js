@@ -13,7 +13,7 @@ export default function Footer() {
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs uppercase tracking-[0.2em] text-era-muted" aria-label="Footer">
           {NAV.map((item) => (
-            <a key={item.href} href={item.href} className="hover:text-era-fg">
+            <a key={item.href} href={item.page ? item.href : `/${item.href}`} className="hover:text-era-fg">
               {item.label}
             </a>
           ))}

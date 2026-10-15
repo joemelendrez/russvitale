@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // Album art can come straight from Spotify's image CDN once real covers are added.
-    remotePatterns: [{ protocol: "https", hostname: "i.scdn.co" }],
+    // Covers uploaded from edit mode (Supabase Storage), and Spotify's image CDN.
+    remotePatterns: [
+      { protocol: "https", hostname: "eljtjrcjyxmqkkruaucl.supabase.co", pathname: "/storage/v1/object/public/russ-covers/**" },
+      { protocol: "https", hostname: "i.scdn.co" },
+    ],
   },
 };
 
