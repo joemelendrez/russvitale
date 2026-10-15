@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1200" preserveAspectRatio="xMidYMid slice">
+  <!-- Placeholder: replace with a real venue/stage photo (see src/data/hero.js) -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="38%" r="65%">
+      <stop offset="0" stop-color="#6d28d9"/>
+      <stop offset="0.45" stop-color="#241046"/>
+      <stop offset="1" stop-color="#05030a"/>
+    </radialGradient>
+    <linearGradient id="beamA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0abfc" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#f0abfc" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7dd3fc" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#7dd3fc" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="led" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="3" fill="#c084fc" opacity="0.35"/>
+    </pattern>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="1920" height="1200" fill="url(#glow)"/>
+  <rect x="460" y="180" width="1000" height="520" fill="url(#led)" opacity="0.7"/>
+  <g filter="url(#blur)" style="mix-blend-mode:screen">
+    <polygon points="300,0 360,0 900,1200 520,1200" fill="url(#beamA)"/>
+    <polygon points="1560,0 1620,0 1400,1200 1020,1200" fill="url(#beamA)"/>
+    <polygon points="760,0 800,0 1150,1200 860,1200" fill="url(#beamB)"/>
+    <polygon points="1120,0 1160,0 1060,1200 760,1200" fill="url(#beamB)"/>
+    <polygon points="40,0 90,0 600,1200 300,1200" fill="url(#beamB)"/>
+    <polygon points="1830,0 1880,0 1640,1200 1340,1200" fill="url(#beamB)"/>
+  </g>
+  <g fill="#fff" opacity="0.9">
+    <circle cx="330" cy="20" r="10"/><circle cx="780" cy="20" r="8"/><circle cx="1140" cy="20" r="8"/>
+    <circle cx="1590" cy="20" r="10"/><circle cx="65" cy="20" r="8"/><circle cx="1855" cy="20" r="8"/>
+  </g>
+</svg>
