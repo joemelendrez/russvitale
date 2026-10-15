@@ -66,7 +66,7 @@ export default function NewsletterForm({ id = "newsletter-email" }) {
         onChange={(e) => setWebsite(e.target.value)}
         className="absolute -left-[9999px] h-px w-px opacity-0"
       />
-      {message && <p className="mt-2 text-sm text-red-400">{message}</p>}
+      {message && <p className="mt-2 text-sm font-semibold text-era-fg" role="alert">{message}</p>}
       <p className="mt-2 text-xs text-era-muted">An unofficial fan newsletter. One tap in any email unsubscribes you.</p>
     </form>
   );

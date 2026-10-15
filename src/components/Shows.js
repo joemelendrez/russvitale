@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { SHOWS, TOUR_LINKS, TICKETMASTER_DISCLOSURE, hasTicketmasterAffiliate, ticketLink } from "@/data/shows";
 import PaletteSection from "./PaletteSection";
+import { SECTION_PALETTES } from "@/data/eras";
 import SectionHeading from "./SectionHeading";
 import BandsintownWidget from "./BandsintownWidget";
 
@@ -23,7 +24,7 @@ export default function Shows() {
   const shows = upcoming();
 
   return (
-    <PaletteSection id="shows" className="relative scroll-mt-16 border-t border-era-fg/10 py-24 sm:py-36" aria-label="Shows">
+    <PaletteSection palette={SECTION_PALETTES.shows} id="shows" className="relative scroll-mt-16 py-24 sm:py-36" aria-label="Shows">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading eyebrow="Live" title="Recent and upcoming shows">
           Dates change fast, so the official listings are always the source of truth. Track Russ on Bandsintown to get a ping when he hits your city.
