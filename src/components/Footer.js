@@ -21,7 +21,7 @@ const FOOTER_STYLE = {
 
 export default function Footer({ newsletter = true }) {
   return (
-    <footer className="py-14" style={FOOTER_STYLE}>
+    <footer className="py-14 font-semibold" style={FOOTER_STYLE}>
       {newsletter && (
         <div className="mx-auto mb-14 max-w-7xl px-4 sm:px-6">
           <NewsletterForm />
