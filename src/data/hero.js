@@ -13,4 +13,6 @@ export const HERO_COPY = {
   eyebrow: "Atlanta by way of New Jersey",
   name: "RUSS",
   tagline: "Eleven SoundCloud albums, a song a week, and one long bet on himself. The music, era by era.",
+  // The hero layers are cut from this post on Russ's own Instagram.
+  credit: { label: "Photo: @russ on Instagram", href: "https://www.instagram.com/p/DM9VEwbOvmU/" },
 };
