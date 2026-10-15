@@ -5,6 +5,7 @@ export const SITE = {
     "An unofficial fan site walking through Russ's music from the SoundCloud era to now, with every album and single playable through Spotify, YouTube Music or SoundCloud.",
   officialSite: "https://www.russworld.com",
   spotifyArtist: "https://open.spotify.com/artist/1z7b1Pr1rSlvWRzsW3HOrS",
+  builder: { name: "Joseph Melendrez", url: "https://josephmelendrez.com" },
   youtubeMusic: "https://music.youtube.com/channel/UCiIETTq2It3OzW8_WYRPTyQ",
 };
 
@@ -24,7 +25,9 @@ const amazon = (asin) => `https://www.amazon.com/dp/${asin}?tag=${AMAZON_TAG}`;
 
 export const AMAZON_DISCLOSURE = "As an Amazon Associate, this site earns from qualifying purchases.";
 
+// `type`/`year` give each book a release key, so its cover uploads in edit
+// mode and is stored like an album cover.
 export const BOOKS = [
-  { title: "It's All In Your Head", note: "His first book, on building self-belief before anyone else has it.", href: amazon("0062962434") },
-  { title: "It Was You All Along", note: "A memoir about therapy, growth and learning to like himself.", href: amazon("0063357887") },
+  { type: "book", year: 2019, title: "It's All In Your Head", note: "His first book, on building self-belief before anyone else has it.", href: amazon("0062962434") },
+  { type: "book", year: 2023, title: "It Was You All Along", note: "A memoir about therapy, growth and learning to like himself.", href: amazon("0063357887") },
 ];
