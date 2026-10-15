@@ -20,7 +20,7 @@ export const ERAS = [
     releases: [
       { title: "Velvet", year: 2011, type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
       { title: "Apollo 13", year: 2012, type: "album" },
-      { title: "Pink Elephant", year: 2014, type: "album" },
+      { title: "Pink Elephant", year: 2014, type: "album", spotify: { kind: "album", id: "0NI2guYRXuRQvjAiSrhfh5" } },
       { title: "How to Rob", year: 2014, type: "album" },
     ],
   },
@@ -46,7 +46,7 @@ export const ERAS = [
     palette: { bg: "#0d1a10", fg: "#f1f5e6", muted: "#a0ad8f", accent: "#f0b429" },
     releases: [
       { title: "Zoo", year: 2018, type: "album" },
-      { title: "Just in Case", year: 2018, type: "ep" },
+      { title: "Just in Case", year: 2018, type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" } },
     ],
   },
   {
@@ -70,9 +70,9 @@ export const ERAS = [
       "On June 30, 2020 Russ announces he is independent. The Chomp series has him trading verses with heavyweight lyricists, and \"Are You Entertained\" with Ed Sheeran goes global without a major label behind it.",
     palette: { bg: "#170707", fg: "#fff1ec", muted: "#c79a90", accent: "#ff3b2f" },
     releases: [
-      { title: "Chomp", year: 2020, type: "ep" },
+      { title: "Chomp", year: 2020, type: "ep", spotify: { kind: "album", id: "6hTlfMRAEJBMyETemdH5Qq" } },
       { title: "Chomp 2", year: 2021, type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" } },
-      { title: "If Not Now, When?", year: 2022, type: "ep" },
+      { title: "If Not Now, When?", year: 2022, type: "ep", spotify: { kind: "album", id: "5K4Ygp0yLgeaYSKFizi15P" } },
     ],
   },
   {
@@ -84,7 +84,7 @@ export const ERAS = [
       "Santiago debuts at No. 12 on the Billboard 200. Then a film debut in M. Night Shyamalan's Trap, and a run of collaborations with 6lack and DJ Premier.",
     palette: { bg: "#1d1008", fg: "#fff3e3", muted: "#c9a587", accent: "#ff8a3d" },
     releases: [
-      { title: "Santiago", year: 2023, type: "album" },
+      { title: "Santiago", year: 2023, type: "album", spotify: { kind: "album", id: "3mX0HbDt7oIzBBJHgQYnDY" } },
     ],
   },
   {

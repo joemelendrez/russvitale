@@ -3,13 +3,16 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { spotifyEmbedUrl, spotifyLink } from "@/data/eras";
+import { SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
 
 const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single" };
 
 // Album or single. Hover (or tap on a phone) flips the cover into a Spotify
 // player. The iframe only loads the first time someone asks for it, so the
 // page stays light with a dozen of these on screen.
-export default function ReleaseCard({ release, palette, index }) {
+export default function ReleaseCard({ release: baseRelease, palette, index }) {
+  const release = useRelease(baseRelease);
+  const { editKey } = useSpotifyLinks();
   const [active, setActive] = useState(false);
   const [mounted, setMounted] = useState(false);
   const ref = useRef(null);
@@ -52,6 +55,7 @@ export default function ReleaseCard({ release, palette, index }) {
       viewport={{ once: true, margin: "-10% 0px" }}
       transition={{ duration: 0.8, delay: (index % 2) * 0.12, ease: [0.22, 1, 0.36, 1] }}
       className="group [perspective:900px]"
+      data-missing-spotify={editKey && !release.spotify ? "" : undefined}
     >
       <motion.div
         ref={ref}
@@ -152,6 +156,7 @@ export default function ReleaseCard({ release, palette, index }) {
           Spotify &#8599;
         </a>
       </div>
+      {editKey && <SpotifyLinkEditor key={release.spotify?.id ?? "none"} release={release} />}
     </motion.article>
   );
 }

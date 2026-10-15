@@ -3,6 +3,7 @@ import "@fontsource-variable/inter";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Header from "@/components/Header";
+import { SpotifyLinksProvider } from "@/components/SpotifyLinks";
 import { SITE } from "@/data/site";
 
 export const metadata = {
@@ -31,10 +32,12 @@ export default function RootLayout({ children }) {
         <a href="#music" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-black">
           Skip to the music
         </a>
-        <SmoothScroll>
-          <Header />
-          <main>{children}</main>
-        </SmoothScroll>
+        <SpotifyLinksProvider>
+          <SmoothScroll>
+            <Header />
+            <main>{children}</main>
+          </SmoothScroll>
+        </SpotifyLinksProvider>
       </body>
     </html>
   );
