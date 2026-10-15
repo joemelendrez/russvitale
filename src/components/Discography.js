@@ -6,6 +6,7 @@ import { DEFAULT_PALETTE, ERAS, eraForYear } from "@/data/eras";
 import { otherDrops, singlesWithDrops } from "@/data/drops";
 import { sameSong } from "@/data/catalog";
 import { VERSION_RELEASES } from "@/data/versions";
+import { FEATURE_RELEASES, featureCredit } from "@/data/features";
 import { CATALOG_SINGLES_BY_YEAR } from "@/data/catalog";
 import { SERVICES, listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
@@ -16,7 +17,7 @@ import PlayerFrame from "./PlayerFrame";
 import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
 
-export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version" };
+export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -24,6 +25,7 @@ const FILTERS = [
   { key: "ep", label: "EPs" },
   { key: "single", label: "Singles" },
   { key: "version", label: "Versions" },
+  { key: "feature", label: "Features" },
   { key: "drop", label: "Drops" },
   { key: "nodate", label: "No date yet", editOnly: true },
 ];
@@ -37,7 +39,7 @@ function formatDate(date) {
 const yearOf = (r) => (r.date ? Number(r.date.slice(0, 4)) : r.year);
 
 function countByType(list) {
-  const c = { all: list.length, album: 0, ep: 0, single: 0, version: 0, drop: 0, nodate: 0 };
+  const c = { all: list.length, album: 0, ep: 0, single: 0, version: 0, feature: 0, drop: 0, nodate: 0 };
   for (const r of list) {
     c[r.type] += 1;
     if (r.dropId) c.drop += 1;
@@ -57,7 +59,7 @@ export function useAllReleases() {
     const singles = singlesWithDrops(drops, CATALOG_SINGLES_BY_YEAR).flatMap((g) => g.singles.map((s) => ({ ...s, year: s.year ?? g.year })));
     // Albums, EPs and versions added from admin. One with the same title as a
     // release already listed replaces it (keeping its players where it has none).
-    const listed = [...albums, ...VERSION_RELEASES];
+    const listed = [...albums, ...VERSION_RELEASES, ...FEATURE_RELEASES];
     for (const added of otherDrops(drops)) {
       const i = listed.findIndex((r) => r.type === added.type && sameSong(r.title, added.title));
       if (i === -1) listed.push(added);
@@ -84,6 +86,19 @@ export default function Discography() {
   useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => () => clearNowPlaying("discography"), []);
 
+  // /music#features (the menu's Features link) opens on that filter.
+  useEffect(() => {
+    const fromHash = () => {
+      if (window.location.hash !== "#features") return;
+      setFilter("feature");
+      // On phones the chip sits past the edge of the row; bring it into view.
+      requestAnimationFrame(() => document.querySelector('[data-filter="feature"]')?.scrollIntoView({ block: "nearest", inline: "center" }));
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, []);
+
   const all = useAllReleases();
 
   // Other versions of each song, by the song's title.
@@ -91,7 +106,7 @@ export default function Discography() {
     const map = new Map();
     for (const r of all) {
       if (r.type !== "version" || !r.versionOf) continue;
-      const original = all.find((o) => o.type !== "version" && sameSong(o.title, r.versionOf));
+      const original = all.find((o) => o.type !== "version" && o.type !== "feature" && sameSong(o.title, r.versionOf));
       if (original) map.set(releaseKey(original), [...(map.get(releaseKey(original)) ?? []), r]);
     }
     return map;
@@ -103,7 +118,7 @@ export default function Discography() {
     const q = query.trim().toLowerCase();
     if (!q) return all;
     return all.filter((r) =>
-      `${r.title} ${r.versionOf ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)
+      `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)
     );
   }, [all, query]);
 
@@ -118,7 +133,7 @@ export default function Discography() {
     });
     // By date where there is one; within a year, undated releases go after
     // dated ones, albums before EPs before singles, then by title.
-    const rank = { album: 0, ep: 1, single: 2, version: 3 };
+    const rank = { album: 0, ep: 1, single: 2, version: 3, feature: 4 };
     const dir = newest ? -1 : 1;
     list.sort(
       (a, b) =>
@@ -153,7 +168,7 @@ export default function Discography() {
       <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Every release</h1>
       <p className="mt-6 max-w-xl text-era-muted">
-        {totals.album} albums, {totals.ep} EPs, {totals.single} singles and {totals.version} other versions, from the Diemon days to the newest drops. Tap any one to play it on the
+        {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.version} other versions and {totals.feature} songs Russ is featured on, from the Diemon days to the newest drops. Tap any one to play it on the
         service you pick with the round button. The list follows Wikipedia&apos;s Russ discography; songs that only live on his albums are on the
         album pages of each service. The counts on the buttons below show how many are left as you search.
       </p>
@@ -170,17 +185,18 @@ export default function Discography() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by title, year or era"
+              placeholder="Search by title, artist, year or era"
               className="h-11 w-full rounded-full border border-era-fg/15 bg-era-fg/5 pl-10 pr-4 text-sm text-era-fg placeholder:text-era-muted focus:border-era-accent focus:outline-none"
             />
           </label>
           <ListenToggle />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          {FILTERS.filter((f) => (f.key !== "drop" || totals.drop > 0) && (f.key !== "version" || totals.version > 0) && (!f.editOnly || editing)).map((f) => (
+          {FILTERS.filter((f) => (f.key !== "drop" || totals.drop > 0) && (f.key !== "version" || totals.version > 0) && (f.key !== "feature" || totals.feature > 0) && (!f.editOnly || editing)).map((f) => (
             <button
               key={f.key}
               type="button"
+              data-filter={f.key}
               aria-pressed={filter === f.key}
               onClick={() => setFilter(f.key)}
               className={`shrink-0 rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] transition-colors ${
@@ -230,7 +246,7 @@ export default function Discography() {
                   editing={editing}
                   onToggle={() => setOpenKey((k) => (k === key ? null : key))}
                   versions={versionsOf.get(key)}
-                  original={r.type === "version" ? all.find((o) => o.type !== "version" && sameSong(o.title, r.versionOf ?? "")) : null}
+                  original={r.type === "version" ? all.find((o) => o.type !== "version" && o.type !== "feature" && sameSong(o.title, r.versionOf ?? "")) : null}
                   onOpen={openRelease}
                 />
               );
@@ -268,7 +284,11 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
           <span className="min-w-0 flex-1">
             <span className="block truncate font-semibold sm:text-lg">{release.title}</span>
             <span className="mt-0.5 block text-[11px] uppercase tracking-[0.18em] text-era-muted">
-              {release.type === "version" && release.versionOf ? `Version of ${release.versionOf}` : TYPE_LABEL[release.type]}
+              {release.type === "version" && release.versionOf
+                ? `Version of ${release.versionOf}`
+                : release.type === "feature"
+                  ? featureCredit(release)
+                  : TYPE_LABEL[release.type]}
               {versions?.length ? ` · +${versions.length} version${versions.length > 1 ? "s" : ""}` : ""}
               {release.dropId ? " · New drop" : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
             </span>
