@@ -32,6 +32,8 @@ The hero is three layers in `public/hero/`, made from Joseph's concert photos: `
 
 Copy the share link from Spotify (`https://open.spotify.com/album/<id>` or `/track/<id>`) and add `spotify: { kind: "album", id: "<id>" }` to the release in `eras.js`. Releases without one link to a Spotify search instead. Real cover art can go in `public/covers/` with `cover: "/covers/zoo.jpg"`.
 
+You can also fix players from the live site. Open `https://russvitale.com/?edit=<SPOTIFY_EDIT_KEY>` once on a device: an "Edit mode" bar appears, and every card gets a "Find it on Spotify" link and a box to paste the share link into. Saved links go to a Netlify Blobs store (`/api/spotify-links`) and show for every visitor straight away. "Done" leaves edit mode on that device. Set `SPOTIFY_EDIT_KEY` in the Netlify project's environment variables; without it nobody can save.
+
 ## Ground rules
 
 This is a fan site. It stays labeled unofficial, plays music only through official Spotify and YouTube embeds, hosts no audio, prints no full lyrics and sells nothing.
