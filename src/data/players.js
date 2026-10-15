@@ -76,7 +76,7 @@ function youtubeMusicUrl({ kind, id }) {
 }
 
 export function searchLinks(release) {
-  const q = encodeURIComponent(`Russ ${release.title}`);
+  const q = encodeURIComponent(release.artist ? `${release.artist} ${release.title} Russ` : `Russ ${release.title}`);
   return {
     spotify: `https://open.spotify.com/search/${q}`,
     youtube: `https://music.youtube.com/search?q=${q}`,

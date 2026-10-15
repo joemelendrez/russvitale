@@ -20,7 +20,6 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Post not found" };
-  const images = post.cover ? [post.cover] : undefined;
   return {
     title: `${post.title} | Russ fan blog`,
     description: post.excerpt || undefined,
@@ -31,10 +30,9 @@ export async function generateMetadata({ params }) {
       type: "article",
       siteName: SITE.name,
       url: `/blog/${post.slug}`,
-      images,
       publishedTime: post.published || undefined,
     },
-    twitter: { card: "summary_large_image", title: post.title, description: post.excerpt || undefined, images },
+    twitter: { card: "summary_large_image", title: post.title, description: post.excerpt || undefined },
   };
 }
 

@@ -20,7 +20,22 @@ export const metadata = {
     siteName: SITE.name,
     type: "website",
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", title: "Russ: the music, era by era", description: SITE.description },
+  keywords: ["Russ", "Russ rapper", "Russ discography", "Russ albums", "Russ songs", "Russ features", "Russ fan site"],
+  formatDetection: { telephone: false },
+};
+
+// Who the site is (an unofficial fan site) and who it's about, for search.
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  alternateName: "Russ fan archive (unofficial)",
+  url: SITE.url,
+  description: SITE.description,
+  inLanguage: "en",
+  about: { "@type": "Person", name: "Russ", alternateName: "Russell Vitale", sameAs: [SITE.officialSite, SITE.spotifyArtist] },
+  publisher: { "@type": "Person", name: SITE.builder.name, url: SITE.builder.url },
 };
 
 export const viewport = {
@@ -33,6 +48,7 @@ export default function RootLayout({ children }) {
       <head>
         {/* Impact (Ticketmaster affiliate program) site verification. */}
         <meta name="impact-site-verification" value="0f51a803-5e30-40e5-b84e-28d74d8989f0" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c") }} />
       </head>
       <body className="grain">
         <a href="#music" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-black">

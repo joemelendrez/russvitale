@@ -10,6 +10,7 @@ import { clearNowPlaying, useListenOn } from "@/lib/listenOn";
 import { ReleaseRow, useAllReleases } from "./Discography";
 import FavoritesAccount from "./FavoritesAccount";
 import ListenToggle from "./ListenToggle";
+import MostLoved from "./MostLoved";
 import { applyPalette } from "./usePalette";
 
 // YouTube turns up to 50 video ids into a playlist anyone can open, no sign-in.
@@ -115,6 +116,20 @@ export default function Favorites() {
           </Reorder.Group>
         </>
       )}
+
+      {list.length > 0 && (
+        <Link href="/top10" className="mt-10 flex items-center justify-between gap-4 rounded-2xl border border-era-fg/10 p-5 hover:border-era-accent">
+          <span>
+            <span className="block font-display text-2xl uppercase">Make your top 10</span>
+            <span className="block text-sm text-era-muted">Pick 10 from these and share the picture.</span>
+          </span>
+          <span aria-hidden="true" className="text-2xl text-era-accent">
+            &rarr;
+          </span>
+        </Link>
+      )}
+
+      <MostLoved />
 
       <p className="mt-16 text-xs leading-relaxed text-era-muted">
         An unofficial fan site, not affiliated with Russ, Diemon or any label. Music plays through the official Spotify, YouTube and SoundCloud
