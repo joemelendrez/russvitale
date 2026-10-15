@@ -158,7 +158,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
 
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
-          <h4 className="text-base font-semibold leading-snug sm:text-lg">{release.title}</h4>
+          <h4 className="line-clamp-2 text-base font-semibold leading-snug sm:text-lg" title={release.title}>{release.title}</h4>
           <p className="mt-1 text-xs uppercase tracking-[0.2em]" style={{ color: palette.muted }}>
             {TYPE_LABEL[release.type]} &middot; {release.year}
           </p>

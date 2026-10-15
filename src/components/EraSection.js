@@ -51,11 +51,9 @@ export default function EraSection({ era, number }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:col-span-7">
+        <div className="grid grid-cols-2 items-start gap-x-5 gap-y-12 sm:gap-x-8 lg:col-span-7">
           {era.releases.map((release, i) => (
-            <div key={release.title} className={i % 2 === 1 ? "sm:translate-y-16" : ""}>
-              <ReleaseCard release={release} palette={era.palette} index={i} />
-            </div>
+            <ReleaseCard key={release.title} release={release} palette={era.palette} index={i} />
           ))}
         </div>
       </div>
