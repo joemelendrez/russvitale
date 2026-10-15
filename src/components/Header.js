@@ -5,9 +5,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { NAV, SITE } from "@/data/site";
 import { TAB_EVENT } from "./Timeline";
 
+// Section links point at the home page; off it they need the leading "/".
+function navHref(item, onHome) {
+  return item.page || onHome ? item.href : `/${item.href}`;
+}
+
 // Albums and Singles both live in the Music section; the link picks the tab.
-function openTab(e, item) {
-  if (!item.tab) return;
+function openTab(e, item, onHome) {
+  if (!item.tab || !onHome) return;
   e.preventDefault();
   history.replaceState(null, "", item.href);
   window.dispatchEvent(new CustomEvent(TAB_EVENT, { detail: item.tab }));
@@ -17,6 +22,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const onHome = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -45,20 +51,20 @@ export default function Header() {
         }`}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <a href="#top" className="group flex items-baseline gap-2" onClick={() => setOpen(false)}>
+          <a href={onHome ? "#top" : "/"} className="group flex items-baseline gap-2" onClick={() => setOpen(false)}>
             <span className="font-display text-2xl tracking-wide">RUSS</span>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-era-muted transition-colors group-hover:text-era-accent">
+            <span className="whitespace-nowrap text-[10px] uppercase tracking-[0.3em] text-era-muted transition-colors group-hover:text-era-accent">
               fan archive
             </span>
           </a>
 
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
+          <nav className="hidden items-center gap-5 md:flex lg:gap-8" aria-label="Main">
             {NAV.map((item) => (
               <a
                 key={item.href}
-                href={item.href}
-                onClick={(e) => openTab(e, item)}
-                className="relative text-sm uppercase tracking-[0.2em] text-era-fg/80 transition-colors hover:text-era-fg after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-era-accent after:transition-transform hover:after:scale-x-100"
+                href={navHref(item, onHome)}
+                onClick={(e) => openTab(e, item, onHome)}
+                className="relative whitespace-nowrap text-xs uppercase tracking-[0.2em] text-era-fg/80 lg:text-sm transition-colors hover:text-era-fg after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-era-accent after:transition-transform hover:after:scale-x-100"
               >
                 {item.label}
               </a>
@@ -99,10 +105,10 @@ export default function Header() {
               {NAV.map((item, i) => (
                 <motion.a
                   key={item.href}
-                  href={item.href}
+                  href={navHref(item, onHome)}
                   onClick={(e) => {
                     setOpen(false);
-                    openTab(e, item);
+                    openTab(e, item, onHome);
                   }}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}

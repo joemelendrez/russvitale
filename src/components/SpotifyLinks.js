@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ALL_RELEASES, releaseKey } from "@/data/releaseKey";
 import { expandSoundcloud, parsePlayerLink, playerFor, releaseFieldsFromRow, searchLinks } from "@/data/players";
 import { useListenOn } from "@/lib/listenOn";
@@ -25,6 +25,35 @@ function storage(action) {
   return false;
 }
 
+const COVER_BUCKET = "russ-covers";
+const LINK_COLUMNS = ["kind", "spotify_id", "soundcloud_url", "youtube_kind", "youtube_id"];
+const ROW_COLUMNS = [...LINK_COLUMNS, "cover_url"];
+
+// "…/object/public/russ-covers/<path>" → "<path>", for deleting an old upload.
+function coverPath(url) {
+  const marker = `/object/public/${COVER_BUCKET}/`;
+  return url?.includes(marker) ? url.split(marker)[1] : null;
+}
+
+// A picked photo as a square-ish image at most 1000px across: WebP where the
+// browser can make one, JPEG otherwise.
+async function shrinkImage(file) {
+  if (!file?.type?.startsWith("image/")) throw new Error("Pick an image file.");
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) throw new Error("Couldn't read that image. Try a JPEG or PNG.");
+  const scale = Math.min(1, 1000 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const encode = (type) => new Promise((resolve) => canvas.toBlob(resolve, type, 0.86));
+  const webp = await encode("image/webp");
+  if (webp?.type === "image/webp") return webp;
+  const jpeg = await encode("image/jpeg");
+  if (!jpeg) throw new Error("Couldn't read that image. Try a JPEG or PNG.");
+  return jpeg;
+}
+
 // Saved rows by release key, as stored (Spotify or SoundCloud, plus YouTube).
 function linksFromRows(rows) {
   return Object.fromEntries((rows ?? []).map((r) => [r.release_key, r]));
@@ -35,7 +64,8 @@ function linksFromRows(rows) {
 export function withSavedLinks(release, row) {
   if (!row) return release;
   const saved = releaseFieldsFromRow(row);
-  const next = { ...release, savedLink: true };
+  const hasLinks = Boolean(row.spotify_id || row.soundcloud_url || row.youtube_id);
+  const next = hasLinks ? { ...release, savedLink: true } : { ...release };
   if (row.spotify_id || row.soundcloud_url) {
     delete next.spotify;
     delete next.soundcloud;
@@ -45,6 +75,10 @@ export function withSavedLinks(release, row) {
 
 export function SpotifyLinksProvider({ children }) {
   const [links, setLinks] = useState({});
+  const linksRef = useRef(links);
+  useEffect(() => {
+    linksRef.current = links;
+  }, [links]);
   const [drops, setDrops] = useState([]);
   const [admin, setAdmin] = useState("unknown"); // unknown | yes | no
   // Read on the client only; nothing renders from it until the admin check
@@ -58,7 +92,7 @@ export function SpotifyLinksProvider({ children }) {
     let cancelled = false;
     supabase
       .from("russ_release_links")
-      .select("release_key, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id")
+      .select("release_key, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, cover_url")
       .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
     supabase
       .from("russ_drops")
@@ -100,16 +134,28 @@ export function SpotifyLinksProvider({ children }) {
   // Someone opened /?edit=1 without being signed in as an admin.
   const editError = wantsEdit && admin === "no" ? "Sign in at /admin first to fix song links." : null;
 
+  // Clears some columns of a saved row, or deletes the row when nothing is left.
+  const clearRow = useCallback(async (key, columns, message) => {
+    const row = linksRef.current[key];
+    if (!row) return;
+    const left = ROW_COLUMNS.some((c) => !columns.includes(c) && row[c]);
+    const query = supabase.from("russ_release_links");
+    const { error } = left
+      ? await query.update({ ...Object.fromEntries(columns.map((c) => [c, null])), updated_at: new Date().toISOString() }).eq("release_key", key)
+      : await query.delete().eq("release_key", key);
+    if (error) throw new Error(message);
+    setLinks((prev) => {
+      const next = { ...prev };
+      if (left) next[key] = { ...prev[key], ...Object.fromEntries(columns.map((c) => [c, null])) };
+      else delete next[key];
+      return next;
+    });
+  }, []);
+
   const save = useCallback(async (release, link, remove = false) => {
     const key = releaseKey(release);
     if (remove) {
-      const { error } = await supabase.from("russ_release_links").delete().eq("release_key", key);
-      if (error) throw new Error("Couldn't remove that link. Are you still signed in?");
-      setLinks((prev) => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
+      await clearRow(key, LINK_COLUMNS, "Couldn't remove that link. Are you still signed in?");
       return;
     }
     const found = parsePlayerLink(link);
@@ -120,7 +166,34 @@ export function SpotifyLinksProvider({ children }) {
     const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, ...parsed, updated_at: new Date().toISOString() });
     if (error) throw new Error("Couldn't save that link. Are you still signed in?");
     setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, ...parsed } }));
+  }, [clearRow]);
+
+  // Uploads a new cover (shrunk on the device first) and points the release at it.
+  const saveCover = useCallback(async (release, file) => {
+    const key = releaseKey(release);
+    const blob = await shrinkImage(file);
+    const ext = blob.type === "image/webp" ? "webp" : "jpg";
+    const path = `${key}-${Date.now()}.${ext}`;
+    const bucket = supabase.storage.from(COVER_BUCKET);
+    const { error: upErr } = await bucket.upload(path, blob, { contentType: blob.type, cacheControl: "31536000" });
+    if (upErr) throw new Error("Couldn't upload that image. Are you still signed in?");
+    const cover_url = bucket.getPublicUrl(path).data.publicUrl;
+    const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, cover_url, updated_at: new Date().toISOString() });
+    if (error) {
+      await bucket.remove([path]);
+      throw new Error("Couldn't save that cover. Are you still signed in?");
+    }
+    const old = coverPath(linksRef.current[key]?.cover_url);
+    setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, cover_url } }));
+    if (old) bucket.remove([old]);
   }, []);
+
+  const removeCover = useCallback(async (release) => {
+    const key = releaseKey(release);
+    const old = coverPath(linksRef.current[key]?.cover_url);
+    await clearRow(key, ["cover_url"], "Couldn't remove that cover. Are you still signed in?");
+    if (old) supabase.storage.from(COVER_BUCKET).remove([old]);
+  }, [clearRow]);
 
   const exitEdit = useCallback(() => {
     storage("remove");
@@ -133,8 +206,8 @@ export function SpotifyLinksProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ links, drops, editing, isAdmin, editError, save, exitEdit, dismissError }),
-    [links, drops, editing, isAdmin, editError, save, exitEdit, dismissError]
+    () => ({ links, drops, editing, isAdmin, editError, save, saveCover, removeCover, exitEdit, dismissError }),
+    [links, drops, editing, isAdmin, editError, save, saveCover, removeCover, exitEdit, dismissError]
   );
   return (
     <SpotifyLinksContext.Provider value={value}>
@@ -296,5 +369,54 @@ export function SpotifyLinkEditor({ release }) {
         )}
       </div>
     </form>
+  );
+}
+
+// Edit mode: upload or replace a release's cover (and take it off again).
+// The image is shrunk on the device, then stored in Supabase for everyone.
+export function CoverEditor({ release }) {
+  const { links, saveCover, removeCover } = useSpotifyLinks();
+  const saved = links[releaseKey(release)]?.cover_url;
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState(null);
+  const input = useRef(null);
+
+  const run = async (task, done) => {
+    setStatus("saving");
+    setError(null);
+    try {
+      await task();
+      setStatus(done);
+    } catch (e) {
+      setError(e.message);
+      setStatus(null);
+    }
+  };
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-label={`Cover image for ${release.title}`}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) run(() => saveCover(release, file), "Cover saved");
+        }}
+      />
+      <button type="button" disabled={status === "saving"} onClick={() => input.current?.click()} className="underline opacity-70 hover:opacity-100 disabled:opacity-40">
+        {status === "saving" ? "Uploading..." : saved ? "Change cover" : "Upload cover"}
+      </button>
+      {saved && status !== "saving" && (
+        <button type="button" onClick={() => run(() => removeCover(release), "Cover removed")} className="underline opacity-70 hover:opacity-100">
+          Remove cover
+        </button>
+      )}
+      {status && status !== "saving" && <span className="text-emerald-400">{status}</span>}
+      {error && <span className="text-red-400">{error}</span>}
+    </div>
   );
 }

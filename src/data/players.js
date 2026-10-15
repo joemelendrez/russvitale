@@ -145,6 +145,7 @@ export function releaseFieldsFromRow(row) {
     ...(row.spotify_id ? { spotify: { kind: row.kind, id: row.spotify_id } } : {}),
     ...(row.soundcloud_url ? { soundcloud: row.soundcloud_url } : {}),
     ...(row.youtube_id ? { youtube: { kind: row.youtube_kind, id: row.youtube_id } } : {}),
+    ...(row.cover_url ? { cover: row.cover_url } : {}),
   };
 }
 

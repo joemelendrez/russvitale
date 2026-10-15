@@ -4,8 +4,8 @@ import Image from "next/image";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
-import { SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
-import { useListenOn } from "@/lib/listenOn";
+import { CoverEditor, SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
+import { serviceOfPlayer, setNowPlaying, useListenOn } from "@/lib/listenOn";
 import PlayerFrame from "./PlayerFrame";
 import { PHONE_QUERY, usePhonePlayer } from "./PhonePlayer";
 
@@ -32,9 +32,15 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
   const rotateX = useSpring(useTransform(ry, [-0.5, 0.5], [8, -8]), { stiffness: 200, damping: 20 });
   const rotateY = useSpring(useTransform(rx, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 20 });
 
+  const service = useListenOn();
+  const player = playerFor(release, service);
+  const listen = listenLink(release, service);
+
   const open = () => {
     setActive(true);
     setMounted(true);
+    // The Play on button switches to the service this card plays on.
+    if (player) setNowPlaying(releaseKey(release), serviceOfPlayer(player));
   };
 
   const onPointerMove = (e) => {
@@ -54,10 +60,6 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
     rx.set(0);
     ry.set(0);
   };
-
-  const service = useListenOn();
-  const player = playerFor(release, service);
-  const listen = listenLink(release, service);
 
   return (
     <motion.article
@@ -171,6 +173,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           {listen.label} &#8599;
         </a>
       </div>
+      {editing && <CoverEditor release={release} />}
       {editing && <SpotifyLinkEditor key={`${service}-${player?.key ?? "none"}`} release={release} />}
     </motion.article>
   );
