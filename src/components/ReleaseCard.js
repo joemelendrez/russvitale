@@ -3,13 +3,16 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { spotifyEmbedUrl, spotifyLink } from "@/data/eras";
+import { releaseKey } from "@/data/releaseKey";
 import { SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
+import { PHONE_QUERY, usePhonePlayer } from "./PhonePlayer";
 
 const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single" };
 
-// Album or single. Hover (or tap on a phone) flips the cover into a Spotify
-// player. The iframe only loads the first time someone asks for it, so the
-// page stays light with a dozen of these on screen.
+// Album or single. On desktop, hover flips the cover into a Spotify player;
+// the iframe only loads the first time someone asks for it, so the page stays
+// light with a dozen of these on screen. On phones and tablets a tap plays it
+// in the full-width bar at the bottom of the screen (PhonePlayer.js).
 export default function ReleaseCard({ release: baseRelease, palette, index }) {
   const release = useRelease(baseRelease);
   const { editKey } = useSpotifyLinks();
@@ -17,6 +20,9 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
   const [mounted, setMounted] = useState(false);
   const ref = useRef(null);
   const pointerType = useRef(null);
+  const phone = usePhonePlayer();
+  const playingOnPhone = phone.playing === releaseKey(release);
+  const lit = active || playingOnPhone;
 
   const rx = useMotionValue(0);
   const ry = useMotionValue(0);
@@ -69,29 +75,36 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           type="button"
           onPointerDown={(e) => (pointerType.current = e.pointerType)}
           onClick={() => {
+            const touch = pointerType.current !== "mouse" && window.matchMedia(PHONE_QUERY).matches;
+            if (touch) {
+              pointerType.current = null;
+              if (playingOnPhone) phone.stop();
+              else phone.play(release, palette);
+              return;
+            }
             // A mouse already opened it on hover, so a click shouldn't close it.
             if (pointerType.current === "mouse" || !active) open();
             else setActive(false);
             pointerType.current = null;
           }}
-          aria-label={`${active ? "Hide" : "Play"} ${release.title}`}
-          aria-expanded={active}
+          aria-label={`${lit ? "Stop" : "Play"} ${release.title}`}
+          aria-pressed={lit}
           className="absolute inset-0 z-10 block h-full w-full cursor-pointer"
         >
           <motion.div
-            animate={{ scale: active ? 1.06 : 1, filter: active ? "brightness(0.55)" : "brightness(1)" }}
+            animate={{ scale: lit ? 1.06 : 1, filter: lit ? "brightness(0.55)" : "brightness(1)" }}
             transition={{ duration: 0.5 }}
             className="absolute inset-0"
           >
             {release.cover ? (
               <Image src={release.cover} alt={`${release.title} cover`} fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" />
             ) : (
-              <GeneratedCover release={release} palette={palette} spinning={active} />
+              <GeneratedCover release={release} palette={palette} spinning={lit} />
             )}
           </motion.div>
 
           <AnimatePresence>
-            {active && (
+            {lit && (
               <motion.span
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -99,9 +112,15 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
                 className="absolute left-1/2 top-[30%] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
                 style={{ background: palette.accent, color: palette.bg }}
               >
-                <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6" fill="currentColor" aria-hidden="true">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                {playingOnPhone ? (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+                    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
               </motion.span>
             )}
           </AnimatePresence>
