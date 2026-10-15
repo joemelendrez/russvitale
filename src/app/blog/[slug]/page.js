@@ -62,7 +62,7 @@ export default async function PostPage({ params }) {
           "@type": "BlogPosting",
           headline: post.title,
           description: post.excerpt || undefined,
-          image: post.cover ? [post.cover] : undefined,
+          image: post.cover ? [new URL(post.cover, SITE.url).href] : undefined,
           datePublished: post.published || undefined,
           dateModified: post.updated || undefined,
           author: { "@type": "Person", name: SITE.builder.name, url: SITE.builder.url },

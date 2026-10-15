@@ -4,6 +4,8 @@
 // when WordPress can't be reached, the blog just shows that posts are on the
 // way. Set it to "off" to stop reading WordPress.
 
+import { coverUrl, iconFromTags } from "@/data/blogCovers";
+
 const URL_SETTING = process.env.RUSS_WORDPRESS_GRAPHQL_URL || "https://cms.habitnova.com/russvitale/graphql";
 export const blogConfigured = URL_SETTING !== "off";
 
@@ -46,6 +48,7 @@ const FIELDS = `
   dateGmt
   modifiedGmt
   categories { nodes { name slug } }
+  tags { nodes { name slug } }
   featuredImage { node { sourceUrl altText } }
 `;
 
@@ -65,7 +68,8 @@ function toPost(node, withContent = false) {
     title: decodeEntities(node.title || ""),
     excerpt: stripTags(node.excerpt || ""),
     category: category ? { name: decodeEntities(category.name), slug: category.slug } : null,
-    cover: node.featuredImage?.node?.sourceUrl || null,
+    // No featured image: the category's flat-color cover (/blog/cover).
+    cover: node.featuredImage?.node?.sourceUrl || coverUrl({ category: category?.slug, icon: iconFromTags(node.tags?.nodes?.map((t) => t.slug)) }),
     coverAlt: node.featuredImage?.node?.altText || "",
     published: gmt(node.dateGmt),
     updated: gmt(node.modifiedGmt),
