@@ -18,7 +18,7 @@ export const ERAS = [
     kicker: "The SoundCloud grind",
     blurb:
       "Russ co-founds Diemon in Atlanta, then self-releases eleven albums and 87 singles in under three years, producing, mixing and engineering nearly all of it himself. After that comes a song a week on SoundCloud for almost three years, until \"What They Want\" and \"Losin Control\" break into the Billboard Hot 100.",
-    palette: { bg: "#120a1f", fg: "#f3e9ff", muted: "#a996c4", accent: "#b98cff" },
+    palette: { bg: "#0b0c22", fg: "#eef0ff", muted: "#9c9fd0", accent: "#a7abff" },
     releases: [
       { title: "Velvet", year: 2011, date: "2011-12-09", type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
       { title: "Apollo 13", year: 2012, date: "2012-01-24", type: "album" },
@@ -40,7 +40,7 @@ export const ERAS = [
     kicker: "The debut",
     blurb:
       "A partnership with Columbia, but the same rules: Russ writes, produces and engineers. His official debut lands at No. 7 on the Billboard 200 and the Wake Up Tour takes the songs on the road.",
-    palette: { bg: "#0b1218", fg: "#e6eef5", muted: "#8ea3b4", accent: "#8fd0ff" },
+    palette: { bg: "#f3f2ec", fg: "#16160f", muted: "#6c6b63", accent: "#16160f" },
     releases: [
       { title: "There's Really a Wolf", year: 2017, date: "2017-05-05", type: "album", spotify: { kind: "album", id: "0lUL92det7mZ4DaHYmiUEC" } },
     ],
@@ -52,7 +52,7 @@ export const ERAS = [
     kicker: "Louder, sharper",
     blurb:
       "The second album climbs to No. 4 on the Billboard 200, with Jessie Reyez on \"Basement\" and the late-year Just in Case EP closing things out.",
-    palette: { bg: "#0d1a10", fg: "#f1f5e6", muted: "#a0ad8f", accent: "#f0b429" },
+    palette: { bg: "#1a120a", fg: "#f4ead6", muted: "#ab977a", accent: "#e0a33e" },
     releases: [
       { title: "Zoo", year: 2018, date: "2018-09-07", type: "album" },
       { title: "Just in Case", year: 2018, date: "2018-12-23", type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" } },
@@ -65,7 +65,7 @@ export const ERAS = [
     kicker: "The last Columbia record",
     blurb:
       "Another No. 4 debut. \"Best on Earth\" with Bia becomes one of his biggest records, and by June 2020 his deal is done.",
-    palette: { bg: "#e8eef4", fg: "#0f1720", muted: "#56677a", accent: "#2563eb" },
+    palette: { bg: "#030404", fg: "#e9f3f2", muted: "#8d9a99", accent: "#93dcd8" },
     releases: [
       { title: "Shake the Snow Globe", year: 2020, date: "2020-01-31", type: "album", spotify: { kind: "album", id: "2ZzatxW5gv1XZ0uai8TKxk" } },
     ],
@@ -77,7 +77,7 @@ export const ERAS = [
     kicker: "Fully independent",
     blurb:
       "On June 30, 2020 Russ announces he is independent. The Chomp series has him trading verses with heavyweight lyricists, and \"Are You Entertained\" with Ed Sheeran goes global without a major label behind it.",
-    palette: { bg: "#170707", fg: "#fff1ec", muted: "#c79a90", accent: "#ff3b2f" },
+    palette: { bg: "#1e0606", fg: "#fff0e8", muted: "#c69a92", accent: "#ffd21f" },
     releases: [
       { title: "Chomp", year: 2020, date: "2020-11-17", type: "ep", spotify: { kind: "album", id: "6hTlfMRAEJBMyETemdH5Qq" } },
       { title: "Chomp 2", year: 2021, date: "2021-12-08", type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" } },
@@ -91,7 +91,7 @@ export const ERAS = [
     kicker: "Warmer, looser",
     blurb:
       "Santiago debuts at No. 12 on the Billboard 200. Then a film debut in M. Night Shyamalan's Trap, and a run of collaborations with 6lack and DJ Premier.",
-    palette: { bg: "#1d1008", fg: "#fff3e3", muted: "#c9a587", accent: "#ff8a3d" },
+    palette: { bg: "#0f1c3f", fg: "#e9f5f8", muted: "#93b3c6", accent: "#62b6d0" },
     releases: [
       { title: "Santiago", year: 2023, date: "2023-08-18", type: "album", spotify: { kind: "album", id: "3mX0HbDt7oIzBBJHgQYnDY" } },
     ],
@@ -103,7 +103,7 @@ export const ERAS = [
     kicker: "The newest chapter",
     blurb:
       "W!LD arrives in June 2025, followed by the deluxe, The Elephant & The Rider. The same year Billboard names him an Indie Trailblazer, fourteen years after the first Diemon upload.",
-    palette: { bg: "#060606", fg: "#f4ffe6", muted: "#9aa88a", accent: "#c6ff2e" },
+    palette: { bg: "#e5e2dc", fg: "#121417", muted: "#5f6168", accent: "#0a4fc8" },
     releases: [
       { title: "W!LD", year: 2025, date: "2025-06-27", type: "album", spotify: { kind: "album", id: "1gFQ6dGFvpDsHmnr4bPbTV" } },
       { title: "W!LD Deluxe: The Elephant & The Rider", year: 2025, type: "album", spotify: { kind: "album", id: "4yfXdMJl2ckTYvEXes0aaQ" } },

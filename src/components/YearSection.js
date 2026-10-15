@@ -30,7 +30,7 @@ export default function YearSection({ group }) {
             <p className="mt-4 max-w-xs text-era-fg/85">{group.note}</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:col-span-8 lg:grid-cols-3">
+        <div className="grid grid-cols-2 items-start gap-x-5 gap-y-12 sm:gap-x-8 lg:col-span-8 lg:grid-cols-3">
           {group.singles.map((single, i) => (
             <ReleaseCard key={single.title} release={{ ...single, year: group.year }} palette={era.palette} index={i} />
           ))}
