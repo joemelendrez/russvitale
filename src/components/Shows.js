@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { SHOWS, TOUR_LINKS } from "@/data/shows";
 import PaletteSection from "./PaletteSection";
 import SectionHeading from "./SectionHeading";
+import BandsintownWidget from "./BandsintownWidget";
 
 function upcoming() {
   const today = new Date().toISOString().slice(0, 10);
@@ -64,6 +65,8 @@ export default function Shows() {
             })}
           </ul>
         )}
+
+        <BandsintownWidget />
 
         <div className="mt-14 grid gap-4 sm:grid-cols-3">
           {TOUR_LINKS.map((link, i) => (

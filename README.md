@@ -32,7 +32,19 @@ The hero is three layers in `public/hero/`, cut from a photo on Russ's Instagram
 
 Copy the share link from Spotify (`https://open.spotify.com/album/<id>` or `/track/<id>`) and add `spotify: { kind: "album", id: "<id>" }` to the release in `eras.js`. Releases without one link to a Spotify search instead. Real cover art can go in `public/covers/` with `cover: "/covers/zoo.jpg"`.
 
-You can also fix players from the live site. Open `https://russvitale.com/?edit=<SPOTIFY_EDIT_KEY>` once on a device: an "Edit mode" bar appears, and every card gets a "Find it on Spotify" link and a box to paste the share link into. Saved links go to a Netlify Blobs store (`/api/spotify-links`) and show for every visitor straight away. "Done" leaves edit mode on that device. Set `SPOTIFY_EDIT_KEY` in the Netlify project's environment variables; without it nobody can save.
+You can also fix players from the live site. Sign in at `/admin` with an emailed link (only emails in the `russ_admins` table can save), then tap "Fix song links on the site": an "Edit mode" bar appears, and every card gets a "Find it on Spotify" link and a box to paste the share link into. Saved links go to the `russ_release_links` table and show for every visitor straight away. "Done" leaves edit mode on that device.
+
+### New drops
+
+`/admin` also has "Add a new drop": a title, a Spotify link, the release date and a short note. Drops (`russ_drops`) join the Singles timeline under their year, and the newest one with "Pop-up" on slides down under the menu as a "New drop" notice, once per visitor (dismissing it is remembered per drop).
+
+### Database
+
+The tables live in the Handoff Hero Supabase project (the free plan allows two projects), all prefixed `russ_`; the schema is `supabase/migrations/0001_russ_links_and_drops.sql`. The site only has the public key (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` on Netlify); row-level security is what stops anyone but an admin from writing. Add an editor with `insert into public.russ_admins (email) values ('them@example.com');`. Sign-in links redirect to `https://russvitale.com/admin`, which has to be listed under Authentication › URL Configuration › Redirect URLs in that Supabase project. Without the env vars the site still works from `src/data` alone.
+
+### Shows
+
+The Shows section embeds Bandsintown's own widget for Russ (`BANDSINTOWN` in `src/data/shows.js`), so dates always come from them.
 
 ## Ground rules
 

@@ -31,7 +31,7 @@ export function PhonePlayerProvider({ children }) {
 }
 
 function PhonePlayerBar({ current, onClose }) {
-  const { editKey } = useSpotifyLinks();
+  const { editing } = useSpotifyLinks();
   const release = current?.release;
   const accent = current?.palette?.accent ?? "#fff";
 
@@ -45,7 +45,7 @@ function PhonePlayerBar({ current, onClose }) {
           exit={{ y: "120%" }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           // Sits above the edit bar when edit mode is on.
-          className={`fixed inset-x-2 z-[75] mx-auto max-w-xl rounded-2xl border border-white/10 bg-neutral-950/95 p-2 text-white shadow-2xl backdrop-blur lg:hidden ${editKey ? "bottom-20" : "bottom-2"}`}
+          className={`fixed inset-x-2 z-[75] mx-auto max-w-xl rounded-2xl border border-white/10 bg-neutral-950/95 p-2 text-white shadow-2xl backdrop-blur lg:hidden ${editing ? "bottom-20" : "bottom-2"}`}
           style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
           role="region"
           aria-label="Now playing"

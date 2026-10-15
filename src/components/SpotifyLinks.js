@@ -1,90 +1,128 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ALL_RELEASES, releaseKey } from "@/data/releaseKey";
+import { ALL_RELEASES, parseSpotifyLink, releaseKey } from "@/data/releaseKey";
+import { supabase } from "@/lib/supabase";
 import { TAB_EVENT } from "./Timeline";
+import DropBanner from "./DropBanner";
 
-// Spotify links fixed from the page itself. Everyone loads the saved links
-// on top of src/data; opening the site once as /?edit=<SPOTIFY_EDIT_KEY>
-// turns on edit mode on that device, where every card gets a paste box.
-const EDIT_KEY_STORAGE = "russ-spotify-edit-key";
-const SpotifyLinksContext = createContext({ links: {}, editKey: null });
+// Song links fixed from the page itself, plus the newest drops, both kept in
+// Supabase (src/lib/supabase.js). Everyone reads them on top of src/data.
+// An admin signed in at /admin opens /?edit=1 to turn on edit mode on that
+// device, where every card gets a paste box. RLS decides who may save.
+const EDIT_MODE_STORAGE = "russ-edit-mode";
+const SpotifyLinksContext = createContext({ links: {}, drops: [], editing: false, isAdmin: false });
 
-function storage(action, value) {
+function storage(action) {
   try {
-    if (action === "get") return localStorage.getItem(EDIT_KEY_STORAGE);
-    if (action === "set") localStorage.setItem(EDIT_KEY_STORAGE, value);
-    if (action === "remove") localStorage.removeItem(EDIT_KEY_STORAGE);
+    if (action === "get") return localStorage.getItem(EDIT_MODE_STORAGE) === "1";
+    if (action === "set") localStorage.setItem(EDIT_MODE_STORAGE, "1");
+    if (action === "remove") localStorage.removeItem(EDIT_MODE_STORAGE);
   } catch {
-    return null;
+    return false;
   }
-  return null;
+  return false;
+}
+
+function linksFromRows(rows) {
+  return Object.fromEntries((rows ?? []).map((r) => [r.release_key, { kind: r.kind, id: r.spotify_id }]));
 }
 
 export function SpotifyLinksProvider({ children }) {
   const [links, setLinks] = useState({});
-  const [editKey, setEditKey] = useState(null);
-  const [editError, setEditError] = useState(null);
+  const [drops, setDrops] = useState([]);
+  const [admin, setAdmin] = useState("unknown"); // unknown | yes | no
+  // Read on the client only; nothing renders from it until the admin check
+  // (async, after hydration) says yes.
+  const [wantsEdit, setWantsEdit] = useState(
+    () => typeof window !== "undefined" && (new URLSearchParams(window.location.search).has("edit") || storage("get"))
+  );
 
   useEffect(() => {
+    if (!supabase) return;
     let cancelled = false;
-    fetch("/api/spotify-links")
-      .then((res) => (res.ok ? res.json() : {}))
-      .then((data) => !cancelled && setLinks(data ?? {}))
-      .catch(() => {});
+    supabase
+      .from("russ_release_links")
+      .select("release_key, kind, spotify_id")
+      .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
+    supabase
+      .from("russ_drops")
+      .select("id, title, kind, spotify_id, note, released_on, show_banner, created_at")
+      .order("released_on", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => !cancelled && data && setDrops(data));
 
     const url = new URL(window.location.href);
-    const fromUrl = url.searchParams.get("edit");
-    if (fromUrl !== null) {
+    if (url.searchParams.has("edit")) {
       url.searchParams.delete("edit");
       window.history.replaceState(null, "", url.pathname + url.search + url.hash);
     }
-    const key = fromUrl || storage("get");
-    if (key) {
-      fetch("/api/spotify-links", {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-edit-key": key },
-        body: JSON.stringify({ action: "check" }),
-      })
-        .then((res) => {
-          if (cancelled) return;
-          if (res.ok) {
-            storage("set", key);
-            setEditKey(key);
-          } else {
-            storage("remove");
-            setEditError("That edit link didn't work. Check the key and try again.");
-          }
-        })
-        .catch(() => {});
-    }
+
+    // Ask the database, the same check RLS uses on every save.
+    const check = async (session) => {
+      if (!session) return !cancelled && setAdmin("no");
+      const { data } = await supabase.rpc("russ_is_admin");
+      if (!cancelled) setAdmin(data === true ? "yes" : "no");
+    };
+    supabase.auth.getSession().then(({ data }) => check(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event !== "INITIAL_SESSION") setTimeout(() => check(next), 0);
+    });
     return () => {
       cancelled = true;
+      sub.subscription.unsubscribe();
     };
   }, []);
 
-  const save = useCallback(
-    async (release, link, remove = false) => {
-      const res = await fetch("/api/spotify-links", {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-edit-key": editKey },
-        body: JSON.stringify({ release: releaseKey(release), link, remove }),
+  const isAdmin = admin === "yes";
+  const editing = wantsEdit && isAdmin;
+
+  useEffect(() => {
+    if (editing) storage("set");
+  }, [editing]);
+
+  // Someone opened /?edit=1 without being signed in as an admin.
+  const editError = wantsEdit && admin === "no" ? "Sign in at /admin first to fix song links." : null;
+
+  const save = useCallback(async (release, link, remove = false) => {
+    const key = releaseKey(release);
+    if (remove) {
+      const { error } = await supabase.from("russ_release_links").delete().eq("release_key", key);
+      if (error) throw new Error("Couldn't remove that link. Are you still signed in?");
+      setLinks((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Couldn't save that link.");
-      setLinks(data.links);
-    },
-    [editKey]
-  );
+      return;
+    }
+    const parsed = parseSpotifyLink(link);
+    if (!parsed) throw new Error("That doesn't look like a Spotify album or song link.");
+    const { error } = await supabase
+      .from("russ_release_links")
+      .upsert({ release_key: key, kind: parsed.kind, spotify_id: parsed.id, updated_at: new Date().toISOString() });
+    if (error) throw new Error("Couldn't save that link. Are you still signed in?");
+    setLinks((prev) => ({ ...prev, [key]: parsed }));
+  }, []);
 
   const exitEdit = useCallback(() => {
     storage("remove");
-    setEditKey(null);
+    setWantsEdit(false);
   }, []);
 
-  const value = useMemo(() => ({ links, editKey, editError, save, exitEdit, setEditError }), [links, editKey, editError, save, exitEdit]);
+  const dismissError = useCallback(() => {
+    storage("remove");
+    setWantsEdit(false);
+  }, []);
+
+  const value = useMemo(
+    () => ({ links, drops, editing, isAdmin, editError, save, exitEdit, dismissError }),
+    [links, drops, editing, isAdmin, editError, save, exitEdit, dismissError]
+  );
   return (
     <SpotifyLinksContext.Provider value={value}>
       {children}
+      <DropBanner />
       <EditBar />
     </SpotifyLinksContext.Provider>
   );
@@ -102,18 +140,23 @@ export function useRelease(release) {
 }
 
 function EditBar() {
-  const { links, editKey, editError, exitEdit, setEditError } = useSpotifyLinks();
+  const { links, editing, editError, exitEdit, dismissError } = useSpotifyLinks();
   if (editError) {
     return (
       <div className="fixed inset-x-3 bottom-3 z-[80] mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl bg-red-600 px-4 py-3 text-sm text-white shadow-2xl">
-        {editError}
-        <button type="button" onClick={() => setEditError(null)} className="font-semibold">
+        <span>
+          {editError}{" "}
+          <a href="/admin" className="font-semibold underline">
+            Sign in
+          </a>
+        </span>
+        <button type="button" onClick={dismissError} className="font-semibold">
           OK
         </button>
       </div>
     );
   }
-  if (!editKey) return null;
+  if (!editing) return null;
 
   const missing = ALL_RELEASES.filter((r) => !r.spotify && !links[releaseKey(r)]);
   // The other tab's cards aren't on the page, so switch tabs when this one is done.

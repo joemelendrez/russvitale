@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, useScroll, useSpring } from "framer-motion";
 import { ERAS } from "@/data/eras";
-import { SINGLES_BY_YEAR } from "@/data/singles";
+import { singlesWithDrops } from "@/data/drops";
+import { useSpotifyLinks } from "./SpotifyLinks";
 import EraSection from "./EraSection";
 import YearSection from "./YearSection";
 
@@ -27,6 +28,8 @@ const COPY = {
 export default function Timeline() {
   const ref = useRef(null);
   const [tab, setTab] = useState("albums");
+  const { drops } = useSpotifyLinks();
+  const singles = useMemo(() => singlesWithDrops(drops), [drops]);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start center", "end center"] });
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   const inView = useInView(ref, { margin: "-40% 0px -40% 0px" });
@@ -34,7 +37,7 @@ export default function Timeline() {
   const sections =
     tab === "albums"
       ? ERAS.map((era) => ({ id: `era-${era.id}`, label: era.title }))
-      : SINGLES_BY_YEAR.map((g) => ({ id: `year-${g.year}`, label: String(g.year) }));
+      : singles.map((g) => ({ id: `year-${g.year}`, label: String(g.year) }));
   const active = useActiveSection(sections);
 
   // The menu's Singles link and a #singles URL both open that tab.
@@ -138,7 +141,7 @@ export default function Timeline() {
       <div id="music-panel" role="tabpanel">
         {tab === "albums"
           ? ERAS.map((era, i) => <EraSection key={era.id} era={era} number={i + 1} />)
-          : SINGLES_BY_YEAR.map((group) => <YearSection key={group.year} group={group} />)}
+          : singles.map((group) => <YearSection key={group.year} group={group} />)}
       </div>
     </div>
   );
