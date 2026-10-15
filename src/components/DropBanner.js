@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { spotifyEmbedUrl, spotifyLink } from "@/data/eras";
+import { listenLink, playerFor } from "@/data/players";
 import { bannerDrop, dropToRelease } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
 
@@ -21,7 +21,7 @@ function formatDay(day) {
 }
 
 // "New drop" notification: slides down under the menu a moment after the page
-// opens, once per drop per device. Play opens the Spotify player right in it.
+// opens, once per drop per device. Play opens the Spotify or SoundCloud player right in it.
 export default function DropBanner() {
   const { drops } = useSpotifyLinks();
   const drop = bannerDrop(drops);
@@ -44,6 +44,8 @@ export default function DropBanner() {
   };
 
   const release = drop && dropToRelease(drop);
+  const player = release && playerFor(release);
+  const listen = release && listenLink(release);
   const visible = drop && shown === drop.id && !onAdmin;
 
   return (
@@ -68,7 +70,7 @@ export default function DropBanner() {
               <p className="mt-1 truncate font-display text-2xl uppercase leading-none">{drop.title}</p>
               {drop.note && <p className="mt-1 text-sm text-white/70">{drop.note}</p>}
               <div className="mt-3 flex flex-wrap gap-2">
-                {release.spotify ? (
+                {player ? (
                   <button
                     type="button"
                     onClick={() => setPlaying((p) => !p)}
@@ -78,12 +80,12 @@ export default function DropBanner() {
                   </button>
                 ) : null}
                 <a
-                  href={spotifyLink(release)}
+                  href={listen.href}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-white/25 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em]"
                 >
-                  Spotify &#8599;
+                  {listen.label} &#8599;
                 </a>
               </div>
             </div>
@@ -96,11 +98,11 @@ export default function DropBanner() {
               &times;
             </button>
           </div>
-          {playing && release.spotify && (
+          {playing && player && (
             <iframe
-              title={`${drop.title} on Spotify`}
-              src={spotifyEmbedUrl(release.spotify)}
-              height={release.spotify.kind === "album" ? 152 : 80}
+              title={`${drop.title} on ${listen.label}`}
+              src={player.src}
+              height={player.height}
               className="mt-3 block w-full rounded-xl border-0 bg-black/60"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             />

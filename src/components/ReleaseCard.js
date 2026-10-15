@@ -2,14 +2,15 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { spotifyEmbedUrl, spotifyLink } from "@/data/eras";
+import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
 import { PHONE_QUERY, usePhonePlayer } from "./PhonePlayer";
 
 const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single" };
 
-// Album or single. On desktop, hover flips the cover into a Spotify player;
+// Album or single. On desktop, hover flips the cover into a Spotify (or
+// SoundCloud) player;
 // the iframe only loads the first time someone asks for it, so the page stays
 // light with a dozen of these on screen. On phones and tablets a tap plays it
 // in the full-width bar at the bottom of the screen (PhonePlayer.js).
@@ -52,7 +53,8 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
     ry.set(0);
   };
 
-  const embedHeight = release.spotify?.kind === "album" ? 152 : 80;
+  const player = playerFor(release);
+  const listen = listenLink(release);
 
   return (
     <motion.article
@@ -61,7 +63,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
       viewport={{ once: true, margin: "-10% 0px" }}
       transition={{ duration: 0.8, delay: (index % 2) * 0.12, ease: [0.22, 1, 0.36, 1] }}
       className="group [perspective:900px]"
-      data-missing-spotify={editing && !release.spotify ? "" : undefined}
+      data-missing-spotify={editing && !player ? "" : undefined}
     >
       <motion.div
         ref={ref}
@@ -133,12 +135,13 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-x-2 bottom-2 z-20"
         >
-          {release.spotify ? (
+          {player ? (
             mounted && (
               <iframe
-                title={`${release.title} on Spotify`}
-                src={spotifyEmbedUrl(release.spotify)}
-                height={embedHeight}
+                key={player.key}
+                title={`${release.title} on ${listen.label}`}
+                src={player.src}
+                height={player.height}
                 className="w-full rounded-xl border-0 bg-black/60"
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                 loading="lazy"
@@ -146,7 +149,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
             )
           ) : (
             <a
-              href={spotifyLink(release)}
+              href={listen.href}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-between gap-2 rounded-xl bg-black/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white backdrop-blur"
@@ -166,16 +169,16 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           </p>
         </div>
         <a
-          href={spotifyLink(release)}
+          href={listen.href}
           target="_blank"
           rel="noreferrer"
           className="mt-1 hidden shrink-0 text-xs uppercase tracking-[0.2em] opacity-60 sm:block transition-opacity hover:opacity-100"
-          aria-label={`Open ${release.title} in Spotify`}
+          aria-label={`Open ${release.title} in ${listen.label}`}
         >
-          Spotify &#8599;
+          {listen.label} &#8599;
         </a>
       </div>
-      {editing && <SpotifyLinkEditor key={release.spotify?.id ?? "none"} release={release} />}
+      {editing && <SpotifyLinkEditor key={player?.key ?? "none"} release={release} />}
     </motion.article>
   );
 }

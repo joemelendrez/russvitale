@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ALL_RELEASES, parseSpotifyLink } from "@/data/releaseKey";
+import { ALL_RELEASES } from "@/data/releaseKey";
+import { parsePlayerLink, rowLink } from "@/data/players";
 
 const today = () => new Date().toLocaleDateString("en-CA");
 
@@ -166,7 +167,7 @@ function Dashboard({ email }) {
 
       <Card title="Song links">
         <p className="text-sm text-white/70">
-          {linkCount === null ? "Loading..." : `${linkCount} saved from the site.`} Open the site in edit mode to paste Spotify links into releases
+          {linkCount === null ? "Loading..." : `${linkCount} saved from the site.`} Open the site in edit mode to paste Spotify or SoundCloud links into releases
           without a player.
         </p>
         {/* A full page load, so the site picks up edit mode as it opens. */}
@@ -204,7 +205,7 @@ function Dashboard({ email }) {
                     <p className="truncate font-semibold">{drop.title}</p>
                     <p className="text-xs text-white/50">
                       {drop.released_on}
-                      {drop.spotify_id ? ` · Spotify ${drop.kind}` : " · no player"}
+                      {drop.spotify_id ? ` · Spotify ${drop.kind}` : drop.soundcloud_url ? " · SoundCloud" : " · no player"}
                       {drop.note ? ` · ${drop.note}` : ""}
                     </p>
                   </div>
@@ -237,7 +238,7 @@ const blankDrop = () => ({ title: "", link: "", released_on: today(), note: "", 
 
 const formFromDrop = (drop) => ({
   title: drop.title,
-  link: drop.spotify_id ? `https://open.spotify.com/${drop.kind}/${drop.spotify_id}` : "",
+  link: rowLink(drop),
   released_on: drop.released_on,
   note: drop.note ?? "",
   show_banner: drop.show_banner,
@@ -261,20 +262,21 @@ function DropForm({ drop, onSaved, onCancel }) {
     setForm((f) => ({
       ...f,
       title: release.title,
-      link: release.spotify ? `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}` : f.link,
+      link: release.spotify ? `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}` : release.soundcloud ?? f.link,
     }));
   };
 
   const save = async (e) => {
     e.preventDefault();
     setError(null);
-    const parsed = form.link.trim() ? parseSpotifyLink(form.link) : null;
-    if (form.link.trim() && !parsed) return setError("That doesn't look like a Spotify album or song link.");
+    const parsed = form.link.trim() ? parsePlayerLink(form.link) : null;
+    if (form.link.trim() && !parsed) return setError("That doesn't look like a Spotify or SoundCloud link.");
     setStatus("saving");
     const row = {
       title: form.title.trim(),
       kind: parsed?.kind ?? null,
-      spotify_id: parsed?.id ?? null,
+      spotify_id: parsed?.spotify_id ?? null,
+      soundcloud_url: parsed?.soundcloud_url ?? null,
       released_on: form.released_on,
       note: form.note.trim() || null,
       show_banner: form.show_banner,
@@ -314,12 +316,12 @@ function DropForm({ drop, onSaved, onCancel }) {
       </div>
       <div>
         <label htmlFor={`drop-link-${id}`} className="mb-1 block text-sm text-white/70">
-          Spotify link (Share › Copy link)
+          Spotify or SoundCloud link (Share › Copy link)
         </label>
         <input
           id={`drop-link-${id}`}
           inputMode="url"
-          placeholder="https://open.spotify.com/track/..."
+          placeholder="https://open.spotify.com/track/... or soundcloud.com/..."
           value={form.link}
           onChange={set("link")}
           className={input}

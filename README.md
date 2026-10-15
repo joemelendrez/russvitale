@@ -30,13 +30,13 @@ The hero is three layers in `public/hero/`, cut from a photo on Russ's Instagram
 
 ### Adding a Spotify player to a release
 
-Copy the share link from Spotify (`https://open.spotify.com/album/<id>` or `/track/<id>`) and add `spotify: { kind: "album", id: "<id>" }` to the release in `eras.js`. Releases without one link to a Spotify search instead. Real cover art can go in `public/covers/` with `cover: "/covers/zoo.jpg"`.
+Copy the share link from Spotify (`https://open.spotify.com/album/<id>` or `/track/<id>`) and add `spotify: { kind: "album", id: "<id>" }` to the release in `eras.js`. For a song Spotify doesn't carry, add `soundcloud: "https://soundcloud.com/<user>/<track>"` instead and it plays in SoundCloud's own embed player. Releases with neither link to a Spotify search. Real cover art can go in `public/covers/` with `cover: "/covers/zoo.jpg"`.
 
-You can also fix players from the live site. Sign in at `/admin` with an emailed link (only emails in the `russ_admins` table can save), then tap "Fix song links on the site": an "Edit mode" bar appears, and every card gets a "Find it on Spotify" link and a box to paste the share link into. Saved links go to the `russ_release_links` table and show for every visitor straight away. "Done" leaves edit mode on that device.
+You can also fix players from the live site. Sign in at `/admin` with an emailed link (only emails in the `russ_admins` table can save), then tap "Fix song links on the site": an "Edit mode" bar appears, and every card gets "Find it on Spotify or SoundCloud" links and a box to paste either share link into (a saved link replaces the release's player, so a SoundCloud link takes over from a Spotify search). Saved links go to the `russ_release_links` table and show for every visitor straight away. "Done" leaves edit mode on that device.
 
 ### New drops
 
-`/admin` also has "Add a new drop": a title, a Spotify link, the release date and a short note. Drops (`russ_drops`) join the Singles timeline under their year, and the newest one with "Pop-up" on slides down under the menu as a "New drop" notice, once per visitor (dismissing it is remembered per drop).
+`/admin` also has "Add a new drop": a title, a Spotify or SoundCloud link, the release date and a short note. Drops (`russ_drops`) join the Singles timeline under their year, and the newest one with "Pop-up" on slides down under the menu as a "New drop" notice, once per visitor (dismissing it is remembered per drop).
 
 ### Database
 
@@ -48,4 +48,4 @@ The Shows section embeds Bandsintown's own widget for Russ (`BANDSINTOWN` in `sr
 
 ## Ground rules
 
-This is a fan site. It stays labeled unofficial, plays music only through official Spotify and YouTube embeds, hosts no audio, prints no full lyrics and sells nothing.
+This is a fan site. It stays labeled unofficial, plays music only through official Spotify, SoundCloud and YouTube embeds, hosts no audio, prints no full lyrics and sells nothing.

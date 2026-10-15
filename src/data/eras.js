@@ -4,8 +4,9 @@
 // Releases:
 //   type     "album" | "ep"
 //   spotify  { kind: "album" | "track", id } from the Spotify share link
-//            (open.spotify.com/album/<id>). Leave it out and the card links
-//            to a Spotify search instead.
+//            (open.spotify.com/album/<id>).
+//   soundcloud  a soundcloud.com link, for releases Spotify doesn't carry.
+//            With neither, the card links to a Spotify search instead.
 //   cover    optional path to artwork in /public/covers. Without one the card
 //            draws its own art in the era's colors.
 export const ERAS = [
@@ -105,15 +106,6 @@ export const ERAS = [
 // The palette the page uses outside the timeline (hero, shows, footer).
 // Its red comes from the stage lights and jersey in the hero photo.
 export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#ff3b30" };
-
-export function spotifyEmbedUrl(spotify) {
-  return `https://open.spotify.com/embed/${spotify.kind}/${spotify.id}?utm_source=generator&theme=0`;
-}
-
-export function spotifyLink(release) {
-  if (release.spotify) return `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}`;
-  return `https://open.spotify.com/search/${encodeURIComponent(`Russ ${release.title}`)}`;
-}
 
 // The era a given year belongs to, for coloring the singles timeline.
 const ERA_BY_YEAR = { 2016: "diemon", 2017: "wolf", 2018: "zoo", 2019: "snowglobe", 2020: "chomp", 2021: "chomp", 2022: "chomp", 2023: "santiago", 2024: "santiago" };
