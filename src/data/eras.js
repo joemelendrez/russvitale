@@ -119,7 +119,7 @@ export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa",
 // in one long run of black. The home page's own sections stay black.
 export const SECTION_PALETTES = {
   // The yellow and black of his book, It's All in Your Head.
-  footer: { bg: "#ffe600", fg: "#111111", muted: "#4d4708", accent: "#111111" },
+  footer: { bg: "#ffe600", fg: "#111111", muted: "#2b2805", accent: "#111111" },
   top10: { bg: "#0f1835", fg: "#eef3ff", muted: "#97a5cc", accent: "#ffd21f" },
   favorites: { bg: "#260a15", fg: "#ffeef3", muted: "#d49aae", accent: "#e8457c" },
   newsletter: { bg: "#08201e", fg: "#e9f7f6", muted: "#8fb5b2", accent: "#17a3a0" },
