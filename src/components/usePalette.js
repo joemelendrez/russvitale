@@ -1,8 +1,27 @@
 "use client";
 import { useEffect } from "react";
 
+const LITE = "(max-width: 767px), (pointer: coarse)";
+
+// On phones the variables switch instantly (animating them is too heavy), so
+// a layer in the old color sits behind the page and fades out instead.
+function crossfadeBackground(fromColor) {
+  let layer = document.getElementById("palette-fade");
+  if (!layer) {
+    layer = document.createElement("div");
+    layer.id = "palette-fade";
+    layer.setAttribute("aria-hidden", "true");
+    document.body.prepend(layer);
+  }
+  layer.getAnimations().forEach((a) => a.cancel());
+  layer.style.background = fromColor;
+  layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, easing: "ease-out", fill: "forwards" });
+}
+
 export function applyPalette(palette) {
   const root = document.documentElement.style;
+  const current = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  if (current && current !== palette.bg && window.matchMedia(LITE).matches) crossfadeBackground(current);
   root.setProperty("--bg", palette.bg);
   root.setProperty("--fg", palette.fg);
   root.setProperty("--muted", palette.muted);

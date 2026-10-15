@@ -106,7 +106,7 @@ export default function ReleaseCard({ release, palette, index }) {
         {/* Player tray */}
         <motion.div
           initial={false}
-          animate={{ y: active ? "0%" : "110%" }}
+          animate={{ y: active ? "0%" : "150%" }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-x-2 bottom-2 z-20"
         >

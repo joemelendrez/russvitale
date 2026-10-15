@@ -9,7 +9,8 @@ export const SITE = {
 };
 
 export const NAV = [
-  { label: "Music", href: "#music" },
+  { label: "Albums", href: "#music", tab: "albums" },
+  { label: "Singles", href: "#singles", tab: "singles" },
   { label: "Shows", href: "#shows" },
   { label: "Watch", href: "#watch" },
   { label: "About", href: "#about" },

@@ -18,19 +18,19 @@ export default function EraSection({ era, number }) {
       <motion.div
         aria-hidden="true"
         style={{ y: glowY, background: `radial-gradient(closest-side, ${era.palette.accent}33, transparent)` }}
-        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[70vh] w-[90vw] -translate-x-1/2 rounded-full blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[70vh] w-[90vw] -translate-x-1/2"
       />
       <motion.p
         aria-hidden="true"
         style={{ x: watermarkX }}
-        className="outline-text pointer-events-none absolute top-6 -z-10 whitespace-nowrap font-display text-[28vw] uppercase leading-none sm:top-10"
+        className="outline-text pointer-events-none absolute top-6 -z-10 hidden whitespace-nowrap sm:block font-display text-[28vw] uppercase leading-none sm:top-10"
       >
         {era.title}
       </motion.p>
 
       <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
-          <div className="lg:sticky lg:top-28">
+          <div className="lg:sticky lg:top-36">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}

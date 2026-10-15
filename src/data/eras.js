@@ -1,8 +1,8 @@
-// The timeline, oldest first. Each era repaints the whole page as it scrolls
-// into view using its `palette`.
+// The albums timeline, oldest first (singles live in singles.js). Each era
+// repaints the whole page as it scrolls into view using its `palette`.
 //
 // Releases:
-//   type     "album" | "ep" | "single"
+//   type     "album" | "ep"
 //   spotify  { kind: "album" | "track", id } from the Spotify share link
 //            (open.spotify.com/album/<id>). Leave it out and the card links
 //            to a Spotify search instead.
@@ -19,9 +19,9 @@ export const ERAS = [
     palette: { bg: "#120a1f", fg: "#f3e9ff", muted: "#a996c4", accent: "#b98cff" },
     releases: [
       { title: "Velvet", year: 2011, type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
+      { title: "Apollo 13", year: 2012, type: "album" },
       { title: "Pink Elephant", year: 2014, type: "album" },
-      { title: "What They Want", year: 2016, type: "single", spotify: { kind: "track", id: "0AjrdcjDF0nrsoTzOFdXUv" } },
-      { title: "Losin Control", year: 2016, type: "single", spotify: { kind: "track", id: "1jkIErXa3YNUX5QIyO6GGR" } },
+      { title: "How to Rob", year: 2014, type: "album" },
     ],
   },
   {
@@ -34,8 +34,6 @@ export const ERAS = [
     palette: { bg: "#0b1218", fg: "#e6eef5", muted: "#8ea3b4", accent: "#8fd0ff" },
     releases: [
       { title: "There's Really a Wolf", year: 2017, type: "album", spotify: { kind: "album", id: "0lUL92det7mZ4DaHYmiUEC" } },
-      { title: "Me You", year: 2017, type: "single" },
-      { title: "Wife You Up", year: 2017, type: "single" },
     ],
   },
   {
@@ -48,7 +46,6 @@ export const ERAS = [
     palette: { bg: "#0d1a10", fg: "#f1f5e6", muted: "#a0ad8f", accent: "#f0b429" },
     releases: [
       { title: "Zoo", year: 2018, type: "album" },
-      { title: "Basement (feat. Jessie Reyez)", year: 2018, type: "single" },
       { title: "Just in Case", year: 2018, type: "ep" },
     ],
   },
@@ -62,7 +59,6 @@ export const ERAS = [
     palette: { bg: "#e8eef4", fg: "#0f1720", muted: "#56677a", accent: "#2563eb" },
     releases: [
       { title: "Shake the Snow Globe", year: 2020, type: "album", spotify: { kind: "album", id: "2ZzatxW5gv1XZ0uai8TKxk" } },
-      { title: "Best on Earth (feat. Bia)", year: 2019, type: "single", spotify: { kind: "track", id: "6dt78h32We1nu4Vmv1OajN" } },
     ],
   },
   {
@@ -76,7 +72,6 @@ export const ERAS = [
     releases: [
       { title: "Chomp", year: 2020, type: "ep" },
       { title: "Chomp 2", year: 2021, type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" } },
-      { title: "Are You Entertained (with Ed Sheeran)", year: 2021, type: "single", spotify: { kind: "track", id: "5bLGQqcpsz5ISWeihZfJnR" } },
       { title: "If Not Now, When?", year: 2022, type: "ep" },
     ],
   },
@@ -89,10 +84,7 @@ export const ERAS = [
       "Santiago debuts at No. 12 on the Billboard 200. Then a film debut in M. Night Shyamalan's Trap, and a run of collaborations with 6lack and DJ Premier.",
     palette: { bg: "#1d1008", fg: "#fff3e3", muted: "#c9a587", accent: "#ff8a3d" },
     releases: [
-      { title: "Nasty", year: 2023, type: "single", spotify: { kind: "track", id: "0DuylJNqsvjRN9hhWUdeJZ" } },
       { title: "Santiago", year: 2023, type: "album" },
-      { title: "Workin on Me (with 6lack)", year: 2024, type: "single" },
-      { title: "Work This Out (with DJ Premier)", year: 2024, type: "single" },
     ],
   },
   {
@@ -104,7 +96,6 @@ export const ERAS = [
       "W!LD arrives in June 2025, followed by the deluxe, The Elephant & The Rider. The same year Billboard names him an Indie Trailblazer, fourteen years after the first Diemon upload.",
     palette: { bg: "#060606", fg: "#f4ffe6", muted: "#9aa88a", accent: "#c6ff2e" },
     releases: [
-      { title: "April 7", year: 2025, type: "single", spotify: { kind: "track", id: "3tHNvYvBIuTgYNMF5W4vzf" } },
       { title: "W!LD", year: 2025, type: "album", spotify: { kind: "album", id: "1gFQ6dGFvpDsHmnr4bPbTV" } },
       { title: "W!LD Deluxe: The Elephant & The Rider", year: 2025, type: "album", spotify: { kind: "album", id: "4yfXdMJl2ckTYvEXes0aaQ" } },
     ],
@@ -112,7 +103,8 @@ export const ERAS = [
 ];
 
 // The palette the page uses outside the timeline (hero, shows, footer).
-export const DEFAULT_PALETTE = { bg: "#09090b", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#f5f5f4" };
+// Its red comes from the stage lights and jersey in the hero photo.
+export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#ff3b30" };
 
 export function spotifyEmbedUrl(spotify) {
   return `https://open.spotify.com/embed/${spotify.kind}/${spotify.id}?utm_source=generator&theme=0`;
@@ -121,4 +113,12 @@ export function spotifyEmbedUrl(spotify) {
 export function spotifyLink(release) {
   if (release.spotify) return `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}`;
   return `https://open.spotify.com/search/${encodeURIComponent(`Russ ${release.title}`)}`;
+}
+
+// The era a given year belongs to, for coloring the singles timeline.
+const ERA_BY_YEAR = { 2016: "diemon", 2017: "wolf", 2018: "zoo", 2019: "snowglobe", 2020: "chomp", 2021: "chomp", 2022: "chomp", 2023: "santiago", 2024: "santiago" };
+
+export function eraForYear(year) {
+  const id = ERA_BY_YEAR[year] ?? (year < 2016 ? "diemon" : "wild");
+  return ERAS.find((era) => era.id === id);
 }

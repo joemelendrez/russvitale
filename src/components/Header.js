@@ -2,6 +2,15 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { NAV, SITE } from "@/data/site";
+import { TAB_EVENT } from "./Timeline";
+
+// Albums and Singles both live in the Music section; the link picks the tab.
+function openTab(e, item) {
+  if (!item.tab) return;
+  e.preventDefault();
+  history.replaceState(null, "", item.href);
+  window.dispatchEvent(new CustomEvent(TAB_EVENT, { detail: item.tab }));
+}
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,7 +35,7 @@ export default function Header() {
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-500 ${
           scrolled && !open
-            ? "border-b border-era-fg/10 bg-era-bg/70 backdrop-blur-xl"
+            ? "border-b border-era-fg/10 bg-era-bg/95 md:bg-era-bg/70 md:backdrop-blur-xl"
             : "border-b border-transparent"
         }`}
       >
@@ -43,6 +52,7 @@ export default function Header() {
               <a
                 key={item.href}
                 href={item.href}
+                onClick={(e) => openTab(e, item)}
                 className="relative text-sm uppercase tracking-[0.2em] text-era-fg/80 transition-colors hover:text-era-fg after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-era-accent after:transition-transform hover:after:scale-x-100"
               >
                 {item.label}
@@ -85,7 +95,10 @@ export default function Header() {
                 <motion.a
                   key={item.href}
                   href={item.href}
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => {
+                    setOpen(false);
+                    openTab(e, item);
+                  }}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 + i * 0.07 }}
