@@ -61,10 +61,10 @@ export default function About() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-era-bg p-6 sm:p-8"
+              className={i === 0 ? "bg-white p-6 text-black sm:p-8" : "bg-era-bg p-6 sm:p-8"}
             >
               <p className="font-display text-5xl sm:text-6xl">{stat.value}</p>
-              <p className="mt-3 text-sm text-era-muted">{stat.label}</p>
+              <p className={`mt-3 text-sm ${i === 0 ? "font-semibold text-black/70" : "text-era-muted"}`}>{stat.label}</p>
             </motion.div>
           ))}
         </div>
