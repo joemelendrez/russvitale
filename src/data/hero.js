@@ -1,13 +1,12 @@
-// Hero parallax layers, back to front. To use real concert photos, drop the
-// files into /public/hero and point these paths at them:
-//   background: the venue, stage lights, sky (a wide JPG or WebP is fine)
-//   midground:  the crowd or stage rig, transparent PNG/WebP, bottom aligned
-//   subject:    Russ cut out from the background, transparent PNG/WebP
-// `depth` controls how far each layer drifts on scroll and mouse move.
+// Hero parallax layers, back to front, all in /public/hero:
+//   background: the crowd shot, softened so it reads as depth
+//   midground:  the stage floor from the concert photo, transparent at the top
+//   subject:    Russ cut out of the same photo, transparent PNG/WebP
+// Give a replacement a new file name: the image CDN caches by URL.
 export const HERO_LAYERS = {
-  background: { src: "/hero/background.svg", alt: "" },
-  midground: { src: "/hero/midground.svg", alt: "" },
-  subject: { src: "/hero/subject.svg", alt: "Russ performing on stage" },
+  background: { src: "/hero/crowd.webp", alt: "" },
+  midground: { src: "/hero/stage-floor.webp", alt: "" },
+  subject: { src: "/hero/russ.webp", alt: "Russ performing on stage, mic in hand" },
 };
 
 export const HERO_COPY = {

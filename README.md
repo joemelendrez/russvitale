@@ -18,20 +18,15 @@ Everything lives in `src/data/`, no component changes needed.
 | File | What it controls |
 |---|---|
 | `hero.js` | The three hero parallax layers and the intro copy |
-| `eras.js` | Each era: years, blurb, color palette, and its releases |
+| `eras.js` | Albums tab: each era's years, blurb, color palette, albums and EPs |
+| `singles.js` | Singles tab: singles grouped by year (colored by that year's era) |
 | `shows.js` | Upcoming show dates and the tour links |
 | `videos.js` | YouTube video ids for the Watch section |
 | `site.js` | Menu items and outbound links |
 
-### Swapping in the concert photos
+### Hero photos
 
-The hero uses placeholder art in `public/hero/`. Replace it with three layers cut from the concert shots:
-
-1. `background`: the venue, lights or sky. A wide JPG or WebP.
-2. `midground`: the crowd or stage rig, on a transparent background, bottom aligned.
-3. `subject`: Russ cut out on a transparent background (PNG or WebP).
-
-Drop the files into `public/hero/` and update the paths in `src/data/hero.js`. The name "RUSS" sits between the midground and Russ, so he stands in front of it.
+The hero is three layers in `public/hero/`, made from Joseph's concert photos: `crowd.webp` (background, softened), `stage-floor.webp` (the stage floor, transparent at the top) and `russ.webp` (Russ cut out). The name "RUSS" sits between the crowd and Russ, so he stands in front of it. To swap one, add the new file under a new name and update `src/data/hero.js`, since the image CDN caches by URL.
 
 ### Adding a Spotify player to a release
 

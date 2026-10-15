@@ -60,27 +60,29 @@ export default function Hero() {
           {/* The name sits between the venue and Russ, so he stands in front of it. */}
           <motion.h1
             style={{ y: nameY, scale: nameScale }}
-            className="pointer-events-none absolute inset-x-0 top-[12%] select-none text-center font-display text-[34vw] leading-none tracking-tight text-white/90 mix-blend-overlay sm:top-[8%] sm:text-[30vw]"
+            className="pointer-events-none absolute inset-x-0 top-[12%] select-none text-center font-display text-[34vw] leading-none tracking-tight bg-gradient-to-b from-white/90 via-white/50 to-white/0 bg-clip-text text-transparent sm:top-[8%] sm:text-[30vw]"
           >
             {HERO_COPY.name}
           </motion.h1>
 
           {/* Midground: crowd and stage rig */}
-          <motion.div style={{ y: midY, x: midX }} className="absolute inset-x-[-4%] bottom-[-2%] h-[55%]">
+          <motion.div style={{ y: midY, x: midX }} className="absolute inset-x-[-4%] bottom-[-2%] h-[34%]">
             <Image src={HERO_LAYERS.midground.src} alt={HERO_LAYERS.midground.alt} fill sizes="100vw" className="object-cover object-bottom" />
           </motion.div>
 
           {/* Subject: Russ */}
           <motion.div
             style={{ y: subjectY, x: subjectX, scale: subjectScale }}
-            className="absolute inset-x-0 bottom-0 mx-auto h-[82%] w-full max-w-3xl origin-bottom"
+            className="absolute inset-x-0 bottom-[24%] mx-auto h-[50%] w-full max-w-3xl origin-bottom sm:bottom-[4%] sm:h-[68%]"
           >
-            <Image src={HERO_LAYERS.subject.src} alt={HERO_LAYERS.subject.alt} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-contain object-bottom drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]" />
+            <Image src={HERO_LAYERS.subject.src} alt={HERO_LAYERS.subject.alt} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-contain object-bottom" />
           </motion.div>
         </motion.div>
 
+        {/* Darken the top so the menu stays readable over the crowd. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
         {/* Haze at the bottom so the hero melts into the page. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-era-bg to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-era-bg via-era-bg/70 to-transparent sm:h-1/3 sm:via-transparent" />
         <motion.div style={{ opacity: fade }} className="pointer-events-none absolute inset-0 bg-era-bg" />
 
         <motion.div
