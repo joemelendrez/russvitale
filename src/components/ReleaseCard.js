@@ -7,6 +7,7 @@ import { releaseKey } from "@/data/releaseKey";
 import { CoverEditor, SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
 import { serviceOfPlayer, setNowPlaying, useListenOn } from "@/lib/listenOn";
 import PlayerFrame from "./PlayerFrame";
+import FavoriteButton from "./FavoriteButton";
 import { PHONE_QUERY, usePhonePlayer } from "./PhonePlayer";
 
 const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single" };
@@ -176,6 +177,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
         >
           {listen.label} &#8599;
         </a>
+        <FavoriteButton release={release} className="-mr-2 -mt-1" />
       </div>
       {editing && <CoverEditor release={release} />}
       {editing && <SpotifyLinkEditor key={`${service}-${player?.key ?? "none"}`} release={release} />}

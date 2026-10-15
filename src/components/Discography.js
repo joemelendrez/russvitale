@@ -13,9 +13,10 @@ import { clearNowPlaying, serviceOfPlayer, setNowPlaying, useListenOn } from "@/
 import { CoverEditor, DateEditor, SpotifyLinkEditor, useSpotifyLinks, withSavedLinks } from "./SpotifyLinks";
 import ListenToggle, { ServiceMark } from "./ListenToggle";
 import PlayerFrame from "./PlayerFrame";
+import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
 
-const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version" };
+export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version" };
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -47,20 +48,11 @@ function countByType(list) {
 
 const HAS = { spotify: (r) => r.spotify, youtube: (r) => r.youtube, soundcloud: (r) => r.soundcloud };
 
-// Every album, EP, single and drop in one searchable list, newest first,
-// each with the same players as the timeline and its saved links and covers.
-export default function Discography() {
-  const { links, drops, editing } = useSpotifyLinks();
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [newest, setNewest] = useState(true);
-  const [openKey, setOpenKey] = useState(null);
-
-  // Coming from the timeline, the page may still be in an era's colors.
-  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
-  useEffect(() => () => clearNowPlaying("discography"), []);
-
-  const all = useMemo(() => {
+// Every album, EP, single, version and drop, with saved links, dates and
+// covers applied. Shared by /music and /favorites.
+export function useAllReleases() {
+  const { links, drops } = useSpotifyLinks();
+  return useMemo(() => {
     const albums = ERAS.flatMap((era) => era.releases.map((r) => ({ ...r, era })));
     const singles = singlesWithDrops(drops, CATALOG_SINGLES_BY_YEAR).flatMap((g) => g.singles.map((s) => ({ ...s, year: s.year ?? g.year })));
     // Albums, EPs and versions added from admin. One with the same title as a
@@ -77,6 +69,22 @@ export default function Discography() {
       return { ...saved, shownYear, era: saved.era ?? eraForYear(shownYear) };
     });
   }, [links, drops]);
+}
+
+// Every album, EP, single and drop in one searchable list, newest first,
+// each with the same players as the timeline and its saved links and covers.
+export default function Discography() {
+  const { editing } = useSpotifyLinks();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [newest, setNewest] = useState(true);
+  const [openKey, setOpenKey] = useState(null);
+
+  // Coming from the timeline, the page may still be in an era's colors.
+  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
+  useEffect(() => () => clearNowPlaying("discography"), []);
+
+  const all = useAllReleases();
 
   // Other versions of each song, by the song's title.
   const versionsOf = useMemo(() => {
@@ -239,7 +247,7 @@ export default function Discography() {
   );
 }
 
-function ReleaseRow({ release, open, editing, onToggle, versions, original, onOpen }) {
+export function ReleaseRow({ release, open, editing, onToggle, versions, original, onOpen, as: Tag = "li" }) {
   const service = useListenOn();
   const player = playerFor(release, service);
   const listen = listenLink(release, service);
@@ -253,40 +261,43 @@ function ReleaseRow({ release, open, editing, onToggle, versions, original, onOp
   }, [open, playingOn]);
 
   return (
-    <li id={`row-${releaseKey(release)}`} data-missing={editing && (!player || !release.date) ? "" : undefined}>
-      <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-4 py-3 text-left">
-        <Thumb release={release} palette={palette} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold sm:text-lg">{release.title}</span>
-          <span className="mt-0.5 block text-[11px] uppercase tracking-[0.18em] text-era-muted">
-            {release.type === "version" && release.versionOf ? `Version of ${release.versionOf}` : TYPE_LABEL[release.type]}
-            {versions?.length ? ` · +${versions.length} version${versions.length > 1 ? "s" : ""}` : ""}
-            {release.dropId ? " · New drop" : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
-          </span>
-        </span>
-        <span className="hidden items-center gap-1.5 sm:flex" aria-label={`On ${SERVICES.filter((s) => HAS[s.key](release)).map((s) => s.label).join(", ") || "no service yet"}`}>
-          {SERVICES.map((s) => (
-            <span key={s.key} className={HAS[s.key](release) ? "" : "opacity-20 grayscale"} title={HAS[s.key](release) ? s.label : `Not linked on ${s.label} yet`}>
-              <ServiceMark service={s.key} className="h-4 w-4" />
+    <Tag id={`row-${releaseKey(release)}`} data-missing={editing && (!player || !release.date) ? "" : undefined}>
+      <div className="flex items-center gap-1">
+        <button type="button" onClick={onToggle} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-4 py-3 text-left">
+          <Thumb release={release} palette={palette} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-semibold sm:text-lg">{release.title}</span>
+            <span className="mt-0.5 block text-[11px] uppercase tracking-[0.18em] text-era-muted">
+              {release.type === "version" && release.versionOf ? `Version of ${release.versionOf}` : TYPE_LABEL[release.type]}
+              {versions?.length ? ` · +${versions.length} version${versions.length > 1 ? "s" : ""}` : ""}
+              {release.dropId ? " · New drop" : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
             </span>
-          ))}
-        </span>
-        <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors"
-          style={open ? { background: palette.accent, color: palette.bg } : { border: "1px solid color-mix(in srgb, var(--fg) 20%, transparent)" }}
-          aria-hidden="true"
-        >
-          {open ? (
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-              <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          )}
-        </span>
-      </button>
+          </span>
+          <span className="hidden items-center gap-1.5 sm:flex" aria-label={`On ${SERVICES.filter((s) => HAS[s.key](release)).map((s) => s.label).join(", ") || "no service yet"}`}>
+            {SERVICES.map((s) => (
+              <span key={s.key} className={HAS[s.key](release) ? "" : "opacity-20 grayscale"} title={HAS[s.key](release) ? s.label : `Not linked on ${s.label} yet`}>
+                <ServiceMark service={s.key} className="h-4 w-4" />
+              </span>
+            ))}
+          </span>
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors"
+            style={open ? { background: palette.accent, color: palette.bg } : { border: "1px solid color-mix(in srgb, var(--fg) 20%, transparent)" }}
+            aria-hidden="true"
+          >
+            {open ? (
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </span>
+        </button>
+        <FavoriteButton release={release} />
+      </div>
 
       <AnimatePresence initial={false}>
         {open && (
@@ -340,7 +351,7 @@ function ReleaseRow({ release, open, editing, onToggle, versions, original, onOp
           </motion.div>
         )}
       </AnimatePresence>
-    </li>
+    </Tag>
   );
 }
 

@@ -13,6 +13,7 @@ export const NAV = [
   { label: "Albums", href: "#music", tab: "albums" },
   { label: "Singles", href: "#singles", tab: "singles" },
   { label: "All music", href: "/music", page: true },
+  { label: "Favorites", href: "/favorites", page: true },
   { label: "Shows", href: "#shows" },
   { label: "Watch", href: "#watch" },
   { label: "About", href: "#about" },
