@@ -57,12 +57,16 @@ export function useAllReleases() {
   return useMemo(() => {
     const albums = ERAS.flatMap((era) => era.releases.map((r) => ({ ...r, era })));
     const singles = singlesWithDrops(drops, CATALOG_SINGLES_BY_YEAR).flatMap((g) => g.singles.map((s) => ({ ...s, year: s.year ?? g.year })));
-    // Albums, EPs and versions added from admin. One with the same title as a
-    // release already listed replaces it (keeping its players where it has none).
+    // Albums, EPs, versions and features added from admin. One with the same
+    // title as a release already listed (or naming a built-in feature in
+    // `replaces`) replaces it, keeping its players where it has none; a
+    // hidden one takes that built-in feature off the site.
     const listed = [...albums, ...VERSION_RELEASES, ...FEATURE_RELEASES];
     for (const added of otherDrops(drops)) {
-      const i = listed.findIndex((r) => r.type === added.type && sameSong(r.title, added.title));
-      if (i === -1) listed.push(added);
+      const i = listed.findIndex((r) => r.type === added.type && !r.dropId && sameSong(r.title, added.replaces ?? added.title));
+      if (added.hidden) {
+        if (i !== -1) listed.splice(i, 1);
+      } else if (i === -1) listed.push(added);
       else listed[i] = { ...listed[i], ...added, era: undefined };
     }
     return [...listed, ...singles].map((r) => {

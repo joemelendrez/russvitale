@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AddSongWizard from "@/components/AddSongWizard";
 import NewsletterAdmin from "@/components/NewsletterAdmin";
+import FeaturesAdmin from "@/components/FeaturesAdmin";
 import { playerColumnsFromLinks, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
 
 const TYPE_LABEL = { single: "Single", album: "Album", ep: "EP", version: "Version" };
@@ -213,6 +214,9 @@ function Dashboard({ email }) {
     load();
   };
 
+  // Features have their own card.
+  const songs = (drops ?? []).filter((d) => d.release_type !== "feature");
+
   const remove = async (drop) => {
     if (!window.confirm(`Delete "${drop.title}"? It leaves the site for everyone.`)) return;
     setError(null);
@@ -241,17 +245,19 @@ function Dashboard({ email }) {
 
       <AddSongWizard drops={drops ?? []} onSaved={load} />
 
+      <FeaturesAdmin drops={drops ?? []} onSaved={load} />
+
       <NewsletterAdmin />
 
       <Card title="Added songs">
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
         {drops === null ? (
           <p className="text-sm text-white/60">Loading...</p>
-        ) : drops.length === 0 ? (
+        ) : songs.length === 0 ? (
           <p className="text-sm text-white/60">Nothing added yet.</p>
         ) : (
           <ul className="divide-y divide-white/10">
-            {drops.map((drop) =>
+            {songs.map((drop) =>
               editingId === drop.id ? (
                 <li key={drop.id} className="py-4">
                   <DropForm
