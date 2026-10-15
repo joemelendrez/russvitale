@@ -76,7 +76,7 @@ function PhonePlayerBar({ current, onClose }) {
             </button>
           </div>
           {player ? (
-            <PlayerFrame player={player} title={release.title} />
+            <PlayerFrame player={player} title={release.title} autoplay />
           ) : (
             <a
               href={listen.href}
