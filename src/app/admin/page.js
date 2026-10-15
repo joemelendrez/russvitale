@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { parseSpotifyLink } from "@/data/releaseKey";
+import { ALL_RELEASES, parseSpotifyLink } from "@/data/releaseKey";
 
 const today = () => new Date().toLocaleDateString("en-CA");
 
@@ -67,7 +67,7 @@ function Card({ children, title }) {
   );
 }
 
-const input = "w-full rounded-lg border border-white/15 bg-black/50 px-3 py-2.5 text-base text-white placeholder:text-white/30";
+const input = "w-full rounded-lg [color-scheme:dark] border border-white/15 bg-black/50 px-3 py-2.5 text-base text-white placeholder:text-white/30";
 const primary = "rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-40";
 
 function SignIn() {
@@ -120,6 +120,7 @@ function Dashboard({ email }) {
   const [drops, setDrops] = useState(null);
   const [linkCount, setLinkCount] = useState(null);
   const [error, setError] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   const load = useCallback(async () => {
     const [d, l] = await Promise.all([
@@ -175,7 +176,7 @@ function Dashboard({ email }) {
         </a>
       </Card>
 
-      <NewDrop onSaved={load} />
+      <DropForm onSaved={load} />
 
       <Card title="Drops">
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
@@ -185,41 +186,84 @@ function Dashboard({ email }) {
           <p className="text-sm text-white/60">No drops yet.</p>
         ) : (
           <ul className="divide-y divide-white/10">
-            {drops.map((drop) => (
-              <li key={drop.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{drop.title}</p>
-                  <p className="text-xs text-white/50">
-                    {drop.released_on}
-                    {drop.spotify_id ? ` · Spotify ${drop.kind}` : " · no player"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={drop.show_banner} onChange={(e) => update(drop.id, { show_banner: e.target.checked })} className="h-4 w-4" />
-                    Pop-up
-                  </label>
-                  <button type="button" onClick={() => remove(drop)} className="text-red-400 hover:underline">
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
+            {drops.map((drop) =>
+              editingId === drop.id ? (
+                <li key={drop.id} className="py-4">
+                  <DropForm
+                    drop={drop}
+                    onCancel={() => setEditingId(null)}
+                    onSaved={() => {
+                      setEditingId(null);
+                      load();
+                    }}
+                  />
+                </li>
+              ) : (
+                <li key={drop.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{drop.title}</p>
+                    <p className="text-xs text-white/50">
+                      {drop.released_on}
+                      {drop.spotify_id ? ` · Spotify ${drop.kind}` : " · no player"}
+                      {drop.note ? ` · ${drop.note}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" checked={drop.show_banner} onChange={(e) => update(drop.id, { show_banner: e.target.checked })} className="h-4 w-4" />
+                      Pop-up
+                    </label>
+                    <button type="button" onClick={() => setEditingId(drop.id)} className="font-semibold hover:underline">
+                      Edit
+                    </button>
+                    <button type="button" onClick={() => remove(drop)} className="text-red-400 hover:underline">
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              )
+            )}
           </ul>
         )}
         <p className="mt-4 text-xs text-white/40">
-          Drops show in the Singles timeline under their year. The newest one with Pop-up on slides down as a &quot;New drop&quot; notice, once per visitor.
+          Drops show in the Singles timeline under their year. A drop with the same title as a single already on the site replaces it, so you can set its exact date. The newest one with Pop-up on slides down as a &quot;New drop&quot; notice, once per visitor.
         </p>
       </Card>
     </div>
   );
 }
 
-function NewDrop({ onSaved }) {
-  const [form, setForm] = useState({ title: "", link: "", released_on: today(), note: "", show_banner: true });
+const blankDrop = () => ({ title: "", link: "", released_on: today(), note: "", show_banner: true });
+
+const formFromDrop = (drop) => ({
+  title: drop.title,
+  link: drop.spotify_id ? `https://open.spotify.com/${drop.kind}/${drop.spotify_id}` : "",
+  released_on: drop.released_on,
+  note: drop.note ?? "",
+  show_banner: drop.show_banner,
+});
+
+// Releases already on the site, newest first, to start a drop from.
+const SITE_RELEASES = [...ALL_RELEASES].reverse();
+
+// Adds a new drop, or edits `drop` when one is passed.
+function DropForm({ drop, onSaved, onCancel }) {
+  const editing = Boolean(drop);
+  const [form, setForm] = useState(() => (drop ? formFromDrop(drop) : blankDrop()));
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
+  const id = drop?.id ?? "new";
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
+
+  const pickRelease = (e) => {
+    const release = SITE_RELEASES[Number(e.target.value)];
+    if (!release) return;
+    setForm((f) => ({
+      ...f,
+      title: release.title,
+      link: release.spotify ? `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}` : f.link,
+    }));
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -227,62 +271,92 @@ function NewDrop({ onSaved }) {
     const parsed = form.link.trim() ? parseSpotifyLink(form.link) : null;
     if (form.link.trim() && !parsed) return setError("That doesn't look like a Spotify album or song link.");
     setStatus("saving");
-    const { error } = await supabase.from("russ_drops").insert({
+    const row = {
       title: form.title.trim(),
       kind: parsed?.kind ?? null,
       spotify_id: parsed?.id ?? null,
       released_on: form.released_on,
       note: form.note.trim() || null,
       show_banner: form.show_banner,
-    });
+    };
+    const { error } = editing ? await supabase.from("russ_drops").update(row).eq("id", drop.id) : await supabase.from("russ_drops").insert(row);
     setStatus(null);
     if (error) return setError("Couldn't save the drop. Check the fields and try again.");
-    setForm({ title: "", link: "", released_on: today(), note: "", show_banner: true });
-    setStatus("saved");
+    if (!editing) {
+      setForm(blankDrop());
+      setStatus("saved");
+    }
     onSaved();
   };
 
-  return (
-    <Card title="Add a new drop">
-      <form onSubmit={save} className="space-y-4">
+  const fields = (
+    <form onSubmit={save} className="space-y-4">
+      {!editing && (
         <div>
-          <label htmlFor="drop-title" className="mb-1 block text-sm text-white/70">
-            Title
+          <label htmlFor="drop-from" className="mb-1 block text-sm text-white/70">
+            Start from a release on the site (optional)
           </label>
-          <input id="drop-title" required maxLength={120} value={form.title} onChange={set("title")} className={input} />
+          <select id="drop-from" defaultValue="" onChange={pickRelease} className={input}>
+            <option value="">A new release</option>
+            {SITE_RELEASES.map((r, i) => (
+              <option key={`${r.type}-${r.year}-${r.title}`} value={i}>
+                {r.title} ({r.year})
+              </option>
+            ))}
+          </select>
         </div>
-        <div>
-          <label htmlFor="drop-link" className="mb-1 block text-sm text-white/70">
-            Spotify link (Share › Copy link)
-          </label>
-          <input id="drop-link" inputMode="url" placeholder="https://open.spotify.com/track/..." value={form.link} onChange={set("link")} className={input} />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="drop-date" className="mb-1 block text-sm text-white/70">
-              Release date
-            </label>
-            <input id="drop-date" type="date" required value={form.released_on} onChange={set("released_on")} className={input} />
-          </div>
-          <div>
-            <label htmlFor="drop-note" className="mb-1 block text-sm text-white/70">
-              Short note (optional)
-            </label>
-            <input id="drop-note" maxLength={200} placeholder="Out now" value={form.note} onChange={set("note")} className={input} />
-          </div>
-        </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.show_banner} onChange={set("show_banner")} className="h-4 w-4" />
-          Show it as the &quot;New drop&quot; pop-up
+      )}
+      <div>
+        <label htmlFor={`drop-title-${id}`} className="mb-1 block text-sm text-white/70">
+          Title
         </label>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-        <div className="flex items-center gap-3">
-          <button type="submit" disabled={!form.title.trim() || status === "saving"} className={primary}>
-            {status === "saving" ? "Saving..." : "Add drop"}
-          </button>
-          {status === "saved" && <span className="text-sm text-emerald-400">Added. It&apos;s live for everyone.</span>}
+        <input id={`drop-title-${id}`} required maxLength={120} value={form.title} onChange={set("title")} className={input} />
+      </div>
+      <div>
+        <label htmlFor={`drop-link-${id}`} className="mb-1 block text-sm text-white/70">
+          Spotify link (Share › Copy link)
+        </label>
+        <input
+          id={`drop-link-${id}`}
+          inputMode="url"
+          placeholder="https://open.spotify.com/track/..."
+          value={form.link}
+          onChange={set("link")}
+          className={input}
+        />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor={`drop-date-${id}`} className="mb-1 block text-sm text-white/70">
+            Release date
+          </label>
+          <input id={`drop-date-${id}`} type="date" required value={form.released_on} onChange={set("released_on")} className={input} />
         </div>
-      </form>
-    </Card>
+        <div>
+          <label htmlFor={`drop-note-${id}`} className="mb-1 block text-sm text-white/70">
+            Short note (optional)
+          </label>
+          <input id={`drop-note-${id}`} maxLength={200} placeholder="Out now" value={form.note} onChange={set("note")} className={input} />
+        </div>
+      </div>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={form.show_banner} onChange={set("show_banner")} className="h-4 w-4" />
+        Show it as the &quot;New drop&quot; pop-up
+      </label>
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={!form.title.trim() || status === "saving"} className={primary}>
+          {status === "saving" ? "Saving..." : editing ? "Save changes" : "Add drop"}
+        </button>
+        {editing && (
+          <button type="button" onClick={onCancel} className="text-sm opacity-70 hover:opacity-100">
+            Cancel
+          </button>
+        )}
+        {status === "saved" && <span className="text-sm text-emerald-400">Added. It&apos;s live for everyone.</span>}
+      </div>
+    </form>
   );
+
+  return editing ? fields : <Card title="Add a new drop">{fields}</Card>;
 }
