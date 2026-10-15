@@ -51,15 +51,17 @@ export async function GET(request) {
     const timed = async (label, fn) => {
       const t = Date.now();
       try {
-        out[label] = { ok: await withTimeout(fn(), 4000) };
+        out[label] = { ok: await withTimeout(fn(), 3000) };
       } catch (e) {
         out[label] = { error: e.message };
       }
       out[label].ms = Date.now() - t;
     };
-    await timed("original", () => getStore({ name: "spotify-links", fetch: globalThis._nextOriginalFetch }).get(BLOB_KEY, { type: "json" }));
-    await timed("noStoreFetch", () => getStore({ name: "spotify-links", fetch: (u, o) => fetch(u, { ...o, cache: "no-store" }) }).get(BLOB_KEY, { type: "json" }));
-    await timed("default", () => store().get(BLOB_KEY, { type: "json" }));
+    const which = new URL(request.url).searchParams.get("diag");
+    if (which === "original") await timed("original", () => getStore({ name: "spotify-links", fetch: globalThis._nextOriginalFetch }).get(BLOB_KEY, { type: "json" }));
+    if (which === "nostore") await timed("noStoreFetch", () => getStore({ name: "spotify-links", fetch: (u, o) => fetch(u, { ...o, cache: "no-store" }) }).get(BLOB_KEY, { type: "json" }));
+    if (which === "raw") await timed("raw", async () => (await (globalThis._nextOriginalFetch ?? fetch)(JSON.parse(Buffer.from(process.env.NETLIFY_BLOBS_CONTEXT, "base64").toString()).edgeURL, { method: "HEAD" })).status);
+    if (which === "default") await timed("default", () => store().get(BLOB_KEY, { type: "json" }));
     out.ms = Date.now() - started;
     return Response.json(out, { headers: { "Cache-Control": "no-store" } });
   }
