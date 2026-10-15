@@ -29,6 +29,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Impact (Ticketmaster affiliate program) site verification. */}
+        <meta name="impact-site-verification" value="0f51a803-5e30-40e5-b84e-28d74d8989f0" />
+      </head>
       <body className="grain">
         <a href="#music" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-black">
           Skip to the music
