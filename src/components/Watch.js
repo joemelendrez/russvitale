@@ -4,12 +4,11 @@ import { motion } from "framer-motion";
 import { VIDEOS } from "@/data/videos";
 import { SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
-import { SECTION_PALETTES } from "@/data/eras";
 import SectionHeading from "./SectionHeading";
 
 export default function Watch() {
   return (
-    <PaletteSection palette={SECTION_PALETTES.watch} id="watch" className="relative scroll-mt-16 py-24 sm:py-36" aria-label="Watch">
+    <PaletteSection id="watch" className="relative scroll-mt-16 py-24 sm:py-36" aria-label="Watch">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading eyebrow="Watch" title="Official videos">
           Played straight from YouTube. More on the{" "}

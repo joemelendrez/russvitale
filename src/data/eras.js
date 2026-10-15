@@ -115,13 +115,9 @@ export const ERAS = [
 // Its red comes from the stage lights and jersey in the hero photo.
 export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#ff3b30" };
 
-// Sections and pages past the timeline get their own colors too, so the site
-// never sits in one long run of black. Bright ones borrow the single covers'
-// flat colors (blogCovers.js).
+// Pages outside the timeline get their own colors too, so the site never sits
+// in one long run of black. The home page's own sections stay black.
 export const SECTION_PALETTES = {
-  shows: { bg: "#ff4a1c", fg: "#170703", muted: "#5e1c0b", accent: "#170703" },
-  watch: { bg: "#1b1030", fg: "#f2ebff", muted: "#a597c2", accent: "#b48cff" },
-  about: { bg: "#12224a", fg: "#eef3ff", muted: "#9eb0d8", accent: "#ffe600" },
   // The yellow and black of his book, It's All in Your Head.
   footer: { bg: "#ffe600", fg: "#111111", muted: "#4d4708", accent: "#111111" },
   top10: { bg: "#0f1835", fg: "#eef3ff", muted: "#97a5cc", accent: "#ffd21f" },
