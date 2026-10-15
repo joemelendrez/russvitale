@@ -13,7 +13,9 @@ export const NAV = [
   { label: "Albums", href: "#music", tab: "albums" },
   { label: "Singles", href: "#singles", tab: "singles" },
   { label: "All music", href: "/music", page: true },
-  { label: "Features", href: "/music#features", page: true },
+  // Footer and phone menu only; the desktop header has no room for it.
+  { label: "Features", href: "/music#features", page: true, footerOnly: true },
+  { label: "Blog", href: "/blog", page: true },
   { label: "Favorites", href: "/favorites", page: true },
   { label: "Shows", href: "#shows" },
   { label: "Watch", href: "#watch" },

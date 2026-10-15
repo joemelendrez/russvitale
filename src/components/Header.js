@@ -59,7 +59,7 @@ export default function Header() {
           </a>
 
           <nav className="hidden items-center gap-5 md:flex lg:gap-8" aria-label="Main">
-            {NAV.map((item) => (
+            {NAV.filter((item) => !item.footerOnly).map((item) => (
               <a
                 key={item.href}
                 href={navHref(item, onHome)}
