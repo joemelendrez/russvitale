@@ -1,14 +1,14 @@
 "use client";
 import { useEffect } from "react";
 import { getFavorites, setFavorites, subscribeFavorites } from "@/lib/favorites";
-import { supabase } from "@/lib/supabase";
+import { fanAccounts, supabase } from "@/lib/supabase";
 
 // Keeps a signed-in fan's favorites on their account. On sign-in the saved
 // list comes first and anything only on this device is added after it, so
 // nothing is lost either way; after that every change is saved (debounced).
 export default function FavoritesSync() {
   useEffect(() => {
-    if (!supabase) return;
+    if (!fanAccounts) return;
     let userId = null;
     let lastSaved = null;
     let timer = null;

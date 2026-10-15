@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { fanAccounts, supabase } from "@/lib/supabase";
 
 // Optional sign-in on /favorites so the list follows a fan to other devices.
 // Google, or a sign-in link by email. FavoritesSync does the saving.
@@ -11,13 +11,13 @@ export default function FavoritesAccount() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!fanAccounts) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
 
-  if (!supabase || session === undefined) return null;
+  if (!fanAccounts || session === undefined) return null;
 
   if (session) {
     return (
