@@ -1,7 +1,5 @@
 import Footer from "@/components/Footer";
 import NewsletterForm from "@/components/NewsletterForm";
-import DefaultPalette from "@/components/DefaultPalette";
-import { SECTION_PALETTES } from "@/data/eras";
 
 export const metadata = {
   title: "Russ fan newsletter | Unofficial fan site",
@@ -20,7 +18,6 @@ export default async function NewsletterPage({ searchParams }) {
   const shown = STATUS[status];
   return (
     <>
-      <DefaultPalette palette={SECTION_PALETTES.newsletter} />
       <div className="mx-auto max-w-3xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
         <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
         <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">{shown?.title ?? "The newsletter"}</h1>

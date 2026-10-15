@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CoverEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
 import { AMAZON_DISCLOSURE, BOOKS, SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
+import { SECTION_PALETTES } from "@/data/eras";
 
 const STATS = [
   { value: "11", label: "Free albums, 2011 to 2014" },
@@ -14,7 +15,7 @@ const STATS = [
 
 export default function About() {
   return (
-    <PaletteSection id="about" className="relative scroll-mt-16 border-t border-era-fg/10 py-24 sm:py-36" aria-label="About">
+    <PaletteSection palette={SECTION_PALETTES.about} id="about" className="relative scroll-mt-16 border-t border-era-fg/10 py-24 sm:py-36" aria-label="About">
       <div className="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 lg:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 40 }}

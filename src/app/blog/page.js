@@ -1,6 +1,5 @@
 import Link from "next/link";
 import DefaultPalette from "@/components/DefaultPalette";
-import { SECTION_PALETTES } from "@/data/eras";
 import Footer from "@/components/Footer";
 import NewsletterForm from "@/components/NewsletterForm";
 import { formatDate, getPosts } from "@/lib/blog";
@@ -25,7 +24,7 @@ export default async function BlogPage() {
 
   return (
     <>
-      <DefaultPalette palette={SECTION_PALETTES.blog} />
+      <DefaultPalette />
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
         <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan blog</p>
         <h1 className="mt-4 font-display text-6xl uppercase leading-[0.9] sm:text-8xl">

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { SECTION_PALETTES } from "@/data/eras";
+import { DEFAULT_PALETTE } from "@/data/eras";
 import { Reorder, useDragControls } from "framer-motion";
 import { listenLink } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
@@ -25,7 +25,7 @@ export default function Favorites() {
   const [openKey, setOpenKey] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => applyPalette(SECTION_PALETTES.favorites), []);
+  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => () => clearNowPlaying("discography"), []);
 
   const byKey = useMemo(() => new Map(all.map((r) => [releaseKey(r), r])), [all]);
