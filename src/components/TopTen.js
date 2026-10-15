@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Reorder, useDragControls } from "framer-motion";
-import { DEFAULT_PALETTE } from "@/data/eras";
+import { SECTION_PALETTES } from "@/data/eras";
 import { featureCredit } from "@/data/features";
 import { releaseKey } from "@/data/releaseKey";
 import { useFavorites } from "@/lib/favorites";
@@ -50,7 +50,7 @@ function useShortCode(list) {
 // With ?l= it shows the list someone shared, playable, with a way to make
 // your own.
 export default function TopTen({ shared }) {
-  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
+  useEffect(() => applyPalette(SECTION_PALETTES.top10), []);
   useEffect(() => () => clearNowPlaying("discography"), []);
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">

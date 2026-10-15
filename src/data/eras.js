@@ -115,6 +115,17 @@ export const ERAS = [
 // Its red comes from the stage lights and jersey in the hero photo.
 export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#ff3b30" };
 
+// Pages outside the timeline get their own colors too, so the site never sits
+// in one long run of black. The home page's own sections stay black.
+export const SECTION_PALETTES = {
+  // The yellow and black of his book, It's All in Your Head.
+  footer: { bg: "#ffe600", fg: "#111111", muted: "#4d4708", accent: "#111111" },
+  top10: { bg: "#0f1835", fg: "#eef3ff", muted: "#97a5cc", accent: "#ffd21f" },
+  favorites: { bg: "#260a15", fg: "#ffeef3", muted: "#d49aae", accent: "#e8457c" },
+  newsletter: { bg: "#08201e", fg: "#e9f7f6", muted: "#8fb5b2", accent: "#17a3a0" },
+  blog: { bg: "#140c1f", fg: "#f4eefb", muted: "#a99bbd", accent: "#e8457c" },
+};
+
 // The era a given year belongs to, for coloring the singles timeline.
 const ERA_BY_YEAR = { 2016: "diemon", 2017: "wolf", 2018: "zoo", 2019: "snowglobe", 2020: "chomp", 2021: "chomp", 2022: "chomp", 2023: "santiago", 2024: "santiago" };
 

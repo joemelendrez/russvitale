@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DEFAULT_PALETTE } from "@/data/eras";
+import { SECTION_PALETTES } from "@/data/eras";
 import { fanAccounts } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
 import SignInPanel from "./SignInPanel";
@@ -19,7 +19,7 @@ export default function LoginForm() {
   const router = useRouter();
   const [next] = useState(() => (typeof window === "undefined" ? "/favorites" : safeNext(new URLSearchParams(window.location.search).get("next"))));
 
-  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
+  useEffect(() => applyPalette(SECTION_PALETTES.newsletter), []);
   useEffect(() => {
     if (session) router.replace(next);
   }, [session, next, router]);
