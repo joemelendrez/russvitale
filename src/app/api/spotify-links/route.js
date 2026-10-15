@@ -47,11 +47,19 @@ export async function GET(request) {
     } catch (e) {
       out.parse = e.message;
     }
-    try {
-      out.value = await withTimeout(store().get(BLOB_KEY, { type: "json" }), 8000);
-    } catch (e) {
-      out.error = e.message;
-    }
+    out.hasOriginalFetch = Boolean(globalThis._nextOriginalFetch);
+    const timed = async (label, fn) => {
+      const t = Date.now();
+      try {
+        out[label] = { ok: await withTimeout(fn(), 4000) };
+      } catch (e) {
+        out[label] = { error: e.message };
+      }
+      out[label].ms = Date.now() - t;
+    };
+    await timed("original", () => getStore({ name: "spotify-links", fetch: globalThis._nextOriginalFetch }).get(BLOB_KEY, { type: "json" }));
+    await timed("noStoreFetch", () => getStore({ name: "spotify-links", fetch: (u, o) => fetch(u, { ...o, cache: "no-store" }) }).get(BLOB_KEY, { type: "json" }));
+    await timed("default", () => store().get(BLOB_KEY, { type: "json" }));
     out.ms = Date.now() - started;
     return Response.json(out, { headers: { "Cache-Control": "no-store" } });
   }
