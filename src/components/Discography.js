@@ -4,10 +4,11 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { DEFAULT_PALETTE, ERAS, eraForYear } from "@/data/eras";
 import { singlesWithDrops } from "@/data/drops";
+import { CATALOG_SINGLES_BY_YEAR } from "@/data/catalog";
 import { SERVICES, listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { clearNowPlaying, serviceOfPlayer, setNowPlaying, useListenOn } from "@/lib/listenOn";
-import { CoverEditor, SpotifyLinkEditor, useSpotifyLinks, withSavedLinks } from "./SpotifyLinks";
+import { CoverEditor, DateEditor, SpotifyLinkEditor, useSpotifyLinks, withSavedLinks } from "./SpotifyLinks";
 import ListenToggle, { ServiceMark } from "./ListenToggle";
 import PlayerFrame from "./PlayerFrame";
 import { applyPalette } from "./usePalette";
@@ -20,7 +21,16 @@ const FILTERS = [
   { key: "ep", label: "EPs" },
   { key: "single", label: "Singles" },
   { key: "drop", label: "Drops" },
+  { key: "nodate", label: "No date yet", editOnly: true },
 ];
+
+// "2019-03-08" → "Mar 8, 2019" (UTC, so the server and browser agree).
+function formatDate(date) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+// A release's year, from its date when one is set.
+const yearOf = (r) => (r.date ? Number(r.date.slice(0, 4)) : r.year);
 
 const HAS = { spotify: (r) => r.spotify, youtube: (r) => r.youtube, soundcloud: (r) => r.soundcloud };
 
@@ -39,15 +49,20 @@ export default function Discography() {
 
   const all = useMemo(() => {
     const albums = ERAS.flatMap((era) => era.releases.map((r) => ({ ...r, era })));
-    const singles = singlesWithDrops(drops).flatMap((g) => g.singles.map((s) => ({ ...s, year: s.year ?? g.year, era: eraForYear(g.year) })));
-    return [...albums, ...singles].map((r) => withSavedLinks(r, links[releaseKey(r)]));
+    const singles = singlesWithDrops(drops, CATALOG_SINGLES_BY_YEAR).flatMap((g) => g.singles.map((s) => ({ ...s, year: s.year ?? g.year })));
+    return [...albums, ...singles].map((r) => {
+      const saved = withSavedLinks(r, links[releaseKey(r)]);
+      const shownYear = yearOf(saved);
+      return { ...saved, shownYear, era: saved.era ?? eraForYear(shownYear) };
+    });
   }, [links, drops]);
 
   const counts = useMemo(() => {
-    const c = { all: all.length, album: 0, ep: 0, single: 0, drop: 0 };
+    const c = { all: all.length, album: 0, ep: 0, single: 0, drop: 0, nodate: 0 };
     for (const r of all) {
       c[r.type] += 1;
       if (r.dropId) c.drop += 1;
+      if (!r.date) c.nodate += 1;
     }
     return c;
   }, [all]);
@@ -55,21 +70,33 @@ export default function Discography() {
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = all.filter((r) => {
-      if (filter === "drop" ? !r.dropId : filter !== "all" && r.type !== filter) return false;
+      if (filter === "drop") {
+        if (!r.dropId) return false;
+      } else if (filter === "nodate") {
+        if (r.date || !editing) return false;
+      } else if (filter !== "all" && r.type !== filter) return false;
       if (!q) return true;
-      return `${r.title} ${r.year} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q);
+      return `${r.title} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q);
     });
-    // Within a year, albums before EPs before singles, then by title.
+    // By date where there is one; within a year, undated releases go after
+    // dated ones, albums before EPs before singles, then by title.
     const rank = { album: 0, ep: 1, single: 2 };
-    list.sort((a, b) => (newest ? b.year - a.year : a.year - b.year) || rank[a.type] - rank[b.type] || a.title.localeCompare(b.title));
+    const dir = newest ? -1 : 1;
+    list.sort(
+      (a, b) =>
+        dir * (a.shownYear - b.shownYear) ||
+        (a.date && b.date ? dir * a.date.localeCompare(b.date) : Boolean(b.date) - Boolean(a.date)) ||
+        rank[a.type] - rank[b.type] ||
+        a.title.localeCompare(b.title)
+    );
     const groups = [];
     for (const r of list) {
       const last = groups[groups.length - 1];
-      if (last?.year === r.year) last.items.push(r);
-      else groups.push({ year: r.year, items: [r] });
+      if (last?.year === r.shownYear) last.items.push(r);
+      else groups.push({ year: r.shownYear, items: [r] });
     }
     return groups;
-  }, [all, query, filter, newest]);
+  }, [all, query, filter, newest, editing]);
 
   const total = shown.reduce((n, g) => n + g.items.length, 0);
 
@@ -79,7 +106,8 @@ export default function Discography() {
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Every release</h1>
       <p className="mt-6 max-w-xl text-era-muted">
         {counts.album} albums, {counts.ep} EPs and {counts.single} singles, from the Diemon days to the newest drops. Tap any one to play it on the
-        service you pick with the round button.
+        service you pick with the round button. The list follows Wikipedia&apos;s Russ discography; songs that only live on his albums are on the
+        album pages of each service.
       </p>
 
       <div className="sticky top-16 z-30 -mx-4 mt-10 space-y-3 bg-era-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
@@ -101,7 +129,7 @@ export default function Discography() {
           <ListenToggle />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          {FILTERS.filter((f) => f.key !== "drop" || counts.drop > 0).map((f) => (
+          {FILTERS.filter((f) => (f.key !== "drop" || counts.drop > 0) && (!f.editOnly || editing)).map((f) => (
             <button
               key={f.key}
               type="button"
@@ -182,14 +210,14 @@ function ReleaseRow({ release, open, editing, onToggle }) {
   }, [open, playingOn]);
 
   return (
-    <li>
+    <li data-missing={editing && (!player || !release.date) ? "" : undefined}>
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-4 py-3 text-left">
         <Thumb release={release} palette={palette} />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold sm:text-lg">{release.title}</span>
           <span className="mt-0.5 block text-[11px] uppercase tracking-[0.18em] text-era-muted">
             {TYPE_LABEL[release.type]}
-            {release.dropId ? " · New drop" : ""} &middot; {release.year}
+            {release.dropId ? " · New drop" : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
           </span>
         </span>
         <span className="hidden items-center gap-1.5 sm:flex" aria-label={`On ${SERVICES.filter((s) => HAS[s.key](release)).map((s) => s.label).join(", ") || "no service yet"}`}>
@@ -244,6 +272,7 @@ function ReleaseRow({ release, open, editing, onToggle }) {
               </div>
               {editing && (
                 <div className="mt-3">
+                  <DateEditor release={release} />
                   <CoverEditor release={release} />
                   <SpotifyLinkEditor key={`${service}-${player?.key ?? "none"}`} release={release} />
                 </div>

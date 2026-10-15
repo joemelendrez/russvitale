@@ -18,9 +18,9 @@ const sameTitle = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 // first like the rest of the list. A drop with the same title as a single in
 // src/data/singles.js replaces it, so a drop can also correct a release's date
 // (and keeps its players for any service the drop has no link for).
-export function singlesWithDrops(drops) {
-  if (!drops?.length) return SINGLES_BY_YEAR;
-  const groups = SINGLES_BY_YEAR.map((g) => ({ ...g, singles: [...g.singles] }));
+export function singlesWithDrops(drops, base = SINGLES_BY_YEAR) {
+  if (!drops?.length) return base;
+  const groups = base.map((g) => ({ ...g, singles: [...g.singles] }));
   for (const drop of [...drops].reverse()) {
     let release = dropToRelease(drop);
     for (const g of groups) {

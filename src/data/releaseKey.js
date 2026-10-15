@@ -1,5 +1,6 @@
 import { ERAS } from "./eras";
 import { SINGLES_BY_YEAR } from "./singles";
+import { CATALOG_SINGLES_BY_YEAR } from "./catalog";
 
 // A stable id for a release, used to store a Spotify link pasted on the page.
 export function releaseKey(release) {
@@ -13,6 +14,12 @@ export function releaseKey(release) {
 export const ALL_RELEASES = [
   ...ERAS.flatMap((era) => era.releases),
   ...SINGLES_BY_YEAR.flatMap((group) => group.singles.map((single) => ({ ...single, year: group.year }))),
+];
+
+// Everything /music lists: the albums plus every single in catalog.js.
+export const CATALOG_RELEASES = [
+  ...ERAS.flatMap((era) => era.releases),
+  ...CATALOG_SINGLES_BY_YEAR.flatMap((group) => group.singles.map((single) => ({ ...single, year: group.year }))),
 ];
 
 export const RELEASE_KEYS = new Set(ALL_RELEASES.map(releaseKey));
