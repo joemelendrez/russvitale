@@ -1,5 +1,5 @@
 -- Song links fixed from the site, and the newest drops, for russvitale.com.
--- Lives in the handoffhero Supabase project (free-plan project limit), so
+-- First lived in the handoffhero Supabase project, so
 -- every object is prefixed russ_ to stay apart from Handoff Hero's tables.
 -- Anyone can read both. Only signed-in accounts whose email is in `russ_admins`
 -- can write, enforced here by RLS (the site has no server-side key).
