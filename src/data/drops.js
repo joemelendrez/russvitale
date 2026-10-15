@@ -8,6 +8,7 @@ export function dropToRelease(drop) {
     year: Number(drop.released_on.slice(0, 4)),
     dropId: drop.id,
     ...(drop.spotify_id ? { spotify: { kind: drop.kind, id: drop.spotify_id } } : {}),
+    ...(drop.soundcloud_url ? { soundcloud: drop.soundcloud_url } : {}),
   };
 }
 
@@ -16,7 +17,7 @@ const sameTitle = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 // The Singles timeline with drops added at the end of their year, oldest
 // first like the rest of the list. A drop with the same title as a single in
 // src/data/singles.js replaces it, so a drop can also correct a release's date
-// (and keeps its Spotify player if the drop has none).
+// (and keeps its player if the drop has no link).
 export function singlesWithDrops(drops) {
   if (!drops?.length) return SINGLES_BY_YEAR;
   const groups = SINGLES_BY_YEAR.map((g) => ({ ...g, singles: [...g.singles] }));
@@ -26,7 +27,10 @@ export function singlesWithDrops(drops) {
       const i = g.singles.findIndex((s) => !s.dropId && sameTitle(s.title, release.title));
       if (i === -1) continue;
       const [existing] = g.singles.splice(i, 1);
-      if (!release.spotify && existing.spotify) release = { ...release, spotify: existing.spotify };
+      // A drop with no link of its own keeps the single's player.
+      if (!release.spotify && !release.soundcloud) {
+        release = { ...release, ...(existing.spotify ? { spotify: existing.spotify } : {}), ...(existing.soundcloud ? { soundcloud: existing.soundcloud } : {}) };
+      }
     }
     let group = groups.find((g) => g.year === release.year);
     if (!group) {

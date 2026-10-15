@@ -1,11 +1,11 @@
 "use client";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { spotifyEmbedUrl, spotifyLink } from "@/data/eras";
+import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { useSpotifyLinks } from "./SpotifyLinks";
 
-// On phones a card is too small to hold a Spotify player, so tapping a cover
+// On phones a card is too small to hold a Spotify or SoundCloud player, so tapping a cover
 // plays it in one full-width bar pinned to the bottom of the screen instead.
 // One player at a time: tapping another cover swaps it.
 const PhonePlayerContext = createContext({ playing: null, play: () => {}, stop: () => {} });
@@ -34,6 +34,7 @@ function PhonePlayerBar({ current, onClose }) {
   const { editing } = useSpotifyLinks();
   const release = current?.release;
   const accent = current?.palette?.accent ?? "#fff";
+  const player = release && playerFor(release);
 
   return (
     <AnimatePresence>
@@ -63,18 +64,18 @@ function PhonePlayerBar({ current, onClose }) {
               &times;
             </button>
           </div>
-          {release.spotify ? (
+          {player ? (
             <iframe
-              key={`${release.spotify.kind}-${release.spotify.id}`}
-              title={`${release.title} on Spotify`}
-              src={spotifyEmbedUrl(release.spotify)}
-              height={release.spotify.kind === "album" ? 152 : 80}
+              key={player.key}
+              title={`${release.title} on ${listenLink(release).label}`}
+              src={player.src}
+              height={player.height}
               className="block w-full rounded-xl border-0 bg-black/60"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             />
           ) : (
             <a
-              href={spotifyLink(release)}
+              href={listenLink(release).href}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-between gap-2 rounded-xl bg-white/10 px-4 py-4 text-sm font-semibold uppercase tracking-[0.15em]"

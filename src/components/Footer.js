@@ -8,7 +8,7 @@ export default function Footer() {
           <p className="font-display text-6xl leading-none sm:text-8xl">RUSS</p>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-era-muted">
             An unofficial fan site. Not affiliated with, endorsed by or connected to Russ, Diemon or any label. All music plays through
-            official Spotify and YouTube embeds; nothing here is sold or hosted.
+            official Spotify, SoundCloud and YouTube embeds; nothing here is sold or hosted.
           </p>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs uppercase tracking-[0.2em] text-era-muted" aria-label="Footer">

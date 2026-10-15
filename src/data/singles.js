@@ -4,6 +4,8 @@ const s = (title, extra = {}) => ({ title, type: "single", ...extra });
 const track = (id) => ({ spotify: { kind: "track", id } });
 // A single whose own track id we could not confirm plays from its single page.
 const album = (id) => ({ spotify: { kind: "album", id } });
+// For a song Spotify doesn't carry: its soundcloud.com link.
+const soundcloud = (url) => ({ soundcloud: url });
 
 export const SINGLES_BY_YEAR = [
   {
