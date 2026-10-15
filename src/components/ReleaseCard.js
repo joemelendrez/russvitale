@@ -121,7 +121,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
-                className="absolute left-1/2 top-[30%] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+                className="absolute left-1/2 top-[30%] hidden h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full lg:flex"
                 style={{ background: palette.accent, color: palette.bg }}
               >
                 {playingOnPhone ? (
@@ -136,6 +136,23 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
               </motion.span>
             )}
           </AnimatePresence>
+
+          {/* Phones and tablets: a play button always in the middle of the cover. */}
+          <span
+            className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full shadow-lg backdrop-blur-sm transition-colors lg:hidden"
+            style={playingOnPhone ? { background: palette.accent, color: palette.bg } : { background: "rgba(0,0,0,0.45)", color: "#fff" }}
+            aria-hidden="true"
+          >
+            {playingOnPhone ? (
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+                <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </span>
         </button>
 
         {/* Player tray */}
