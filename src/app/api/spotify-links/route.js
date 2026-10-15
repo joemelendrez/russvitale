@@ -1,32 +1,54 @@
 import { timingSafeEqual } from "node:crypto";
-import { getStore } from "@netlify/blobs";
 import { RELEASE_KEYS, parseSpotifyLink } from "@/data/releaseKey";
 
 // Spotify links pasted on the page in edit mode (/?edit=<key>), kept in a
-// Netlify Blobs store so every visitor gets the fixed players. Anyone can
-// read them; only someone with SPOTIFY_EDIT_KEY can change them.
+// Netlify Blobs site store so every visitor gets the fixed players. Anyone
+// can read them; only someone with SPOTIFY_EDIT_KEY can change them.
+//
+// This talks to the Blobs edge API directly. The @netlify/blobs client hung
+// inside this route on Netlify (every call ran into its retry loop), while a
+// plain fetch to the same URL answers in well under 100ms.
 export const dynamic = "force-dynamic";
 
-const BLOB_KEY = "links";
+const BLOB_URL_PATH = "site:spotify-links/links";
 
-function store() {
-  return getStore("spotify-links");
+function blobRequest() {
+  const raw = process.env.NETLIFY_BLOBS_CONTEXT;
+  if (!raw) return null;
+  const context = JSON.parse(Buffer.from(raw, "base64").toString());
+  return {
+    url: new URL(`/${context.siteID}/${BLOB_URL_PATH}`, context.uncachedEdgeURL || context.edgeURL),
+    headers: { authorization: `Bearer ${context.token}` },
+  };
 }
 
-// A Blobs call that hangs shouldn't hang the page's request with it.
-function withTimeout(promise, ms = 5000) {
-  return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms))]);
-}
-
-async function readLinks() {
+// strict: a failed read throws instead of returning {}, so a save never
+// overwrites every saved link with just the new one.
+async function readLinks({ strict = false } = {}) {
   try {
-    return (await withTimeout(store().get(BLOB_KEY, { type: "json" }))) ?? {};
+    const blob = blobRequest();
+    if (!blob) return {}; // plain `next dev`: just the ids in src/data
+    const res = await fetch(blob.url, { headers: blob.headers, cache: "no-store", signal: AbortSignal.timeout(5000) });
+    if (res.status === 404) return {};
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    return await res.json();
   } catch (error) {
-    // Outside Netlify (plain `next dev`) there is no store: the page just
-    // uses the ids in src/data.
     console.error("spotify-links: read failed", error.message);
+    if (strict) throw error;
     return {};
   }
+}
+
+async function writeLinks(links) {
+  const blob = blobRequest();
+  if (!blob) throw new Error("no Blobs context");
+  const res = await fetch(blob.url, {
+    method: "PUT",
+    headers: { ...blob.headers, "content-type": "application/json", "cache-control": "max-age=0, stale-while-revalidate=60" },
+    body: JSON.stringify(links),
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!res.ok) throw new Error(`status ${res.status}`);
 }
 
 function keyMatches(given) {
@@ -37,39 +59,7 @@ function keyMatches(given) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function GET(request) {
-  if (new URL(request.url).searchParams.has("diag")) {
-    const started = Date.now();
-    const out = { hasGlobal: Boolean(globalThis.netlifyBlobsContext), hasEnv: Boolean(process.env.NETLIFY_BLOBS_CONTEXT) };
-    try {
-      const raw = globalThis.netlifyBlobsContext || process.env.NETLIFY_BLOBS_CONTEXT;
-      if (raw) out.keys = Object.keys(JSON.parse(Buffer.from(raw, "base64").toString()));
-    } catch (e) {
-      out.parse = e.message;
-    }
-    out.hasOriginalFetch = Boolean(globalThis._nextOriginalFetch);
-    const timed = async (label, fn) => {
-      const t = Date.now();
-      try {
-        out[label] = { ok: await withTimeout(fn(), 3000) };
-      } catch (e) {
-        out[label] = { error: e.message };
-      }
-      out[label].ms = Date.now() - t;
-    };
-    const which = new URL(request.url).searchParams.get("diag");
-    if (which === "original") await timed("original", () => getStore({ name: "spotify-links", fetch: globalThis._nextOriginalFetch }).get(BLOB_KEY, { type: "json" }));
-    if (which === "nostore") await timed("noStoreFetch", () => getStore({ name: "spotify-links", fetch: (u, o) => fetch(u, { ...o, cache: "no-store" }) }).get(BLOB_KEY, { type: "json" }));
-    if (which === "authed") await timed("authed", async () => {
-      const c = JSON.parse(Buffer.from(process.env.NETLIFY_BLOBS_CONTEXT, "base64").toString());
-      const res = await fetch(new URL(`/${c.siteID}/site:spotify-links/${BLOB_KEY}`, c.edgeURL), { headers: { authorization: `Bearer ${c.token}` }, cache: "no-store" });
-      return { status: res.status, body: (await res.text()).slice(0, 300), region: c.primaryRegion };
-    });
-    if (which === "raw") await timed("raw", async () => (await (globalThis._nextOriginalFetch ?? fetch)(JSON.parse(Buffer.from(process.env.NETLIFY_BLOBS_CONTEXT, "base64").toString()).edgeURL, { method: "HEAD" })).status);
-    if (which === "default") await timed("default", () => store().get(BLOB_KEY, { type: "json" }));
-    out.ms = Date.now() - started;
-    return Response.json(out, { headers: { "Cache-Control": "no-store" } });
-  }
+export async function GET() {
   return Response.json(await readLinks(), { headers: { "Cache-Control": "no-store" } });
 }
 
@@ -94,10 +84,10 @@ export async function POST(request) {
   }
 
   try {
-    const links = await readLinks();
+    const links = await readLinks({ strict: true });
     if (spotify) links[body.release] = spotify;
     else delete links[body.release];
-    await withTimeout(store().setJSON(BLOB_KEY, links));
+    await writeLinks(links);
     return Response.json({ links });
   } catch (error) {
     console.error("spotify-links: write failed", error.message);

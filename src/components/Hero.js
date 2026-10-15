@@ -83,6 +83,8 @@ export default function Hero() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
         {/* Haze at the bottom so the hero melts into the page. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-era-bg via-era-bg/70 to-transparent sm:h-1/3 sm:via-transparent" />
+        {/* Darker scrim behind the copy so it stays readable over the stage lights. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
         <motion.div style={{ opacity: fade }} className="pointer-events-none absolute inset-0 bg-era-bg" />
 
         <motion.div
@@ -90,8 +92,18 @@ export default function Hero() {
           className="absolute inset-x-0 bottom-10 mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:bottom-14 sm:flex-row sm:items-end sm:justify-between sm:px-6"
         >
           <div className="max-w-md">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/70">{HERO_COPY.eyebrow}</p>
-            <p className="mt-3 text-base leading-relaxed text-white/90 sm:text-lg">{HERO_COPY.tagline}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.9)] sm:text-base">
+              {HERO_COPY.eyebrow}
+            </p>
+            <p className="mt-3 text-base leading-relaxed text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.9)] sm:text-lg">{HERO_COPY.tagline}</p>
+            <a
+              href={HERO_COPY.credit.href}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-block text-[11px] uppercase tracking-[0.2em] text-white/60 underline-offset-4 hover:text-white hover:underline"
+            >
+              {HERO_COPY.credit.label}
+            </a>
           </div>
           <a href="#music" className="group inline-flex items-center gap-3 self-start text-xs uppercase tracking-[0.3em] text-white sm:self-end">
             Scroll the timeline

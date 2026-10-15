@@ -26,7 +26,7 @@ Everything lives in `src/data/`, no component changes needed.
 
 ### Hero photos
 
-The hero is three layers in `public/hero/`, made from concert photos Joseph sent (not his own; the source and permission still need confirming): `crowd.webp` (background, softened), `stage-floor.webp` (the stage floor, transparent at the top) and `russ.webp` (Russ cut out). The name "RUSS" sits between the crowd and Russ, so he stands in front of it. To swap one, add the new file under a new name and update `src/data/hero.js`, since the image CDN caches by URL.
+The hero is three layers in `public/hero/`, cut from a photo on Russ's Instagram (https://www.instagram.com/p/DM9VEwbOvmU/, credited under the hero via `HERO_COPY.credit`): `crowd.webp` (background, softened), `stage-floor.webp` (the stage floor, transparent at the top) and `russ.webp` (Russ cut out). The name "RUSS" sits between the crowd and Russ, so he stands in front of it. To swap one, add the new file under a new name and update `src/data/hero.js`, since the image CDN caches by URL.
 
 ### Adding a Spotify player to a release
 
