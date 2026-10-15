@@ -1,5 +1,7 @@
 "use client";
+import Image from "next/image";
 import { motion } from "framer-motion";
+import { CoverEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
 import { AMAZON_DISCLOSURE, BOOKS, SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
 
@@ -43,20 +45,7 @@ export default function About() {
             <p className="text-xs uppercase tracking-[0.35em] text-era-muted">His books</p>
             <ul className="mt-5 grid gap-3 sm:grid-cols-2">
               {BOOKS.map((book) => (
-                <li key={book.title}>
-                  <a
-                    href={book.href}
-                    target="_blank"
-                    rel="sponsored noopener noreferrer"
-                    className="group flex h-full flex-col rounded-2xl border border-era-fg/15 p-5 transition-colors hover:border-era-fg/40"
-                  >
-                    <span className="font-display text-2xl uppercase leading-none">{book.title}</span>
-                    <span className="mt-3 flex-1 text-sm leading-relaxed text-era-muted">{book.note}</span>
-                    <span className="mt-4 text-xs uppercase tracking-[0.2em] text-era-accent">
-                      Get it on Amazon <span aria-hidden="true">&#8599;</span>
-                    </span>
-                  </a>
-                </li>
+                <BookCard key={book.title} book={book} />
               ))}
             </ul>
             <p className="mt-3 text-xs text-era-muted">{AMAZON_DISCLOSURE}</p>
@@ -80,5 +69,34 @@ export default function About() {
         </div>
       </div>
     </PaletteSection>
+  );
+}
+
+function BookCard({ book: raw }) {
+  const book = useRelease(raw);
+  const { editing } = useSpotifyLinks();
+  return (
+    <li className="flex flex-col">
+      <a
+        href={book.href}
+        target="_blank"
+        rel="sponsored noopener noreferrer"
+        className="group flex flex-1 gap-4 rounded-2xl border border-era-fg/15 p-4 transition-colors hover:border-era-fg/40"
+      >
+        {book.cover && (
+          <span className="relative aspect-[2/3] w-20 shrink-0 overflow-hidden rounded-md shadow-lg sm:w-24">
+            <Image src={book.cover} alt={`${book.title} cover`} fill sizes="96px" className="object-cover" />
+          </span>
+        )}
+        <span className="flex flex-1 flex-col">
+          <span className="font-display text-2xl uppercase leading-none">{book.title}</span>
+          <span className="mt-3 flex-1 text-sm leading-relaxed text-era-muted">{book.note}</span>
+          <span className="mt-4 text-xs uppercase tracking-[0.2em] text-era-accent">
+            Get it on Amazon <span aria-hidden="true">&#8599;</span>
+          </span>
+        </span>
+      </a>
+      {editing && <CoverEditor release={raw} />}
+    </li>
   );
 }

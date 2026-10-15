@@ -10,6 +10,12 @@ export default function Footer() {
             An unofficial fan site. Not affiliated with, endorsed by or connected to Russ, Diemon or any label. All music plays through
             official Spotify, YouTube and SoundCloud embeds; nothing here is sold or hosted. Book links go to Amazon. {AMAZON_DISCLOSURE}
           </p>
+          <p className="mt-4 text-sm text-era-muted">
+            Fan site built by{" "}
+            <a href={SITE.builder.url} target="_blank" rel="noopener" className="text-era-fg underline-offset-4 hover:underline">
+              {SITE.builder.name}
+            </a>
+          </p>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs uppercase tracking-[0.2em] text-era-muted" aria-label="Footer">
           {NAV.map((item) => (
