@@ -1,8 +1,14 @@
 import { AMAZON_DISCLOSURE, NAV, SITE } from "@/data/site";
+import NewsletterForm from "./NewsletterForm";
 
-export default function Footer() {
+export default function Footer({ newsletter = true }) {
   return (
     <footer className="border-t border-era-fg/10 py-14">
+      {newsletter && (
+        <div className="mx-auto mb-14 max-w-7xl px-4 sm:px-6">
+          <NewsletterForm />
+        </div>
+      )}
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 sm:px-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="font-display text-6xl leading-none sm:text-8xl">RUSS</p>

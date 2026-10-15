@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AddSongWizard from "@/components/AddSongWizard";
+import NewsletterAdmin from "@/components/NewsletterAdmin";
 import { playerColumnsFromLinks, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
 
 const TYPE_LABEL = { single: "Single", album: "Album", ep: "EP", version: "Version" };
@@ -239,6 +240,8 @@ function Dashboard({ email }) {
       </Card>
 
       <AddSongWizard drops={drops ?? []} onSaved={load} />
+
+      <NewsletterAdmin />
 
       <Card title="Added songs">
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
