@@ -16,3 +16,15 @@ export const NAV = [
   { label: "Watch", href: "#watch" },
   { label: "About", href: "#about" },
 ];
+
+// Amazon Associates links (Joseph's tag). Any page showing these needs the
+// AMAZON_DISCLOSURE line next to them.
+const AMAZON_TAG = "joseph0f30b-20";
+const amazon = (asin) => `https://www.amazon.com/dp/${asin}?tag=${AMAZON_TAG}`;
+
+export const AMAZON_DISCLOSURE = "As an Amazon Associate, this site earns from qualifying purchases.";
+
+export const BOOKS = [
+  { title: "It's All In Your Head", note: "His first book, on building self-belief before anyone else has it.", href: amazon("0062962434") },
+  { title: "It Was You All Along", note: "A memoir about therapy, growth and learning to like himself.", href: amazon("0063357887") },
+];
