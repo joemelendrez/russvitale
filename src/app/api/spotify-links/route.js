@@ -60,6 +60,11 @@ export async function GET(request) {
     const which = new URL(request.url).searchParams.get("diag");
     if (which === "original") await timed("original", () => getStore({ name: "spotify-links", fetch: globalThis._nextOriginalFetch }).get(BLOB_KEY, { type: "json" }));
     if (which === "nostore") await timed("noStoreFetch", () => getStore({ name: "spotify-links", fetch: (u, o) => fetch(u, { ...o, cache: "no-store" }) }).get(BLOB_KEY, { type: "json" }));
+    if (which === "authed") await timed("authed", async () => {
+      const c = JSON.parse(Buffer.from(process.env.NETLIFY_BLOBS_CONTEXT, "base64").toString());
+      const res = await fetch(new URL(`/${c.siteID}/site:spotify-links/${BLOB_KEY}`, c.edgeURL), { headers: { authorization: `Bearer ${c.token}` }, cache: "no-store" });
+      return { status: res.status, body: (await res.text()).slice(0, 300), region: c.primaryRegion };
+    });
     if (which === "raw") await timed("raw", async () => (await (globalThis._nextOriginalFetch ?? fetch)(JSON.parse(Buffer.from(process.env.NETLIFY_BLOBS_CONTEXT, "base64").toString()).edgeURL, { method: "HEAD" })).status);
     if (which === "default") await timed("default", () => store().get(BLOB_KEY, { type: "json" }));
     out.ms = Date.now() - started;
