@@ -21,6 +21,8 @@ function spotifyPlayer({ kind, id }) {
     label: "Spotify",
     src: `https://open.spotify.com/embed/${kind}/${id}?utm_source=generator&theme=0`,
     height: kind === "album" ? 152 : 80,
+    // PlayerFrame builds an autoplaying player from this with Spotify's iFrame API.
+    spotify: { kind, id },
   };
 }
 

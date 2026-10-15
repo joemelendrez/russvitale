@@ -255,7 +255,7 @@ function ReleaseRow({ release, open, editing, onToggle }) {
           >
             <div className="pb-5 sm:pl-[4.5rem]">
               {player ? (
-                <PlayerFrame player={player} title={release.title} />
+                <PlayerFrame player={player} title={release.title} autoplay />
               ) : (
                 <a href={listen.href} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl bg-era-fg/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em]">
                   Find it on {listen.label}

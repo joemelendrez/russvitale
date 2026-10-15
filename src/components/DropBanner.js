@@ -101,7 +101,7 @@ export default function DropBanner() {
               &times;
             </button>
           </div>
-          {playing && player && <PlayerFrame player={player} title={drop.title} className="mt-3" />}
+          {playing && player && <PlayerFrame player={player} title={drop.title} className="mt-3" autoplay />}
         </motion.aside>
       )}
     </AnimatePresence>

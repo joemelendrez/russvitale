@@ -21,6 +21,8 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
   const { editing } = useSpotifyLinks();
   const [active, setActive] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Hovering only shows the player; clicking the cover also starts it.
+  const [autoplay, setAutoplay] = useState(false);
   const ref = useRef(null);
   const pointerType = useRef(null);
   const phone = usePhonePlayer();
@@ -90,8 +92,10 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
               return;
             }
             // A mouse already opened it on hover, so a click shouldn't close it.
-            if (pointerType.current === "mouse" || !active) open();
-            else setActive(false);
+            if (pointerType.current === "mouse" || !active) {
+              open();
+              setAutoplay(true);
+            } else setActive(false);
             pointerType.current = null;
           }}
           aria-label={`${lit ? "Stop" : "Play"} ${release.title}`}
@@ -141,7 +145,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           className="absolute inset-x-2 bottom-2 z-20"
         >
           {player ? (
-            mounted && <PlayerFrame player={player} title={release.title} lazy />
+            mounted && <PlayerFrame player={player} title={release.title} lazy autoplay={autoplay} />
           ) : (
             <a
               href={listen.href}
