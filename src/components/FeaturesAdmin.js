@@ -43,7 +43,7 @@ const formFor = (row) => ({
   title: row?.title ?? "",
   artist: row?.artist ?? "",
   released_on: /^\d{4}-\d{2}-\d{2}$/.test(row?.date ?? "") ? row.date : row?.date ? `${row.date}-01-01` : "",
-  link: row?.drop && (row.drop.spotify_id || row.drop.soundcloud_url) ? rowLink(row.drop) : row?.builtin ? `https://open.spotify.com/track/${row.builtin.spotify.id}` : "",
+  link: row?.drop && (row.drop.spotify_id || row.drop.soundcloud_url) ? rowLink(row.drop) : row?.builtin?.spotify ? `https://open.spotify.com/track/${row.builtin.spotify.id}` : "",
   youtube: row?.drop ? rowYoutubeLink(row.drop) : "",
 });
 

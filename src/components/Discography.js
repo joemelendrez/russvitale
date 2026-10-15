@@ -2,12 +2,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { DEFAULT_PALETTE, ERAS, eraForYear } from "@/data/eras";
-import { otherDrops, singlesWithDrops } from "@/data/drops";
+import { DEFAULT_PALETTE, eraForYear } from "@/data/eras";
+import { baseReleases } from "@/data/allReleases";
 import { sameSong } from "@/data/catalog";
-import { VERSION_RELEASES } from "@/data/versions";
-import { FEATURE_RELEASES, featureCredit } from "@/data/features";
-import { CATALOG_SINGLES_BY_YEAR } from "@/data/catalog";
+import { featureCredit } from "@/data/features";
 import { SERVICES, listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { clearNowPlaying, serviceOfPlayer, setNowPlaying, useListenOn } from "@/lib/listenOn";
@@ -55,21 +53,7 @@ const HAS = { spotify: (r) => r.spotify, youtube: (r) => r.youtube, soundcloud: 
 export function useAllReleases() {
   const { links, drops } = useSpotifyLinks();
   return useMemo(() => {
-    const albums = ERAS.flatMap((era) => era.releases.map((r) => ({ ...r, era })));
-    const singles = singlesWithDrops(drops, CATALOG_SINGLES_BY_YEAR).flatMap((g) => g.singles.map((s) => ({ ...s, year: s.year ?? g.year })));
-    // Albums, EPs, versions and features added from admin. One with the same
-    // title as a release already listed (or naming a built-in feature in
-    // `replaces`) replaces it, keeping its players where it has none; a
-    // hidden one takes that built-in feature off the site.
-    const listed = [...albums, ...VERSION_RELEASES, ...FEATURE_RELEASES];
-    for (const added of otherDrops(drops)) {
-      const i = listed.findIndex((r) => r.type === added.type && !r.dropId && sameSong(r.title, added.replaces ?? added.title));
-      if (added.hidden) {
-        if (i !== -1) listed.splice(i, 1);
-      } else if (i === -1) listed.push(added);
-      else listed[i] = { ...listed[i], ...added, era: undefined };
-    }
-    return [...listed, ...singles].map((r) => {
+    return baseReleases(drops).map((r) => {
       const saved = withSavedLinks(r, links[releaseKey(r)]);
       const shownYear = yearOf(saved);
       return { ...saved, shownYear, era: saved.era ?? eraForYear(shownYear) };

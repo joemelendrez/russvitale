@@ -9,18 +9,35 @@ export const SITE = {
   youtubeMusic: "https://music.youtube.com/channel/UCiIETTq2It3OzW8_WYRPTyQ",
 };
 
+// `group` items share one dropdown in the desktop header and a labelled
+// block in the phone menu; the footer lists every link flat.
 export const NAV = [
-  { label: "Albums", href: "#music", tab: "albums" },
-  { label: "Singles", href: "#singles", tab: "singles" },
-  { label: "All music", href: "/music", page: true },
-  // Footer and phone menu only; the desktop header has no room for it.
-  { label: "Features", href: "/music#features", page: true, footerOnly: true },
+  { label: "Albums", href: "#music", tab: "albums", group: "Music" },
+  { label: "Singles", href: "#singles", tab: "singles", group: "Music" },
+  { label: "All music", href: "/music", page: true, group: "Music" },
+  { label: "Features", href: "/music#features", page: true, group: "Music" },
+  { label: "Top 10", href: "/top10", page: true, group: "Music" },
   { label: "Blog", href: "/blog", page: true },
   { label: "Favorites", href: "/favorites", page: true },
   { label: "Shows", href: "#shows" },
   { label: "Watch", href: "#watch" },
   { label: "About", href: "#about" },
 ];
+
+// NAV with each group folded into one { group, items } entry where its first
+// link sits.
+export function navMenu() {
+  const out = [];
+  for (const item of NAV) {
+    if (!item.group) out.push(item);
+    else {
+      const g = out.find((e) => e.group === item.group && e.items);
+      if (g) g.items.push(item);
+      else out.push({ group: item.group, items: [item] });
+    }
+  }
+  return out;
+}
 
 // Amazon Associates links (Joseph's tag). Any page showing these needs the
 // AMAZON_DISCLOSURE line next to them.

@@ -97,7 +97,7 @@ export function SpotifyLinksProvider({ children }) {
       .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
     supabase
       .from("russ_drops")
-      .select("id, title, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, note, released_on, show_banner, created_at, release_type, version_of")
+      .select("id, title, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, note, released_on, show_banner, created_at, release_type, version_of, artist, replaces, hidden")
       .order("released_on", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(500)

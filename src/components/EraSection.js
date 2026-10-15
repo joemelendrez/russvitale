@@ -46,7 +46,12 @@ export default function EraSection({ era, number }) {
                 {era.title}
               </h3>
               <p className="mt-4 text-sm uppercase tracking-[0.25em] text-era-muted">{era.kicker}</p>
-              <p className="mt-6 max-w-md text-base leading-relaxed text-era-fg/85">{era.blurb}</p>
+              {/* Blurbs mark paragraphs with a blank line ("\n\n"). */}
+              <div className="mt-6 max-w-md space-y-4 text-base leading-relaxed text-era-fg/85">
+                {era.blurb.split(/\n\s*\n/).map((para) => (
+                  <p key={para}>{para}</p>
+                ))}
+              </div>
             </motion.div>
           </div>
         </div>

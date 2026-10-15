@@ -17,7 +17,7 @@ export const ERAS = [
     title: "Diemon Days",
     kicker: "The SoundCloud grind",
     blurb:
-      "Russ co-founds Diemon in Atlanta, then self-releases eleven albums and 87 singles in under three years, producing, mixing and engineering nearly all of it himself. After that comes a song a week on SoundCloud for almost three years, until \"What They Want\" and \"Losin Control\" break into the Billboard Hot 100.",
+      "Russ co-founds Diemon in Atlanta, then self-releases eleven albums and 87 singles in under three years, producing, mixing and engineering nearly all of it himself.\n\nAfter that comes a song a week on SoundCloud for almost three years, until \"What They Want\" and \"Losin Control\" break into the Billboard Hot 100.",
     palette: { bg: "#0b0c22", fg: "#eef0ff", muted: "#9c9fd0", accent: "#a7abff" },
     releases: [
       { title: "Velvet", year: 2011, date: "2011-12-09", type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
@@ -39,7 +39,7 @@ export const ERAS = [
     title: "There's Really a Wolf",
     kicker: "The debut",
     blurb:
-      "A partnership with Columbia, but the same rules: Russ writes, produces and engineers. His official debut lands at No. 7 on the Billboard 200 and the Wake Up Tour takes the songs on the road.",
+      "A partnership with Columbia, but the same rules: Russ writes, produces and engineers.\n\nHis official debut lands at No. 7 on the Billboard 200 and the Wake Up Tour takes the songs on the road.",
     palette: { bg: "#f3f2ec", fg: "#16160f", muted: "#6c6b63", accent: "#16160f" },
     releases: [
       { title: "There's Really a Wolf", year: 2017, date: "2017-05-05", type: "album", spotify: { kind: "album", id: "0lUL92det7mZ4DaHYmiUEC" } },
@@ -64,7 +64,7 @@ export const ERAS = [
     title: "Shake the Snow Globe",
     kicker: "The last Columbia record",
     blurb:
-      "Another No. 4 debut. \"Best on Earth\" with Bia becomes one of his biggest records, and by June 2020 his deal is done.",
+      "Another No. 4 debut.\n\n\"Best on Earth\" with Bia becomes one of his biggest records, and by June 2020 his deal is done.",
     palette: { bg: "#030404", fg: "#e9f3f2", muted: "#8d9a99", accent: "#93dcd8" },
     releases: [
       { title: "Shake the Snow Globe", year: 2020, date: "2020-01-31", type: "album", spotify: { kind: "album", id: "2ZzatxW5gv1XZ0uai8TKxk" } },
@@ -76,7 +76,7 @@ export const ERAS = [
     title: "Chomp",
     kicker: "Fully independent",
     blurb:
-      "On June 30, 2020 Russ announces he is independent. The Chomp series has him trading verses with heavyweight lyricists, and \"Are You Entertained\" with Ed Sheeran goes global without a major label behind it.",
+      "On June 30, 2020 Russ announces he is independent.\n\nThe Chomp series has him trading verses with heavyweight lyricists, and \"Are You Entertained\" with Ed Sheeran goes global without a major label behind it.",
     palette: { bg: "#1e0606", fg: "#fff0e8", muted: "#c69a92", accent: "#ffd21f" },
     releases: [
       { title: "Chomp", year: 2020, date: "2020-11-17", type: "ep", spotify: { kind: "album", id: "6hTlfMRAEJBMyETemdH5Qq" } },
@@ -90,7 +90,7 @@ export const ERAS = [
     title: "Santiago",
     kicker: "Warmer, looser",
     blurb:
-      "Santiago debuts at No. 12 on the Billboard 200. Then a film debut in M. Night Shyamalan's Trap, and a run of collaborations with 6lack and DJ Premier.",
+      "Santiago debuts at No. 12 on the Billboard 200.\n\nThen a film debut in M. Night Shyamalan's Trap, and a run of collaborations with 6lack and DJ Premier.",
     palette: { bg: "#0f1c3f", fg: "#e9f5f8", muted: "#93b3c6", accent: "#62b6d0" },
     releases: [
       { title: "Santiago", year: 2023, date: "2023-08-18", type: "album", spotify: { kind: "album", id: "3mX0HbDt7oIzBBJHgQYnDY" } },
@@ -102,7 +102,7 @@ export const ERAS = [
     title: "W!LD",
     kicker: "The newest chapter",
     blurb:
-      "W!LD arrives in June 2025, followed by the deluxe, The Elephant & The Rider. The same year Billboard names him an Indie Trailblazer, fourteen years after the first Diemon upload.",
+      "W!LD arrives in June 2025, followed by the deluxe, The Elephant & The Rider.\n\nThe same year Billboard names him an Indie Trailblazer, fourteen years after the first Diemon upload.",
     palette: { bg: "#e5e2dc", fg: "#121417", muted: "#5f6168", accent: "#0a4fc8" },
     releases: [
       { title: "W!LD", year: 2025, date: "2025-06-27", type: "album", spotify: { kind: "album", id: "1gFQ6dGFvpDsHmnr4bPbTV" } },
