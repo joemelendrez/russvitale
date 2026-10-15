@@ -5,12 +5,14 @@ import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from
 import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
+import { useListenOn } from "@/lib/listenOn";
+import PlayerFrame from "./PlayerFrame";
 import { PHONE_QUERY, usePhonePlayer } from "./PhonePlayer";
 
 const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single" };
 
-// Album or single. On desktop, hover flips the cover into a Spotify (or
-// SoundCloud) player;
+// Album or single. On desktop, hover flips the cover into a player on the
+// listener's service (Spotify, YouTube Music or SoundCloud);
 // the iframe only loads the first time someone asks for it, so the page stays
 // light with a dozen of these on screen. On phones and tablets a tap plays it
 // in the full-width bar at the bottom of the screen (PhonePlayer.js).
@@ -53,8 +55,9 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
     ry.set(0);
   };
 
-  const player = playerFor(release);
-  const listen = listenLink(release);
+  const service = useListenOn();
+  const player = playerFor(release, service);
+  const listen = listenLink(release, service);
 
   return (
     <motion.article
@@ -136,17 +139,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           className="absolute inset-x-2 bottom-2 z-20"
         >
           {player ? (
-            mounted && (
-              <iframe
-                key={player.key}
-                title={`${release.title} on ${listen.label}`}
-                src={player.src}
-                height={player.height}
-                className="w-full rounded-xl border-0 bg-black/60"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-              />
-            )
+            mounted && <PlayerFrame player={player} title={release.title} lazy />
           ) : (
             <a
               href={listen.href}
@@ -154,7 +147,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
               rel="noreferrer"
               className="flex items-center justify-between gap-2 rounded-xl bg-black/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white backdrop-blur"
             >
-              Find it on Spotify
+              Find it on {listen.label}
               <span aria-hidden="true">&#8599;</span>
             </a>
           )}
@@ -178,7 +171,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           {listen.label} &#8599;
         </a>
       </div>
-      {editing && <SpotifyLinkEditor key={player?.key ?? "none"} release={release} />}
+      {editing && <SpotifyLinkEditor key={`${service}-${player?.key ?? "none"}`} release={release} />}
     </motion.article>
   );
 }

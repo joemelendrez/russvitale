@@ -7,7 +7,7 @@ const album = (id) => ({ spotify: { kind: "album", id } });
 // For a song Spotify doesn't carry: its soundcloud.com link.
 const soundcloud = (url) => ({ soundcloud: url });
 
-export const SINGLES_BY_YEAR = [
+const BY_YEAR = [
   {
     year: 2016,
     note: "The weekly SoundCloud uploads start charting.",
@@ -49,3 +49,37 @@ export const SINGLES_BY_YEAR = [
   },
   { year: 2026, note: "The newest drops.", singles: [s("Hell", track("5VdF8ZUOWoAhmJNb7urwoq")), s("Coulda Shoulda Woulda", track("7ASgdH8lMilajhrWkeCgNx")), s("Come Back to Me")] },
 ];
+
+// YouTube videos (official videos, or the official audio where that was the
+// clear upload) for listeners who play on YouTube Music.
+const YOUTUBE = {
+  "What They Want": "oorK4RPgZ8Q",
+  "Losin Control": "IdGIZjVWrzY",
+  Inbetween: "RA4yjwjyEUo",
+  "Yung God": "uVnzigPQDNk",
+  "Me You": "FMW6ezkJN9Y",
+  "Wife You Up": "asYQiRvE1Xk",
+  "Ride Slow": "y78n5kVYqPo",
+  Flip: "tNvmHLtqgtg",
+  "Some Time": "QOZke5DwV_s",
+  "Basement (feat. Jessie Reyez)": "45GaTIIdL7A",
+  "The Flute Song": "baFlWFS-R3A",
+  "Missin You Crazy": "p1gL8yyUvRY",
+  "Civil War": "kQtAa0u2Sk4",
+  "Best on Earth (feat. Bia)": "uTM0IPt2PTs",
+  "Ain't Goin Back": "9R3mfb9tWWE",
+  "Give Up": "kPsg-c1VM0A",
+  "Take You Back (with Kehlani)": "rmG2TX5fI2g",
+  "Ugly (feat. Lil Baby)": "B6O0e3zXTmE",
+  "3:15 (Breathe)": "um7iZb_wIHc",
+  "Seduce (feat. Capella Grey)": "M-fLM6DoM68",
+  "Handsomer (feat. Ktlyn)": "ovEJc47qJ5Y",
+  "Are You Entertained (with Ed Sheeran)": "ZdBuij_p0No",
+  "Workin on Me (with 6lack)": "7RYYn7MCTZw",
+  "Work This Out (with DJ Premier)": "AlX5W5SM9Gg",
+};
+
+export const SINGLES_BY_YEAR = BY_YEAR.map((group) => ({
+  ...group,
+  singles: group.singles.map((single) => (YOUTUBE[single.title] ? { ...single, youtube: { kind: "video", id: YOUTUBE[single.title] } } : single)),
+}));

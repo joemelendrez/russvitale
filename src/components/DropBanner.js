@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { bannerDrop, dropToRelease } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
+import { useListenOn } from "@/lib/listenOn";
+import PlayerFrame from "./PlayerFrame";
 
 const DISMISSED_KEY = "russ-drop-dismissed";
 
@@ -21,7 +23,7 @@ function formatDay(day) {
 }
 
 // "New drop" notification: slides down under the menu a moment after the page
-// opens, once per drop per device. Play opens the Spotify or SoundCloud player right in it.
+// opens, once per drop per device. Play opens the player for the listener's service right in it.
 export default function DropBanner() {
   const { drops } = useSpotifyLinks();
   const drop = bannerDrop(drops);
@@ -44,8 +46,9 @@ export default function DropBanner() {
   };
 
   const release = drop && dropToRelease(drop);
-  const player = release && playerFor(release);
-  const listen = release && listenLink(release);
+  const service = useListenOn();
+  const player = release && playerFor(release, service);
+  const listen = release && listenLink(release, service);
   const visible = drop && shown === drop.id && !onAdmin;
 
   return (
@@ -98,15 +101,7 @@ export default function DropBanner() {
               &times;
             </button>
           </div>
-          {playing && player && (
-            <iframe
-              title={`${drop.title} on ${listen.label}`}
-              src={player.src}
-              height={player.height}
-              className="mt-3 block w-full rounded-xl border-0 bg-black/60"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            />
-          )}
+          {playing && player && <PlayerFrame player={player} title={drop.title} className="mt-3" />}
         </motion.aside>
       )}
     </AnimatePresence>

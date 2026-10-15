@@ -1,4 +1,5 @@
 import { SINGLES_BY_YEAR } from "./singles";
+import { releaseFieldsFromRow } from "./players";
 
 // A row from the `russ_drops` table as a release card.
 export function dropToRelease(drop) {
@@ -7,8 +8,7 @@ export function dropToRelease(drop) {
     type: "single",
     year: Number(drop.released_on.slice(0, 4)),
     dropId: drop.id,
-    ...(drop.spotify_id ? { spotify: { kind: drop.kind, id: drop.spotify_id } } : {}),
-    ...(drop.soundcloud_url ? { soundcloud: drop.soundcloud_url } : {}),
+    ...releaseFieldsFromRow(drop),
   };
 }
 
@@ -17,7 +17,7 @@ const sameTitle = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 // The Singles timeline with drops added at the end of their year, oldest
 // first like the rest of the list. A drop with the same title as a single in
 // src/data/singles.js replaces it, so a drop can also correct a release's date
-// (and keeps its player if the drop has no link).
+// (and keeps its players for any service the drop has no link for).
 export function singlesWithDrops(drops) {
   if (!drops?.length) return SINGLES_BY_YEAR;
   const groups = SINGLES_BY_YEAR.map((g) => ({ ...g, singles: [...g.singles] }));
@@ -27,10 +27,11 @@ export function singlesWithDrops(drops) {
       const i = g.singles.findIndex((s) => !s.dropId && sameTitle(s.title, release.title));
       if (i === -1) continue;
       const [existing] = g.singles.splice(i, 1);
-      // A drop with no link of its own keeps the single's player.
+      // A drop keeps the single's links for any service it has none for.
       if (!release.spotify && !release.soundcloud) {
         release = { ...release, ...(existing.spotify ? { spotify: existing.spotify } : {}), ...(existing.soundcloud ? { soundcloud: existing.soundcloud } : {}) };
       }
+      if (!release.youtube && existing.youtube) release = { ...release, youtube: existing.youtube };
     }
     let group = groups.find((g) => g.year === release.year);
     if (!group) {

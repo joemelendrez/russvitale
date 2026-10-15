@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ALL_RELEASES, releaseKey } from "@/data/releaseKey";
-import { parsePlayerLink } from "@/data/players";
+import { expandSoundcloud, parsePlayerLink, playerFor, releaseFieldsFromRow, searchLinks } from "@/data/players";
+import { useListenOn } from "@/lib/listenOn";
 import { supabase } from "@/lib/supabase";
 import { TAB_EVENT } from "./Timeline";
 import DropBanner from "./DropBanner";
@@ -24,15 +25,22 @@ function storage(action) {
   return false;
 }
 
-// A saved row as the release fields it sets: { spotify } or { soundcloud }.
-function linkFromRow(row) {
-  if (row.spotify_id) return { spotify: { kind: row.kind, id: row.spotify_id } };
-  if (row.soundcloud_url) return { soundcloud: row.soundcloud_url };
-  return null;
+// Saved rows by release key, as stored (Spotify or SoundCloud, plus YouTube).
+function linksFromRows(rows) {
+  return Object.fromEntries((rows ?? []).map((r) => [r.release_key, r]));
 }
 
-function linksFromRows(rows) {
-  return Object.fromEntries((rows ?? []).map((r) => [r.release_key, linkFromRow(r)]).filter(([, link]) => link));
+// A release with its saved row applied: a saved Spotify or SoundCloud link
+// replaces whichever of those the release had, a saved YouTube link its YouTube.
+export function withSavedLinks(release, row) {
+  if (!row) return release;
+  const saved = releaseFieldsFromRow(row);
+  const next = { ...release, savedLink: true };
+  if (row.spotify_id || row.soundcloud_url) {
+    delete next.spotify;
+    delete next.soundcloud;
+  }
+  return { ...next, ...saved };
 }
 
 export function SpotifyLinksProvider({ children }) {
@@ -50,11 +58,11 @@ export function SpotifyLinksProvider({ children }) {
     let cancelled = false;
     supabase
       .from("russ_release_links")
-      .select("release_key, kind, spotify_id, soundcloud_url")
+      .select("release_key, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id")
       .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
     supabase
       .from("russ_drops")
-      .select("id, title, kind, spotify_id, soundcloud_url, note, released_on, show_banner, created_at")
+      .select("id, title, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, note, released_on, show_banner, created_at")
       .order("released_on", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(50)
@@ -104,11 +112,14 @@ export function SpotifyLinksProvider({ children }) {
       });
       return;
     }
-    const parsed = parsePlayerLink(link);
-    if (!parsed) throw new Error("That doesn't look like a Spotify or SoundCloud link.");
+    const found = parsePlayerLink(link);
+    if (!found) throw new Error("That doesn't look like a Spotify, YouTube Music or SoundCloud link.");
+    const parsed = await expandSoundcloud(found);
+    // Upsert only touches the pasted service's columns, so a YouTube link
+    // keeps the release's saved Spotify link and the other way round.
     const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, ...parsed, updated_at: new Date().toISOString() });
     if (error) throw new Error("Couldn't save that link. Are you still signed in?");
-    setLinks((prev) => ({ ...prev, [key]: linkFromRow(parsed) }));
+    setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, ...parsed } }));
   }, []);
 
   const exitEdit = useCallback(() => {
@@ -138,18 +149,15 @@ export function useSpotifyLinks() {
   return useContext(SpotifyLinksContext);
 }
 
-// The release with any saved link applied. A saved link replaces whatever
-// player the release had, Spotify or SoundCloud.
+// The release with any saved links applied (see withSavedLinks).
 export function useRelease(release) {
   const { links } = useSpotifyLinks();
-  const saved = links[releaseKey(release)];
-  if (!saved) return release;
-  const { spotify: _spotify, soundcloud: _soundcloud, ...rest } = release;
-  return { ...rest, ...saved, savedLink: true };
+  return withSavedLinks(release, links[releaseKey(release)]);
 }
 
 function EditBar() {
   const { links, editing, editError, exitEdit, dismissError } = useSpotifyLinks();
+  const service = useListenOn();
   if (editError) {
     return (
       <div className="fixed inset-x-3 bottom-3 z-[80] mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl bg-red-600 px-4 py-3 text-sm text-white shadow-2xl">
@@ -167,7 +175,9 @@ function EditBar() {
   }
   if (!editing) return null;
 
-  const missing = ALL_RELEASES.filter((r) => !r.spotify && !r.soundcloud && !links[releaseKey(r)]);
+  // Counted for the service picked above the timeline, so switching to
+  // YouTube Music shows what's left to fill in there.
+  const missing = ALL_RELEASES.filter((r) => !playerFor(withSavedLinks(r, links[releaseKey(r)]), service));
   // The other tab's cards aren't on the page, so switch tabs when this one is done.
   const jumpToNext = () => {
     const el = document.querySelector("[data-missing-spotify]");
@@ -198,18 +208,18 @@ function EditBar() {
   );
 }
 
-// Shown under a card in edit mode: find it on Spotify (or SoundCloud when
-// Spotify doesn't have it), paste the share link, save.
+// Shown under a card in edit mode: find it on Spotify, YouTube Music or
+// SoundCloud, paste the share link, save. Opens by itself when the release has
+// no player on the service picked above the timeline.
 export function SpotifyLinkEditor({ release }) {
   const { save } = useSpotifyLinks();
-  const hasPlayer = Boolean(release.spotify || release.soundcloud);
+  const service = useListenOn();
+  const hasPlayer = Boolean(playerFor(release, service));
   const [open, setOpen] = useState(!hasPlayer);
   const [value, setValue] = useState("");
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
-  const query = encodeURIComponent(`Russ ${release.title}`);
-  const search = `https://open.spotify.com/search/${query}`;
-  const soundcloudSearch = `https://soundcloud.com/search/sounds?q=${query}`;
+  const search = searchLinks(release);
 
   const run = async (remove) => {
     setStatus("saving");
@@ -246,12 +256,16 @@ export function SpotifyLinkEditor({ release }) {
     >
       <p className="font-semibold uppercase tracking-[0.15em] text-white/80">
         1. Find it on{" "}
-        <a href={search} target="_blank" rel="noreferrer" className="underline hover:text-white">
-          Spotify &#8599;
+        <a href={search.spotify} target="_blank" rel="noreferrer" className="underline hover:text-white">
+          Spotify
+        </a>
+        ,{" "}
+        <a href={search.youtube} target="_blank" rel="noreferrer" className="underline hover:text-white">
+          YouTube Music
         </a>{" "}
         or{" "}
-        <a href={soundcloudSearch} target="_blank" rel="noreferrer" className="underline hover:text-white">
-          SoundCloud &#8599;
+        <a href={search.soundcloud} target="_blank" rel="noreferrer" className="underline hover:text-white">
+          SoundCloud
         </a>
       </p>
       <label className="block text-white/60" htmlFor={`link-${releaseKey(release)}`}>
@@ -261,7 +275,7 @@ export function SpotifyLinkEditor({ release }) {
         id={`link-${releaseKey(release)}`}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Spotify or SoundCloud link"
+        placeholder="Spotify, YouTube Music or SoundCloud link"
         inputMode="url"
         className="w-full rounded-lg border border-white/20 bg-black/60 px-3 py-2 text-sm text-white placeholder:text-white/30"
       />
@@ -272,7 +286,7 @@ export function SpotifyLinkEditor({ release }) {
         </button>
         {release.savedLink && (
           <button type="button" onClick={() => run(true)} className="rounded-full border border-white/25 px-3 py-1.5">
-            Remove saved link
+            Remove saved links
           </button>
         )}
         {hasPlayer && (

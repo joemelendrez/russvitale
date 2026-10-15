@@ -28,6 +28,10 @@ Everything lives in `src/data/`, no component changes needed.
 
 The hero is three layers in `public/hero/`, cut from a photo on Russ's Instagram (https://www.instagram.com/p/DM9VEwbOvmU/, credited under the hero via `HERO_COPY.credit`): `crowd.webp` (background, softened), `stage-floor.webp` (the stage floor, transparent at the top) and `russ.webp` (Russ cut out). The name "RUSS" sits between the crowd and Russ, so he stands in front of it. To swap one, add the new file under a new name and update `src/data/hero.js`, since the image CDN caches by URL.
 
+### Play on: Spotify, YouTube Music or SoundCloud
+
+A switch above the timeline lets each listener pick where music plays (remembered per device). Releases can carry `spotify`, `youtube: { kind: "video" | "playlist", id }` and `soundcloud` links; `src/data/players.js` picks the embed for the listener's choice and falls back (Spotify → SoundCloud → YouTube, YouTube Music → SoundCloud, SoundCloud → Spotify), or links to a search on their service. Singles' YouTube videos are listed in `singles.js`. SoundCloud short links (on.soundcloud.com) are expanded to full links by `/api/soundcloud-link` when saved, since SoundCloud's player only takes full links.
+
 ### Adding a Spotify player to a release
 
 Copy the share link from Spotify (`https://open.spotify.com/album/<id>` or `/track/<id>`) and add `spotify: { kind: "album", id: "<id>" }` to the release in `eras.js`. For a song Spotify doesn't carry, add `soundcloud: "https://soundcloud.com/<user>/<track>"` instead and it plays in SoundCloud's own embed player. Releases with neither link to a Spotify search. Real cover art can go in `public/covers/` with `cover: "/covers/zoo.jpg"`.
@@ -36,7 +40,7 @@ You can also fix players from the live site. Sign in at `/admin` with an emailed
 
 ### New drops
 
-`/admin` also has "Add a new drop": a title, a Spotify or SoundCloud link, the release date and a short note. Drops (`russ_drops`) join the Singles timeline under their year, and the newest one with "Pop-up" on slides down under the menu as a "New drop" notice, once per visitor (dismissing it is remembered per drop).
+`/admin` also has "Add a new drop": a title, a Spotify or SoundCloud link, an optional YouTube Music link, the release date and a short note. Drops (`russ_drops`) join the Singles timeline under their year, and the newest one with "Pop-up" on slides down under the menu as a "New drop" notice, once per visitor (dismissing it is remembered per drop).
 
 ### Database
 
