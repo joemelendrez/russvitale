@@ -6,7 +6,7 @@ import { expandSoundcloud, parsePlayerLink, parseYoutubeLink, releaseYoutubeLink
 
 const today = () => new Date().toLocaleDateString("en-CA");
 
-// Sign in with an emailed link, then fix song links and post new drops.
+// Sign in with email and password, then fix song links and post new drops.
 // The page itself trusts nothing: RLS in supabase/migrations decides who saves.
 export default function AdminPage() {
   const [session, setSession] = useState(undefined);
@@ -71,13 +71,27 @@ function Card({ children, title }) {
 const input = "w-full rounded-lg [color-scheme:dark] border border-white/15 bg-black/50 px-3 py-2.5 text-base text-white placeholder:text-white/30";
 const primary = "rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-40";
 
+// Email and password, the same account as Handoff Hero (same Supabase
+// project). The emailed link stays as a fallback for a forgotten password.
 function SignIn() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
 
-  const send = async (e) => {
+  const signIn = async (e) => {
     e.preventDefault();
+    setStatus("signing-in");
+    setError(null);
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) {
+      setError(error.message === "Invalid login credentials" ? "That email and password don't match." : error.message);
+      setStatus(null);
+    }
+  };
+
+  const sendLink = async () => {
+    if (!email.trim()) return setError("Enter your email first.");
     setStatus("sending");
     setError(null);
     const { error } = await supabase.auth.signInWithOtp({
@@ -93,17 +107,36 @@ function SignIn() {
   if (status === "sent") {
     return <Card>Check {email} for a sign-in link. Open it in this same browser.</Card>;
   }
+  const busy = status === "signing-in" || status === "sending";
   return (
     <Card title="Sign in">
-      <form onSubmit={send} className="space-y-3">
+      <form onSubmit={signIn} className="space-y-3">
         <label htmlFor="email" className="block text-sm text-white/70">
           Email
         </label>
         <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={input} />
+        <label htmlFor="password" className="block text-sm text-white/70">
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          required
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={input}
+        />
+        <p className="text-xs text-white/40">Same password as your Handoff Hero account.</p>
         {error && <p className="text-sm text-red-400">{error}</p>}
-        <button type="submit" disabled={status === "sending"} className={primary}>
-          {status === "sending" ? "Sending..." : "Email me a sign-in link"}
-        </button>
+        <div className="flex flex-wrap items-center gap-4 pt-1">
+          <button type="submit" disabled={busy} className={primary}>
+            {status === "signing-in" ? "Signing in..." : "Sign in"}
+          </button>
+          <button type="button" onClick={sendLink} disabled={busy} className="text-sm text-white/60 underline hover:text-white disabled:opacity-40">
+            {status === "sending" ? "Sending..." : "Forgot it? Email me a link"}
+          </button>
+        </div>
       </form>
     </Card>
   );
