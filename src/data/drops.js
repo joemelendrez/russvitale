@@ -7,6 +7,9 @@ export function dropToRelease(drop) {
     title: drop.title,
     type: drop.release_type ?? "single",
     ...(drop.version_of ? { versionOf: drop.version_of } : {}),
+    ...(drop.artist ? { artist: drop.artist } : {}),
+    ...(drop.replaces ? { replaces: drop.replaces } : {}),
+    ...(drop.hidden ? { hidden: true } : {}),
     year: Number(drop.released_on.slice(0, 4)),
     dropId: drop.id,
     ...releaseFieldsFromRow(drop),
@@ -52,7 +55,7 @@ export function bannerDrop(drops) {
   return drops?.find((d) => d.show_banner) ?? null;
 }
 
-// Albums, EPs and versions added from admin, as releases for /music.
+// Albums, EPs, versions and features added from admin, as releases for /music.
 export function otherDrops(drops) {
   return (drops ?? []).filter((d) => (d.release_type ?? "single") !== "single").map(dropToRelease);
 }
