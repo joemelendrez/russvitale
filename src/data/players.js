@@ -146,6 +146,7 @@ export function releaseFieldsFromRow(row) {
     ...(row.soundcloud_url ? { soundcloud: row.soundcloud_url } : {}),
     ...(row.youtube_id ? { youtube: { kind: row.youtube_kind, id: row.youtube_id } } : {}),
     ...(row.cover_url ? { cover: row.cover_url } : {}),
+    ...(row.released_on ? { date: row.released_on } : {}),
   };
 }
 

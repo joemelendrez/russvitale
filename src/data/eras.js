@@ -7,6 +7,7 @@
 //            (open.spotify.com/album/<id>).
 //   soundcloud  a soundcloud.com link, for releases Spotify doesn't carry.
 //            With neither, the card links to a Spotify search instead.
+//   date     release day, "YYYY-MM-DD" (an admin can set or fix it from edit mode)
 //   cover    optional path to artwork in /public/covers. Without one the card
 //            draws its own art in the era's colors.
 export const ERAS = [
@@ -19,10 +20,17 @@ export const ERAS = [
       "Russ co-founds Diemon in Atlanta, then self-releases eleven albums and 87 singles in under three years, producing, mixing and engineering nearly all of it himself. After that comes a song a week on SoundCloud for almost three years, until \"What They Want\" and \"Losin Control\" break into the Billboard Hot 100.",
     palette: { bg: "#120a1f", fg: "#f3e9ff", muted: "#a996c4", accent: "#b98cff" },
     releases: [
-      { title: "Velvet", year: 2011, type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
-      { title: "Apollo 13", year: 2012, type: "album" },
-      { title: "Pink Elephant", year: 2014, type: "album", spotify: { kind: "album", id: "0NI2guYRXuRQvjAiSrhfh5" } },
-      { title: "How to Rob", year: 2014, type: "album" },
+      { title: "Velvet", year: 2011, date: "2011-12-09", type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
+      { title: "Apollo 13", year: 2012, date: "2012-01-24", type: "album" },
+      { title: "5280", year: 2012, date: "2012-07-23", type: "album" },
+      { title: "Vacation", year: 2012, date: "2012-09-24", type: "album" },
+      { title: "Straight From Limbo", year: 2013, date: "2013-01-01", type: "album" },
+      { title: "The Edge", year: 2013, date: "2013-06-12", type: "album" },
+      { title: "Color Blind", year: 2013, date: "2013-09-02", type: "album" },
+      { title: "Pink Elephant", year: 2014, date: "2014-01-23", type: "album", spotify: { kind: "album", id: "0NI2guYRXuRQvjAiSrhfh5" } },
+      { title: "Brain Dead", year: 2014, date: "2014-03-24", type: "album" },
+      { title: "Silence", year: 2014, date: "2014-06-11", type: "album" },
+      { title: "How to Rob", year: 2014, date: "2014-08-18", type: "album" },
     ],
   },
   {
@@ -34,7 +42,7 @@ export const ERAS = [
       "A partnership with Columbia, but the same rules: Russ writes, produces and engineers. His official debut lands at No. 7 on the Billboard 200 and the Wake Up Tour takes the songs on the road.",
     palette: { bg: "#0b1218", fg: "#e6eef5", muted: "#8ea3b4", accent: "#8fd0ff" },
     releases: [
-      { title: "There's Really a Wolf", year: 2017, type: "album", spotify: { kind: "album", id: "0lUL92det7mZ4DaHYmiUEC" } },
+      { title: "There's Really a Wolf", year: 2017, date: "2017-05-05", type: "album", spotify: { kind: "album", id: "0lUL92det7mZ4DaHYmiUEC" } },
     ],
   },
   {
@@ -46,8 +54,8 @@ export const ERAS = [
       "The second album climbs to No. 4 on the Billboard 200, with Jessie Reyez on \"Basement\" and the late-year Just in Case EP closing things out.",
     palette: { bg: "#0d1a10", fg: "#f1f5e6", muted: "#a0ad8f", accent: "#f0b429" },
     releases: [
-      { title: "Zoo", year: 2018, type: "album" },
-      { title: "Just in Case", year: 2018, type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" } },
+      { title: "Zoo", year: 2018, date: "2018-09-07", type: "album" },
+      { title: "Just in Case", year: 2018, date: "2018-12-23", type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" } },
     ],
   },
   {
@@ -59,7 +67,7 @@ export const ERAS = [
       "Another No. 4 debut. \"Best on Earth\" with Bia becomes one of his biggest records, and by June 2020 his deal is done.",
     palette: { bg: "#e8eef4", fg: "#0f1720", muted: "#56677a", accent: "#2563eb" },
     releases: [
-      { title: "Shake the Snow Globe", year: 2020, type: "album", spotify: { kind: "album", id: "2ZzatxW5gv1XZ0uai8TKxk" } },
+      { title: "Shake the Snow Globe", year: 2020, date: "2020-01-31", type: "album", spotify: { kind: "album", id: "2ZzatxW5gv1XZ0uai8TKxk" } },
     ],
   },
   {
@@ -71,9 +79,9 @@ export const ERAS = [
       "On June 30, 2020 Russ announces he is independent. The Chomp series has him trading verses with heavyweight lyricists, and \"Are You Entertained\" with Ed Sheeran goes global without a major label behind it.",
     palette: { bg: "#170707", fg: "#fff1ec", muted: "#c79a90", accent: "#ff3b2f" },
     releases: [
-      { title: "Chomp", year: 2020, type: "ep", spotify: { kind: "album", id: "6hTlfMRAEJBMyETemdH5Qq" } },
-      { title: "Chomp 2", year: 2021, type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" } },
-      { title: "If Not Now, When?", year: 2022, type: "ep", spotify: { kind: "album", id: "5K4Ygp0yLgeaYSKFizi15P" } },
+      { title: "Chomp", year: 2020, date: "2020-11-17", type: "ep", spotify: { kind: "album", id: "6hTlfMRAEJBMyETemdH5Qq" } },
+      { title: "Chomp 2", year: 2021, date: "2021-12-08", type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" } },
+      { title: "If Not Now, When?", year: 2022, date: "2022-04-26", type: "ep", spotify: { kind: "album", id: "5K4Ygp0yLgeaYSKFizi15P" } },
     ],
   },
   {
@@ -85,7 +93,7 @@ export const ERAS = [
       "Santiago debuts at No. 12 on the Billboard 200. Then a film debut in M. Night Shyamalan's Trap, and a run of collaborations with 6lack and DJ Premier.",
     palette: { bg: "#1d1008", fg: "#fff3e3", muted: "#c9a587", accent: "#ff8a3d" },
     releases: [
-      { title: "Santiago", year: 2023, type: "album", spotify: { kind: "album", id: "3mX0HbDt7oIzBBJHgQYnDY" } },
+      { title: "Santiago", year: 2023, date: "2023-08-18", type: "album", spotify: { kind: "album", id: "3mX0HbDt7oIzBBJHgQYnDY" } },
     ],
   },
   {
@@ -97,7 +105,7 @@ export const ERAS = [
       "W!LD arrives in June 2025, followed by the deluxe, The Elephant & The Rider. The same year Billboard names him an Indie Trailblazer, fourteen years after the first Diemon upload.",
     palette: { bg: "#060606", fg: "#f4ffe6", muted: "#9aa88a", accent: "#c6ff2e" },
     releases: [
-      { title: "W!LD", year: 2025, type: "album", spotify: { kind: "album", id: "1gFQ6dGFvpDsHmnr4bPbTV" } },
+      { title: "W!LD", year: 2025, date: "2025-06-27", type: "album", spotify: { kind: "album", id: "1gFQ6dGFvpDsHmnr4bPbTV" } },
       { title: "W!LD Deluxe: The Elephant & The Rider", year: 2025, type: "album", spotify: { kind: "album", id: "4yfXdMJl2ckTYvEXes0aaQ" } },
     ],
   },

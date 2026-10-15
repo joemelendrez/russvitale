@@ -40,7 +40,7 @@ You can also fix players from the live site. Sign in at `/admin` with an emailed
 
 ### All music page
 
-`/music` (`src/components/Discography.js`) lists every album, EP, single and drop in one list with search, type filters and newest/oldest sorting. Each row opens the same player as the timeline, with links to every service the release is on.
+`/music` (`src/components/Discography.js`) lists every album, EP, single and drop in one list with search, type filters and newest/oldest sorting. It covers the full catalog: the timeline's singles plus the rest from Wikipedia's Russ discography in `src/data/catalog.js` (the home page timeline keeps the hand-picked ones). Albums carry a `date`; singles only have a year until an admin sets the day from edit mode ("Released", saved as `released_on` on `russ_release_links`, migration 0005). On `/music` the edit bar counts releases without a player or a date, "Next missing" opens the next one, and a "No date yet" filter lists them. Each row opens the same player as the timeline, with links to every service the release is on.
 
 ### New drops
 

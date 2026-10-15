@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { ALL_RELEASES, releaseKey } from "@/data/releaseKey";
+import { usePathname } from "next/navigation";
+import { ALL_RELEASES, CATALOG_RELEASES, releaseKey } from "@/data/releaseKey";
 import { expandSoundcloud, parsePlayerLink, playerFor, releaseFieldsFromRow, searchLinks } from "@/data/players";
 import { useListenOn } from "@/lib/listenOn";
 import { supabase } from "@/lib/supabase";
@@ -27,7 +28,7 @@ function storage(action) {
 
 const COVER_BUCKET = "russ-covers";
 const LINK_COLUMNS = ["kind", "spotify_id", "soundcloud_url", "youtube_kind", "youtube_id"];
-const ROW_COLUMNS = [...LINK_COLUMNS, "cover_url"];
+const ROW_COLUMNS = [...LINK_COLUMNS, "cover_url", "released_on"];
 
 // "…/object/public/russ-covers/<path>" → "<path>", for deleting an old upload.
 function coverPath(url) {
@@ -92,7 +93,7 @@ export function SpotifyLinksProvider({ children }) {
     let cancelled = false;
     supabase
       .from("russ_release_links")
-      .select("release_key, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, cover_url")
+      .select("release_key, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, cover_url, released_on")
       .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
     supabase
       .from("russ_drops")
@@ -188,6 +189,19 @@ export function SpotifyLinksProvider({ children }) {
     if (old) bucket.remove([old]);
   }, []);
 
+  // Sets the day a release came out ("YYYY-MM-DD"), or clears it with "".
+  const saveDate = useCallback(
+    async (release, date) => {
+      const key = releaseKey(release);
+      if (!date) return clearRow(key, ["released_on"], "Couldn't clear that date. Are you still signed in?");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Pick a full date.");
+      const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, released_on: date, updated_at: new Date().toISOString() });
+      if (error) throw new Error("Couldn't save that date. Are you still signed in?");
+      setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, released_on: date } }));
+    },
+    [clearRow]
+  );
+
   const removeCover = useCallback(async (release) => {
     const key = releaseKey(release);
     const old = coverPath(linksRef.current[key]?.cover_url);
@@ -206,8 +220,8 @@ export function SpotifyLinksProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ links, drops, editing, isAdmin, editError, save, saveCover, removeCover, exitEdit, dismissError }),
-    [links, drops, editing, isAdmin, editError, save, saveCover, removeCover, exitEdit, dismissError]
+    () => ({ links, drops, editing, isAdmin, editError, save, saveCover, removeCover, saveDate, exitEdit, dismissError }),
+    [links, drops, editing, isAdmin, editError, save, saveCover, removeCover, saveDate, exitEdit, dismissError]
   );
   return (
     <SpotifyLinksContext.Provider value={value}>
@@ -231,6 +245,7 @@ export function useRelease(release) {
 function EditBar() {
   const { links, editing, editError, exitEdit, dismissError } = useSpotifyLinks();
   const service = useListenOn();
+  const onCatalog = usePathname() === "/music";
   if (editError) {
     return (
       <div className="fixed inset-x-3 bottom-3 z-[80] mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl bg-red-600 px-4 py-3 text-sm text-white shadow-2xl">
@@ -249,10 +264,19 @@ function EditBar() {
   if (!editing) return null;
 
   // Counted for the service picked above the timeline, so switching to
-  // YouTube Music shows what's left to fill in there.
-  const missing = ALL_RELEASES.filter((r) => !playerFor(withSavedLinks(r, links[releaseKey(r)]), service));
+  // YouTube Music shows what's left to fill in there. /music also counts
+  // releases without a full date.
+  const releases = (onCatalog ? CATALOG_RELEASES : ALL_RELEASES).map((r) => withSavedLinks(r, links[releaseKey(r)]));
+  const noPlayer = releases.filter((r) => !playerFor(r, service)).length;
+  const noDate = onCatalog ? releases.filter((r) => !r.date).length : 0;
+  const summary = [noPlayer && `${noPlayer} without a player`, noDate && `${noDate} without a date`].filter(Boolean).join(" · ");
   // The other tab's cards aren't on the page, so switch tabs when this one is done.
   const jumpToNext = () => {
+    if (onCatalog) {
+      const row = document.querySelector("[data-missing] > button");
+      if (row?.getAttribute("aria-expanded") === "false") row.click();
+      return row?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     const el = document.querySelector("[data-missing-spotify]");
     if (el) return el.scrollIntoView({ behavior: "smooth", block: "center" });
     const other = document.querySelector('[role=tab][aria-selected="false"]')?.textContent?.trim().toLowerCase();
@@ -265,10 +289,10 @@ function EditBar() {
     <div className="fixed inset-x-3 bottom-3 z-[80] mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl border border-white/15 bg-neutral-950/95 px-4 py-3 text-sm text-white shadow-2xl">
       <div>
         <p className="font-semibold">Edit mode</p>
-        <p className="text-xs text-white/60">{missing.length ? `${missing.length} without a player` : "Every release has a player"}</p>
+        <p className="text-xs text-white/60">{summary || (onCatalog ? "Every release has a player and a date" : "Every release has a player")}</p>
       </div>
       <div className="flex gap-2">
-        {missing.length > 0 && (
+        {noPlayer + noDate > 0 && (
           <button type="button" onClick={jumpToNext} className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black">
             Next missing
           </button>
@@ -418,5 +442,64 @@ export function CoverEditor({ release }) {
       {status && status !== "saving" && <span className="text-emerald-400">{status}</span>}
       {error && <span className="text-red-400">{error}</span>}
     </div>
+  );
+}
+
+// Edit mode: the day a release came out. Albums come with theirs; most
+// singles only have a year until one is set here.
+export function DateEditor({ release }) {
+  const { links, saveDate } = useSpotifyLinks();
+  const savedDate = links[releaseKey(release)]?.released_on;
+  const [value, setValue] = useState(release.date ?? "");
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState(null);
+  const id = `date-${releaseKey(release)}`;
+
+  const run = async (date) => {
+    setStatus("saving");
+    setError(null);
+    try {
+      await saveDate(release, date);
+      setValue(date);
+      setStatus(date ? "Date saved" : "Date cleared");
+    } catch (e) {
+      setError(e.message);
+      setStatus(null);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        run(value);
+      }}
+      className="mt-2 flex flex-wrap items-center gap-2 text-xs"
+    >
+      <label htmlFor={id} className="opacity-70">
+        Released
+      </label>
+      <input
+        id={id}
+        type="date"
+        value={value}
+        min="2010-01-01"
+        onChange={(e) => {
+          setValue(e.target.value);
+          setStatus(null);
+        }}
+        className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-white [color-scheme:dark]"
+      />
+      <button type="submit" disabled={!value || value === release.date || status === "saving"} className="rounded-full bg-white px-3 py-1 font-semibold text-black disabled:opacity-40">
+        {status === "saving" ? "Saving..." : "Save"}
+      </button>
+      {savedDate && status !== "saving" && (
+        <button type="button" onClick={() => run("")} className="underline opacity-70 hover:opacity-100">
+          Clear
+        </button>
+      )}
+      {status && status !== "saving" && <span className="text-emerald-400">{status}</span>}
+      {error && <span className="text-red-400">{error}</span>}
+    </form>
   );
 }
