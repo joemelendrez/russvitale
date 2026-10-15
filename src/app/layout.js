@@ -4,6 +4,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Header from "@/components/Header";
 import { SpotifyLinksProvider } from "@/components/SpotifyLinks";
+import { PhonePlayerProvider } from "@/components/PhonePlayer";
 import { SITE } from "@/data/site";
 
 export const metadata = {
@@ -33,10 +34,12 @@ export default function RootLayout({ children }) {
           Skip to the music
         </a>
         <SpotifyLinksProvider>
-          <SmoothScroll>
-            <Header />
-            <main>{children}</main>
-          </SmoothScroll>
+          <PhonePlayerProvider>
+            <SmoothScroll>
+              <Header />
+              <main>{children}</main>
+            </SmoothScroll>
+          </PhonePlayerProvider>
         </SpotifyLinksProvider>
       </body>
     </html>
