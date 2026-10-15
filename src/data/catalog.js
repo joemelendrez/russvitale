@@ -1,4 +1,8 @@
 import { SINGLES_BY_YEAR } from "./singles";
+import { CATALOG_TRACK_IDS } from "./spotifyIds";
+
+// Same key as releaseKey() (releaseKey.js imports this file, so it is repeated here).
+const keyOf = (title, year) => `single-${year}-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 
 // The rest of Russ's singles and promotional singles, from the "Russ
 // discography" article on Wikipedia (years only; exact dates get filled in
@@ -125,7 +129,8 @@ export const CATALOG_SINGLES_BY_YEAR = (() => {
     for (const title of titles) {
       if (known.some((k) => sameSong(k, title))) continue;
       known.push(title);
-      group.singles.push({ title, type: "single" });
+      const id = CATALOG_TRACK_IDS[keyOf(title, year)];
+      group.singles.push({ title, type: "single", ...(id && { spotify: { kind: "track", id } }) });
     }
   }
   return groups.sort((a, b) => a.year - b.year);
