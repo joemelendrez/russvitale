@@ -39,3 +39,21 @@ export async function releasesForKeys(keys) {
   const byKey = new Map(all.map((r) => [releaseKey(r), r]));
   return keys.map((k) => byKey.get(k)).filter(Boolean);
 }
+
+// The release keys behind a short share link (/t/<code>), or [] when the
+// code is unknown. Saved lists never change, so they cache for a day.
+export async function keysForCode(code) {
+  if (!url || !key || !/^[A-Za-z0-9]{6,12}$/.test(code ?? "")) return [];
+  try {
+    const res = await fetch(`${url}/rest/v1/russ_top10_links?select=keys&code=eq.${code}`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return parseKeys((rows?.[0]?.keys ?? []).join(","));
+  } catch {
+    return [];
+  }
+}

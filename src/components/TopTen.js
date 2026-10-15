@@ -7,6 +7,7 @@ import { featureCredit } from "@/data/features";
 import { releaseKey } from "@/data/releaseKey";
 import { useFavorites } from "@/lib/favorites";
 import { clearNowPlaying } from "@/lib/listenOn";
+import { supabase } from "@/lib/supabase";
 import { TOP10_MAX, setTop10, useTop10 } from "@/lib/top10";
 import { ReleaseRow, TYPE_LABEL, useAllReleases } from "./Discography";
 import FavoritesAccount from "./FavoritesAccount";
@@ -26,6 +27,23 @@ function useSettled(value, ms) {
     return () => clearTimeout(t);
   }, [value, ms]);
   return settled;
+}
+
+// A short link for a list (russvitale.com/t/<code>), fetched once the list
+// settles. Until it arrives, or if it can't be made, the long ?l= link works.
+function useShortCode(list) {
+  const [codes, setCodes] = useState({});
+  useEffect(() => {
+    if (!list || !supabase || codes[list] !== undefined) return;
+    let live = true;
+    supabase.rpc("russ_top10_link", { p_keys: list.split(",") }).then(({ data, error }) => {
+      if (live) setCodes((c) => ({ ...c, [list]: error ? null : data }));
+    });
+    return () => {
+      live = false;
+    };
+  }, [list, codes]);
+  return list ? codes[list] : undefined;
 }
 
 // /top10: build your Russ top 10 and share it as a picture or a link.
@@ -112,7 +130,11 @@ function Builder() {
   };
 
   // Punctuation-blind, so "aint" finds "Ain't".
-  const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const norm = (t) =>
+    t
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   const q = norm(query);
   const results = !q
     ? []
@@ -199,30 +221,12 @@ function Builder() {
                 </ul>
               )}
               {!q && fromFavorites.length > 0 && (
-                <div className="mt-5">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="text-sm text-era-muted">From your favorites</p>
-                    <button
-                      type="button"
-                      onClick={() => setTop10([...list, ...fromFavorites].slice(0, TOP10_MAX))}
-                      className="text-sm text-era-fg underline-offset-4 hover:underline"
-                    >
-                      Fill from favorites
-                    </button>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {fromFavorites.slice(0, 12).map((k) => (
-                      <button
-                        key={k}
-                        type="button"
-                        onClick={() => add(k)}
-                        className="rounded-full border border-era-fg/15 px-3 py-1.5 text-sm hover:border-era-accent"
-                      >
-                        + {byKey.get(k).title}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <FavoritesPicker
+                  keys={fromFavorites}
+                  byKey={byKey}
+                  onAdd={add}
+                  onFill={() => setTop10([...list, ...fromFavorites].slice(0, TOP10_MAX))}
+                />
               )}
               {!q && list.length === 0 && fromFavorites.length === 0 && (
                 <p className="mt-3 text-sm text-era-muted">
@@ -240,6 +244,62 @@ function Builder() {
         <SharePanel list={list} />
       </div>
     </>
+  );
+}
+
+// Favorites to pick from, folded into one row so a long list of hearts
+// doesn't push the page down. Opens to a list with its own scroll.
+function FavoritesPicker({ keys, byKey, onAdd, onFill }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-5 rounded-2xl border border-era-fg/10">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls="top10-favorites"
+          className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm"
+        >
+          <span className="text-era-accent" aria-hidden="true">
+            &hearts;
+          </span>
+          <span className="font-semibold">From your favorites</span>
+          <span className="text-era-muted">{keys.length}</span>
+          <svg
+            viewBox="0 0 24 24"
+            className={`ml-auto h-4 w-4 shrink-0 text-era-muted transition-transform ${open ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <button type="button" onClick={onFill} className="shrink-0 text-sm text-era-fg underline-offset-4 hover:underline">
+          Fill
+        </button>
+      </div>
+      {open && (
+        <ul id="top10-favorites" className="max-h-72 overflow-y-auto overscroll-contain border-t border-era-fg/10 py-1" data-lenis-prevent>
+          {keys.map((k) => {
+            const r = byKey.get(k);
+            return (
+              <li key={k}>
+                <button type="button" onClick={() => onAdd(k)} className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-era-fg/5">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{r.title}</span>
+                    <span className="block text-[11px] uppercase tracking-[0.18em] text-era-muted">{metaOf(r)}</span>
+                  </span>
+                  <span className="text-xl text-era-accent" aria-hidden="true">
+                    +
+                  </span>
+                  <span className="sr-only">Add {r.title}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -294,6 +354,7 @@ function SharePanel({ list }) {
   const [format, setFormat] = useState("square");
   const [status, setStatus] = useState(null);
   const settled = useSettled(list.join(","), 600);
+  const code = useShortCode(settled);
   const [loaded, setLoaded] = useState(null);
 
   if (!list.length) {
@@ -306,7 +367,7 @@ function SharePanel({ list }) {
 
   const params = `l=${settled}`;
   const imageUrl = `/top10/image?${params}&format=${format}`;
-  const pageUrl = `${window.location.origin}/top10?${params}`;
+  const pageUrl = code ? `${window.location.origin}/t/${code}` : `${window.location.origin}/top10?${params}`;
   const fileName = `my-russ-top-10${format === "story" ? "-story" : ""}.png`;
 
   const flash = (s) => {

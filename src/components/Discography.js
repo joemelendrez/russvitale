@@ -12,6 +12,7 @@ import { clearNowPlaying, serviceOfPlayer, setNowPlaying, useListenOn } from "@/
 import { CoverEditor, DateEditor, SpotifyLinkEditor, useSpotifyLinks, withSavedLinks } from "./SpotifyLinks";
 import ListenToggle, { ServiceMark } from "./ListenToggle";
 import PlayerFrame from "./PlayerFrame";
+import { usePhonePlayer } from "./PhonePlayer";
 import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
 
@@ -263,6 +264,13 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
   const listen = listenLink(release, service);
   const palette = release.era?.palette ?? DEFAULT_PALETTE;
   const playingOn = serviceOfPlayer(player);
+  const { stop: stopPhoneBar } = usePhonePlayer();
+
+  // One player at a time: opening a row closes the bar a song started from
+  // the home page is still playing in.
+  useEffect(() => {
+    if (open) stopPhoneBar();
+  }, [open, stopPhoneBar]);
 
   // The Play on button shows the service this row plays on while it's open.
   useEffect(() => {
