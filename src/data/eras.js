@@ -119,7 +119,7 @@ export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa",
 // else stays black.
 export const SECTION_PALETTES = {
   // The purple and white of his second book, It Was You All Along.
-  about: { bg: "#7b1fd0", fg: "#ffffff", muted: "#e2cdf8", accent: "#ffffff" },
+  watch: { bg: "#7b1fd0", fg: "#ffffff", muted: "#e2cdf8", accent: "#ffffff" },
   // The yellow and black of his book, It's All in Your Head.
   footer: { bg: "#ffe600", fg: "#111111", muted: "#2b2805", accent: "#111111" },
 };

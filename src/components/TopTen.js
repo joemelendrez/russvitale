@@ -13,6 +13,7 @@ import { ReleaseRow, TYPE_LABEL, useAllReleases } from "./Discography";
 import FavoritesAccount from "./FavoritesAccount";
 import MostLoved from "./MostLoved";
 import { applyPalette } from "./usePalette";
+import AlbumSwatches from "@/components/AlbumSwatches";
 
 const pill = "rounded-full px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] disabled:opacity-40";
 
@@ -146,6 +147,7 @@ function Builder() {
 
   return (
     <>
+      <AlbumSwatches className="mb-6" />
       <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
         Your Russ <span className="text-era-accent">top 10</span>

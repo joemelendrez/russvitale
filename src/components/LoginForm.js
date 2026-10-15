@@ -6,6 +6,7 @@ import { fanAccounts } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
 import SignInPanel from "./SignInPanel";
 import { applyPalette } from "./usePalette";
+import AlbumSwatches from "@/components/AlbumSwatches";
 
 // Only paths on this site, so ?next= can't send anyone elsewhere.
 function safeNext(value) {
@@ -27,6 +28,7 @@ export default function LoginForm() {
   return (
     <div className="mx-auto grid max-w-5xl gap-12 px-4 pb-24 pt-28 sm:px-6 sm:pt-36 md:grid-cols-[1.1fr_1fr] md:items-start">
       <div>
+        <AlbumSwatches className="mb-6" />
         <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
         <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Sign in or sign up</h1>
         <p className="mt-6 max-w-md text-era-muted">A free account keeps your favorites and your top 10 on every device. It&apos;s optional: everything works without one.</p>

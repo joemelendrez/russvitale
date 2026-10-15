@@ -1,5 +1,6 @@
 import { AMAZON_DISCLOSURE, NAV, SITE } from "@/data/site";
 import NewsletterForm from "./NewsletterForm";
+import AlbumSwatches from "./AlbumSwatches";
 import { SECTION_PALETTES } from "@/data/eras";
 
 // The footer keeps its own colors on the element itself (not the page-wide
@@ -21,7 +22,8 @@ const FOOTER_STYLE = {
 
 export default function Footer({ newsletter = true }) {
   return (
-    <footer className="py-14 font-semibold" style={FOOTER_STYLE}>
+    <footer className="pb-14 font-semibold" style={FOOTER_STYLE}>
+      <AlbumSwatches variant="band" className="mb-14" />
       {newsletter && (
         <div className="mx-auto mb-14 max-w-7xl px-4 sm:px-6">
           <NewsletterForm />

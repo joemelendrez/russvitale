@@ -15,6 +15,7 @@ import PlayerFrame from "./PlayerFrame";
 import { usePhonePlayer } from "./PhonePlayer";
 import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
+import AlbumSwatches from "@/components/AlbumSwatches";
 
 export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
 
@@ -154,6 +155,7 @@ export default function Discography() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
+      <AlbumSwatches className="mb-6" />
       <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Every release</h1>
       <div className="mt-6 max-w-xl space-y-4 leading-relaxed text-era-muted">
