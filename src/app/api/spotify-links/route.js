@@ -10,12 +10,17 @@ export const dynamic = "force-dynamic";
 const BLOB_KEY = "links";
 
 function store() {
-  return getStore({ name: "spotify-links", consistency: "strong" });
+  return getStore("spotify-links");
+}
+
+// A Blobs call that hangs shouldn't hang the page's request with it.
+function withTimeout(promise, ms = 5000) {
+  return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms))]);
 }
 
 async function readLinks() {
   try {
-    return (await store().get(BLOB_KEY, { type: "json" })) ?? {};
+    return (await withTimeout(store().get(BLOB_KEY, { type: "json" }))) ?? {};
   } catch (error) {
     // Outside Netlify (plain `next dev`) there is no store: the page just
     // uses the ids in src/data.
@@ -60,7 +65,7 @@ export async function POST(request) {
     const links = await readLinks();
     if (spotify) links[body.release] = spotify;
     else delete links[body.release];
-    await store().setJSON(BLOB_KEY, links);
+    await withTimeout(store().setJSON(BLOB_KEY, links));
     return Response.json({ links });
   } catch (error) {
     console.error("spotify-links: write failed", error.message);
