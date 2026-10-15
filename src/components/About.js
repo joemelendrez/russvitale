@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { SITE } from "@/data/site";
+import { AMAZON_DISCLOSURE, BOOKS, SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
 
 const STATS = [
@@ -27,7 +27,7 @@ export default function About() {
               Born in Secaucus, New Jersey in 1992 and raised partly in Atlanta, Russ started writing raps at seven and making beats at fourteen. He built his whole catalog the slow way: free albums, a song every week, and owning the work.
             </p>
             <p>
-              That approach is the thread through every era on this page, from the Diemon uploads to W!LD. He is also the author of two books, It&apos;s Not What You Think and It Was You All Along.
+              That approach is the thread through every era on this page, from the Diemon uploads to W!LD. He is also the author of two books, It&apos;s All In Your Head and It Was You All Along.
             </p>
           </div>
           <a
@@ -38,6 +38,29 @@ export default function About() {
           >
             Official site <span aria-hidden="true">&#8599;</span>
           </a>
+
+          <div className="mt-14">
+            <p className="text-xs uppercase tracking-[0.35em] text-era-muted">His books</p>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+              {BOOKS.map((book) => (
+                <li key={book.title}>
+                  <a
+                    href={book.href}
+                    target="_blank"
+                    rel="sponsored noopener noreferrer"
+                    className="group flex h-full flex-col rounded-2xl border border-era-fg/15 p-5 transition-colors hover:border-era-fg/40"
+                  >
+                    <span className="font-display text-2xl uppercase leading-none">{book.title}</span>
+                    <span className="mt-3 flex-1 text-sm leading-relaxed text-era-muted">{book.note}</span>
+                    <span className="mt-4 text-xs uppercase tracking-[0.2em] text-era-accent">
+                      Get it on Amazon <span aria-hidden="true">&#8599;</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-era-muted">{AMAZON_DISCLOSURE}</p>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-2 gap-px self-start overflow-hidden rounded-2xl border border-era-fg/10 bg-era-fg/10">
