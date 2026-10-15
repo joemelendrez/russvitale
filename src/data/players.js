@@ -179,3 +179,20 @@ export async function expandSoundcloud(parsed) {
   if (!body?.url) throw new Error(body?.error ?? "Couldn't open that SoundCloud link. Paste the full soundcloud.com link instead.");
   return { ...parsed, soundcloud_url: body.url };
 }
+
+// The player columns for a drop from the admin's two link boxes (a Spotify or
+// SoundCloud link, and a YouTube one). Throws with a message the form can show.
+export async function playerColumnsFromLinks(link, youtubeLink) {
+  const found = link?.trim() ? parsePlayerLink(link) : null;
+  if (link?.trim() && (!found || found.youtube_id)) throw new Error("The first link box takes a Spotify or SoundCloud link. YouTube links go in the box below it.");
+  const youtube = youtubeLink?.trim() ? parseYoutubeLink(youtubeLink) : null;
+  if (youtubeLink?.trim() && !youtube) throw new Error("That doesn't look like a YouTube or YouTube Music link.");
+  const parsed = await expandSoundcloud(found);
+  return {
+    kind: parsed?.kind ?? null,
+    spotify_id: parsed?.spotify_id ?? null,
+    soundcloud_url: parsed?.soundcloud_url ?? null,
+    youtube_kind: youtube?.kind ?? null,
+    youtube_id: youtube?.id ?? null,
+  };
+}
