@@ -15,7 +15,7 @@ const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single" };
 // in the full-width bar at the bottom of the screen (PhonePlayer.js).
 export default function ReleaseCard({ release: baseRelease, palette, index }) {
   const release = useRelease(baseRelease);
-  const { editKey } = useSpotifyLinks();
+  const { editing } = useSpotifyLinks();
   const [active, setActive] = useState(false);
   const [mounted, setMounted] = useState(false);
   const ref = useRef(null);
@@ -61,7 +61,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
       viewport={{ once: true, margin: "-10% 0px" }}
       transition={{ duration: 0.8, delay: (index % 2) * 0.12, ease: [0.22, 1, 0.36, 1] }}
       className="group [perspective:900px]"
-      data-missing-spotify={editKey && !release.spotify ? "" : undefined}
+      data-missing-spotify={editing && !release.spotify ? "" : undefined}
     >
       <motion.div
         ref={ref}
@@ -175,7 +175,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           Spotify &#8599;
         </a>
       </div>
-      {editKey && <SpotifyLinkEditor key={release.spotify?.id ?? "none"} release={release} />}
+      {editing && <SpotifyLinkEditor key={release.spotify?.id ?? "none"} release={release} />}
     </motion.article>
   );
 }

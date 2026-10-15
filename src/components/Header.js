@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { NAV, SITE } from "@/data/site";
 import { TAB_EVENT } from "./Timeline";
@@ -15,6 +16,7 @@ function openTab(e, item) {
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -29,6 +31,9 @@ export default function Header() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+
+  // The admin page has its own simple layout; the section links point at the home page.
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
