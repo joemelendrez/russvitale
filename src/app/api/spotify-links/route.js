@@ -37,7 +37,24 @@ function keyMatches(given) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function GET() {
+export async function GET(request) {
+  if (new URL(request.url).searchParams.has("diag")) {
+    const started = Date.now();
+    const out = { hasGlobal: Boolean(globalThis.netlifyBlobsContext), hasEnv: Boolean(process.env.NETLIFY_BLOBS_CONTEXT) };
+    try {
+      const raw = globalThis.netlifyBlobsContext || process.env.NETLIFY_BLOBS_CONTEXT;
+      if (raw) out.keys = Object.keys(JSON.parse(Buffer.from(raw, "base64").toString()));
+    } catch (e) {
+      out.parse = e.message;
+    }
+    try {
+      out.value = await withTimeout(store().get(BLOB_KEY, { type: "json" }), 8000);
+    } catch (e) {
+      out.error = e.message;
+    }
+    out.ms = Date.now() - started;
+    return Response.json(out, { headers: { "Cache-Control": "no-store" } });
+  }
   return Response.json(await readLinks(), { headers: { "Cache-Control": "no-store" } });
 }
 
