@@ -22,8 +22,8 @@ const COPY = {
     sub: "Every album and EP, era by era. Hover any cover to play it right here, on Spotify, YouTube Music or SoundCloud (pick with the round button). The page changes color as each era takes over.",
   },
   singles: {
-    title: "Every single, year by year.",
-    sub: "From the first songs to chart in 2016 to the newest drops. Hover any single to play it.",
+    title: "The big singles, year by year.",
+    sub: "A pick of the standouts from each year, from the 2015 SoundCloud run to the newest drops. Hover any single to play it, or open the Full discography for every release.",
   },
 };
 

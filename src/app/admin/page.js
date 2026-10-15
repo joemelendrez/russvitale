@@ -1,9 +1,10 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ALL_RELEASES } from "@/data/releaseKey";
-import { expandSoundcloud, parsePlayerLink, parseYoutubeLink, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
+import AddSongWizard from "@/components/AddSongWizard";
+import { playerColumnsFromLinks, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
 
+const TYPE_LABEL = { single: "Single", album: "Album", ep: "EP", version: "Version" };
 const today = () => new Date().toLocaleDateString("en-CA");
 
 // Sign in with email and password, then fix song links and post new drops.
@@ -237,14 +238,14 @@ function Dashboard({ email }) {
         </a>
       </Card>
 
-      <DropForm onSaved={load} />
+      <AddSongWizard drops={drops ?? []} onSaved={load} />
 
-      <Card title="Drops">
+      <Card title="Added songs">
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
         {drops === null ? (
           <p className="text-sm text-white/60">Loading...</p>
         ) : drops.length === 0 ? (
-          <p className="text-sm text-white/60">No drops yet.</p>
+          <p className="text-sm text-white/60">Nothing added yet.</p>
         ) : (
           <ul className="divide-y divide-white/10">
             {drops.map((drop) =>
@@ -264,7 +265,8 @@ function Dashboard({ email }) {
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{drop.title}</p>
                     <p className="text-xs text-white/50">
-                      {drop.released_on}
+                      {TYPE_LABEL[drop.release_type] ?? "Single"}
+                      {drop.version_of ? ` of ${drop.version_of}` : ""} · {drop.released_on}
                       {drop.spotify_id ? ` · Spotify ${drop.kind}` : drop.soundcloud_url ? " · SoundCloud" : ""}
                       {drop.youtube_id ? " · YouTube" : ""}
                       {!drop.spotify_id && !drop.soundcloud_url && !drop.youtube_id ? " · no player" : ""}
@@ -289,14 +291,12 @@ function Dashboard({ email }) {
           </ul>
         )}
         <p className="mt-4 text-xs text-white/40">
-          Drops show in the Singles timeline under their year. A drop with the same title as a single already on the site replaces it, so you can set its exact date. The newest one with Pop-up on slides down as a &quot;New drop&quot; notice, once per visitor.
+          Everything here shows on /music under its date. Singles also join the home page&apos;s Singles timeline, and versions show under the song they come from. One with the same title as a release already on the site replaces it, so you can set its exact date. The newest one with Pop-up on slides down as a &quot;New drop&quot; notice, once per visitor.
         </p>
       </Card>
     </div>
   );
 }
-
-const blankDrop = () => ({ title: "", link: "", youtube: "", released_on: today(), note: "", show_banner: true });
 
 const formFromDrop = (drop) => ({
   title: drop.title,
@@ -307,82 +307,40 @@ const formFromDrop = (drop) => ({
   show_banner: drop.show_banner,
 });
 
-// Releases already on the site, newest first, to start a drop from.
-const SITE_RELEASES = [...ALL_RELEASES].reverse();
-
-// Adds a new drop, or edits `drop` when one is passed.
+// Edits a song added from admin (new ones go through AddSongWizard).
 function DropForm({ drop, onSaved, onCancel }) {
-  const editing = Boolean(drop);
-  const [form, setForm] = useState(() => (drop ? formFromDrop(drop) : blankDrop()));
+  const [form, setForm] = useState(() => formFromDrop(drop));
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
-  const id = drop?.id ?? "new";
+  const id = drop.id;
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
-
-  const pickRelease = (e) => {
-    const release = SITE_RELEASES[Number(e.target.value)];
-    if (!release) return;
-    setForm((f) => ({
-      ...f,
-      title: release.title,
-      link: release.spotify ? `https://open.spotify.com/${release.spotify.kind}/${release.spotify.id}` : release.soundcloud ?? f.link,
-      youtube: releaseYoutubeLink(release) || f.youtube,
-    }));
-  };
 
   const save = async (e) => {
     e.preventDefault();
     setError(null);
-    const found = form.link.trim() ? parsePlayerLink(form.link) : null;
-    if (form.link.trim() && (!found || found.youtube_id)) return setError("The first link box takes a Spotify or SoundCloud link. YouTube links go in the box below it.");
-    const youtube = form.youtube.trim() ? parseYoutubeLink(form.youtube) : null;
-    if (form.youtube.trim() && !youtube) return setError("That doesn't look like a YouTube or YouTube Music link.");
     setStatus("saving");
-    let parsed = found;
+    let players;
     try {
-      parsed = await expandSoundcloud(found);
+      players = await playerColumnsFromLinks(form.link, form.youtube);
     } catch (err) {
       setStatus(null);
       return setError(err.message);
     }
     const row = {
       title: form.title.trim(),
-      kind: parsed?.kind ?? null,
-      spotify_id: parsed?.spotify_id ?? null,
-      soundcloud_url: parsed?.soundcloud_url ?? null,
-      youtube_kind: youtube?.kind ?? null,
-      youtube_id: youtube?.id ?? null,
+      ...players,
       released_on: form.released_on,
       note: form.note.trim() || null,
       show_banner: form.show_banner,
     };
-    const { error } = editing ? await supabase.from("russ_drops").update(row).eq("id", drop.id) : await supabase.from("russ_drops").insert(row);
+    const { error } = await supabase.from("russ_drops").update(row).eq("id", drop.id);
     setStatus(null);
     if (error) return setError("Couldn't save the drop. Check the fields and try again.");
-    if (!editing) {
-      setForm(blankDrop());
-      setStatus("saved");
-    }
     onSaved();
   };
 
   const fields = (
     <form onSubmit={save} className="space-y-4">
-      {!editing && (
-        <div>
-          <label htmlFor="drop-from" className="mb-1 block text-sm text-white/70">
-            Start from a release on the site (optional)
-          </label>
-          <select id="drop-from" defaultValue="" onChange={pickRelease} className={input}>
-            <option value="">A new release</option>
-            {SITE_RELEASES.map((r, i) => (
-              <option key={`${r.type}-${r.year}-${r.title}`} value={i}>
-                {r.title} ({r.year})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       <div>
         <label htmlFor={`drop-title-${id}`} className="mb-1 block text-sm text-white/70">
           Title
@@ -436,17 +394,14 @@ function DropForm({ drop, onSaved, onCancel }) {
       {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="flex items-center gap-3">
         <button type="submit" disabled={!form.title.trim() || status === "saving"} className={primary}>
-          {status === "saving" ? "Saving..." : editing ? "Save changes" : "Add drop"}
+          {status === "saving" ? "Saving..." : "Save changes"}
         </button>
-        {editing && (
-          <button type="button" onClick={onCancel} className="text-sm opacity-70 hover:opacity-100">
-            Cancel
-          </button>
-        )}
-        {status === "saved" && <span className="text-sm text-emerald-400">Added. It&apos;s live for everyone.</span>}
+        <button type="button" onClick={onCancel} className="text-sm opacity-70 hover:opacity-100">
+          Cancel
+        </button>
       </div>
     </form>
   );
 
-  return editing ? fields : <Card title="Add a new drop">{fields}</Card>;
+  return fields;
 }

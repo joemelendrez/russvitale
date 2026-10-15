@@ -5,7 +5,8 @@ import { releaseFieldsFromRow } from "./players";
 export function dropToRelease(drop) {
   return {
     title: drop.title,
-    type: "single",
+    type: drop.release_type ?? "single",
+    ...(drop.version_of ? { versionOf: drop.version_of } : {}),
     year: Number(drop.released_on.slice(0, 4)),
     dropId: drop.id,
     ...releaseFieldsFromRow(drop),
@@ -18,7 +19,9 @@ const sameTitle = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 // first like the rest of the list. A drop with the same title as a single in
 // src/data/singles.js replaces it, so a drop can also correct a release's date
 // (and keeps its players for any service the drop has no link for).
-export function singlesWithDrops(drops, base = SINGLES_BY_YEAR) {
+export function singlesWithDrops(allDrops, base = SINGLES_BY_YEAR) {
+  // Albums, EPs and versions added from admin only show on /music.
+  const drops = allDrops?.filter((d) => (d.release_type ?? "single") === "single");
   if (!drops?.length) return base;
   const groups = base.map((g) => ({ ...g, singles: [...g.singles] }));
   for (const drop of [...drops].reverse()) {
@@ -47,4 +50,9 @@ export function singlesWithDrops(drops, base = SINGLES_BY_YEAR) {
 // The drop the slide-down bar should announce: the newest one marked for it.
 export function bannerDrop(drops) {
   return drops?.find((d) => d.show_banner) ?? null;
+}
+
+// Albums, EPs and versions added from admin, as releases for /music.
+export function otherDrops(drops) {
+  return (drops ?? []).filter((d) => (d.release_type ?? "single") !== "single").map(dropToRelease);
 }
