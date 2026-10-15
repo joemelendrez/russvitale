@@ -155,11 +155,17 @@ export default function Discography() {
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
       <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Every release</h1>
-      <p className="mt-6 max-w-xl text-era-muted">
-        {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.version} other versions and {totals.feature} songs Russ is featured on, from the Diemon days to the newest drops. Tap any one to play it on the
-        service you pick with the round button. The list follows Wikipedia&apos;s Russ discography; songs that only live on his albums are on the
-        album pages of each service. The counts on the buttons below show how many are left as you search.
-      </p>
+      <div className="mt-6 max-w-xl space-y-4 leading-relaxed text-era-muted">
+        <p>
+          {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.version} other versions and {totals.feature} songs Russ is featured on,
+          from the Diemon days to the newest drops.
+        </p>
+        <p>Tap any one to play it on the service you pick with the round button.</p>
+        <p>
+          The list follows Wikipedia&apos;s Russ discography. Songs that only live on his albums are on the album pages of each service.
+        </p>
+        <p>The counts on the buttons below show how many are left as you search.</p>
+      </div>
 
       <div className="sticky top-16 z-30 -mx-4 mt-10 space-y-3 bg-era-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <div className="flex items-center gap-2">
