@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#09090b"/><text x="32" y="45" text-anchor="middle" font-family="Impact, Anton, sans-serif" font-size="40" fill="#f5f5f4">R</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<style>
+.o{stroke:#1F2328}.p{fill:#1F2328}
+@media (prefers-color-scheme: dark){.o{stroke:#F4F2EA}}
+</style>
+<circle class="o" cx="19" cy="32" r="13" fill="#C9781E" stroke-width="4"/>
+<circle class="o" cx="45" cy="32" r="13" fill="#3A2418" stroke-width="4"/>
+<circle class="p" cx="19" cy="32" r="5"/>
+<circle cx="45" cy="32" r="5" fill="#0E0B09"/>
+<circle cx="22.5" cy="28.5" r="2.4" fill="#FFFFFF"/>
+<circle cx="48.5" cy="28.5" r="2.4" fill="#FFFFFF"/>
+</svg>
