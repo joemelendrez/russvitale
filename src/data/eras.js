@@ -115,7 +115,14 @@ export const ERAS = [
 
 // The palette the page uses outside the timeline (hero, shows, footer).
 // Its red comes from the stage lights and jersey in the hero photo.
-export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#ff3b30" };
+// In light mode it's a chalky off-white rather than a wash of the red.
+export const DEFAULT_PALETTE = {
+  bg: "#08070c",
+  fg: "#f5f5f4",
+  muted: "#a1a1aa",
+  accent: "#ff3b30",
+  light: { bg: "#ebe9e4", fg: "#121116", muted: "#4b4a52", accent: "#c4241b" },
+};
 
 // The hero over his photo keeps its dark stage colors in light mode too,
 // just a little lighter (`light` is the palette light mode shows).
