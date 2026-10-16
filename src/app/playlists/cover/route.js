@@ -58,7 +58,8 @@ export async function GET(request) {
       width: SIZE,
       height: SIZE,
       fonts: text ? await ogFonts() : undefined,
-      headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800" },
+      // CORS so the playlist generator can draw it on a canvas and upload it.
+      headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800" },
     },
   );
 }
