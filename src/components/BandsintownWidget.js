@@ -43,6 +43,7 @@ export default function BandsintownWidget() {
           data-display-limit="8"
           data-display-start-time="false"
           data-link-text-color="#000000"
+          data-font="inherit"
           data-display-lineup="false"
           data-display-play-my-city="true"
           data-separator-color="rgba(255,255,255,0.15)"

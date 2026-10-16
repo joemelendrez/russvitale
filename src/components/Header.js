@@ -80,6 +80,22 @@ const chevron = (
 const accountButton =
   "grid h-9 w-9 place-items-center rounded-full border border-era-fg/20 text-era-fg transition-colors hover:border-era-accent hover:text-era-accent";
 
+// Whether the signed-in account can edit the site (russ_admins). Only used to
+// show the Admin link; /admin and RLS check again on their own.
+function useIsAdmin(session) {
+  const [admin, setAdmin] = useState({ id: null, value: false });
+  const id = session?.user?.id ?? null;
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    supabase.rpc("russ_is_admin").then(({ data }) => !cancelled && setAdmin({ id, value: data === true }));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+  return admin.id === id && admin.value;
+}
+
 // The account icon in the header, for every fan: signed out it opens /login,
 // signed in it shows their initial and a menu.
 function Account({ session }) {
@@ -108,15 +124,22 @@ function Account({ session }) {
           <span className="block truncate text-xs text-era-muted">{session.user.email}</span>
         </span>
       </div>
-      <AccountLinks itemClass={`${itemStyle} flex items-center gap-3`} />
+      <AccountLinks session={session} itemClass={`${itemStyle} flex items-center gap-3`} />
     </Dropdown>
   );
 }
 
-// Favorites, Top 10 and Sign out, shared by the header menu and the phone menu.
-function AccountLinks({ itemClass, onPick }) {
+// Favorites, Top 10, Admin (for admins) and Sign out, shared by the header
+// menu and the phone menu.
+function AccountLinks({ session, itemClass, onPick }) {
+  const admin = useIsAdmin(session);
   return (
     <>
+      {admin && (
+        <a href="/admin" onClick={onPick} className={itemClass}>
+          <AppIcon name="shield" className="h-4 w-4 opacity-70" /> Admin
+        </a>
+      )}
       <a href="/favorites" onClick={onPick} className={itemClass}>
         <AppIcon name="heart" className="h-4 w-4 opacity-70" /> Your favorites
       </a>
@@ -284,8 +307,9 @@ export default function Header() {
                       <span className="block truncate text-xs text-era-muted">{session.user.email}</span>
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-1">
+                  <div className="grid grid-flow-col auto-cols-fr gap-1">
                     <AccountLinks
+                      session={session}
                       onPick={() => setOpen(false)}
                       itemClass="flex flex-col items-center gap-1.5 rounded-xl bg-era-fg/[0.06] px-2 py-3 text-center text-xs"
                     />
