@@ -1,0 +1,84 @@
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { applyPalette } from "./usePalette";
+import { DEFAULT_PALETTE } from "@/data/eras";
+import { playlistUrl } from "@/data/playlists";
+import AlbumSwatches, { swatchAt } from "./AlbumSwatches";
+import NewsletterForm from "./NewsletterForm";
+
+// /playlists: fan-made Spotify playlists by mood. Each card loads Spotify's
+// own player, so every play counts on Spotify.
+export default function Playlists() {
+  const [lists, setLists] = useState(() => (supabase ? null : []));
+  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
+  useEffect(() => {
+    if (!supabase) return;
+    let live = true;
+    supabase
+      .from("russ_playlists")
+      .select("id, title, blurb, spotify_id")
+      .order("position")
+      .order("created_at")
+      .then(({ data }) => live && setLists(data ?? []));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
+      <AlbumSwatches className="mb-6" />
+      <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan playlists</p>
+      <h1 className="mt-4 font-display text-6xl uppercase leading-[0.9] sm:text-8xl">
+        Russ for every <span className="text-era-accent">mood</span>
+      </h1>
+      <p className="mt-6 max-w-xl text-era-muted">
+        Playlists a fan put together on Spotify, one for each mood. Press play here or follow them on Spotify.
+      </p>
+
+      {lists === null ? (
+        <p className="mt-14 text-era-muted">Loading...</p>
+      ) : lists.length === 0 ? (
+        <div className="mt-14 rounded-3xl border border-era-fg/10 p-6 sm:p-10">
+          <p className="font-display text-4xl uppercase leading-none sm:text-5xl">Playlists are on the way</p>
+          <p className="mt-4 max-w-lg text-era-muted">Get them by email the day they go up, along with tour dates and new drops.</p>
+          <div className="mt-8 max-w-xl">
+            <NewsletterForm id="playlists-newsletter-email" />
+          </div>
+        </div>
+      ) : (
+        <ul className="mt-14 grid gap-6 md:grid-cols-2">
+          {lists.map((list, i) => (
+            <li key={list.id} className="flex flex-col rounded-3xl border-2 p-5 sm:p-6" style={{ borderColor: swatchAt(i) }}>
+              <p className="font-display text-4xl uppercase leading-none" style={{ color: swatchAt(i) }}>
+                {list.title}
+              </p>
+              {list.blurb && <p className="mt-3 text-era-muted">{list.blurb}</p>}
+              <iframe
+                title={`${list.title} on Spotify`}
+                src={`https://open.spotify.com/embed/playlist/${list.spotify_id}?utm_source=generator&theme=0`}
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                className="mt-5 h-[352px] w-full rounded-xl border-0"
+              />
+              <a
+                href={playlistUrl(list.spotify_id)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 self-start rounded-full border border-era-fg/30 px-5 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:border-era-fg hover:bg-era-fg hover:text-era-bg"
+              >
+                Follow on Spotify <span aria-hidden="true">&#8599;</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <p className="mt-16 text-xs leading-relaxed text-era-muted">
+        Unofficial fan playlists, not affiliated with Russ, Diemon or any label. Music plays through Spotify&apos;s official player; nothing is hosted
+        or sold here.
+      </p>
+    </div>
+  );
+}
