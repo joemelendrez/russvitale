@@ -5,6 +5,7 @@ import AddSongWizard from "@/components/AddSongWizard";
 import NewsletterAdmin from "@/components/NewsletterAdmin";
 import FeaturesAdmin from "@/components/FeaturesAdmin";
 import CoverMaker from "@/components/CoverMaker";
+import PlaylistsAdmin from "@/components/PlaylistsAdmin";
 import { playerColumnsFromLinks, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
 
 const TYPE_LABEL = { single: "Single", album: "Album", ep: "EP", version: "Version" };
@@ -247,6 +248,8 @@ function Dashboard({ email }) {
       <AddSongWizard drops={drops ?? []} onSaved={load} />
 
       <FeaturesAdmin drops={drops ?? []} onSaved={load} />
+
+      <PlaylistsAdmin />
 
       <CoverMaker />
 
