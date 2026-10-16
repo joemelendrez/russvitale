@@ -5,7 +5,7 @@ import BlogToc from "@/components/BlogToc";
 import DefaultPalette from "@/components/DefaultPalette";
 import Footer from "@/components/Footer";
 import ReadingProgress from "@/components/ReadingProgress";
-import { AMAZON_DISCLOSURE, SITE } from "@/data/site";
+import { SITE } from "@/data/site";
 import { formatDate, getPost, getPosts } from "@/lib/blog";
 import { bodySegments, faqSchema, withHeadings } from "@/lib/postBody";
 
@@ -49,7 +49,6 @@ export default async function PostPage({ params }) {
   const faq = faqSchema(raw);
   const { segments, headings } = withHeadings(raw);
   const url = `${SITE.url}/blog/${post.slug}`;
-  const hasAmazon = /amazon\.com|amzn\.to/i.test(post.html);
   const more = all.filter((p) => p.slug !== post.slug).slice(0, 3);
 
   return (
@@ -110,9 +109,6 @@ export default async function PostPage({ params }) {
             <BlogToc headings={headings} />
           </aside>
           <div>
-            {hasAmazon && (
-              <p className="mb-8 rounded-2xl border border-dashed border-era-fg/20 px-4 py-3 text-sm text-era-muted">{AMAZON_DISCLOSURE}</p>
-            )}
             <BlogToc headings={headings} variant="mobile" />
             <div className="space-y-10">
               {segments.map((s, i) =>
@@ -127,11 +123,7 @@ export default async function PostPage({ params }) {
             <aside className="mt-16 rounded-3xl border border-era-fg/10 p-6 sm:p-8">
               <p className="text-[11px] uppercase tracking-[0.3em] text-era-muted">About this blog</p>
               <p className="mt-3 text-sm leading-relaxed text-era-muted">
-                Written by {SITE.builder.name}, a Russ fan who also builds{" "}
-                <a href="https://habitnova.com" target="_blank" rel="noopener" className="text-era-fg underline decoration-era-accent underline-offset-4">
-                  Habit Nova
-                </a>
-                , a habit tracker. This is an unofficial fan site, not affiliated with or endorsed by Russ, Diemon or any label. Quotes are kept
+                Written by {SITE.builder.name}, a Russ fan. This is an unofficial fan site, not affiliated with or endorsed by Russ, Diemon or any label. Quotes are kept
                 short and link to where he said them.
               </p>
             </aside>

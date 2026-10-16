@@ -53,8 +53,6 @@ export default function RootLayout({ children }) {
         {/* Light or dark before the first paint: the saved choice, else the phone's setting. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <style>{paletteCss(DEFAULT_PALETTE)}</style>
-        {/* Impact (Ticketmaster affiliate program) site verification. */}
-        <meta name="impact-site-verification" value="0f51a803-5e30-40e5-b84e-28d74d8989f0" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c") }} />
       </head>
       <body className="grain">

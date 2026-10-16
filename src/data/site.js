@@ -40,12 +40,8 @@ export function navMenu() {
   return out;
 }
 
-// Amazon Associates links (Joseph's tag). Any page showing these needs the
-// AMAZON_DISCLOSURE line next to them.
-const AMAZON_TAG = "joseph0f30b-20";
-const amazon = (asin) => `https://www.amazon.com/dp/${asin}?tag=${AMAZON_TAG}`;
-
-export const AMAZON_DISCLOSURE = "As an Amazon Associate, this site earns from qualifying purchases.";
+// Plain Amazon links, no affiliate tag: the site earns nothing.
+const amazon = (asin) => `https://www.amazon.com/dp/${asin}`;
 
 // `type`/`year` give each book a release key, so its cover uploads in edit
 // mode and is stored like an album cover.

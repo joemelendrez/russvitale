@@ -4,4 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  SECRETS_SCAN_OMIT_KEYS = "RUSS_NEWSLETTER_FROM"
+  # The newsletter's From line and postal address go out in every email, so
+  # they aren't secrets; without this the scan fails the build on the From
+  # line written in .env.example.
+  SECRETS_SCAN_OMIT_KEYS = "RUSS_NEWSLETTER_FROM,RUSS_NEWSLETTER_ADDRESS"

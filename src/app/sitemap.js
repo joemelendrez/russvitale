@@ -15,5 +15,6 @@ export default async function sitemap() {
     ...playlists.map((p) => ({ url: `${SITE.url}${playlistHref(p.title)}`, changeFrequency: "weekly", priority: 0.6 })),
     ...posts.map((p) => ({ url: `${SITE.url}/blog/${p.slug}`, lastModified: p.updated || p.published || undefined, changeFrequency: "monthly", priority: 0.6 })),
     { url: `${SITE.url}/newsletter`, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${SITE.url}/contact`, changeFrequency: "yearly", priority: 0.3 },
   ];
 }

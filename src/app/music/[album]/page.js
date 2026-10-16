@@ -103,7 +103,7 @@ export default async function AlbumPage({ params }) {
           <span aria-hidden="true">/</span> {album.era.title} era
         </nav>
 
-        <div className="mt-8 grid gap-8 md:grid-cols-[minmax(0,320px)_1fr] md:items-end">
+        <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-8 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)] md:items-end">
           <div className="relative aspect-square w-full max-w-[320px] overflow-hidden rounded-2xl shadow-2xl" style={{ background: palette.bg, boxShadow: `0 30px 80px -30px ${palette.accent}` }}>
             {cover ? (
               <Image src={cover} alt={`${album.title} cover`} fill sizes="320px" className="object-cover" priority />
@@ -123,7 +123,7 @@ export default async function AlbumPage({ params }) {
             <p className="text-xs uppercase tracking-[0.35em] text-era-accent">
               {TYPE[album.type]} &middot; {album.era.kicker}
             </p>
-            <h1 className="mt-4 font-display text-5xl uppercase leading-[0.9] sm:text-7xl">{album.title}</h1>
+            <h1 className="mt-4 font-display text-5xl uppercase leading-[0.9] [overflow-wrap:anywhere] sm:text-7xl">{album.title}</h1>
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm">
               <div>
                 <dt className="text-[10px] uppercase tracking-[0.25em] text-era-muted">Released</dt>
@@ -151,7 +151,7 @@ export default async function AlbumPage({ params }) {
           </div>
         </div>
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_minmax(0,380px)]">
+        <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
           <section aria-labelledby="songs">
             <h2 id="songs" className="font-display text-3xl uppercase">
               Tracklist
@@ -260,7 +260,7 @@ export default async function AlbumPage({ params }) {
           </aside>
         </div>
 
-        <nav aria-label="More albums" className="mt-16 grid gap-4 border-t border-era-fg/10 pt-8 sm:grid-cols-2">
+        <nav aria-label="More albums" className="mt-16 grid grid-cols-[minmax(0,1fr)] gap-4 border-t border-era-fg/10 pt-8 sm:grid-cols-2">
           {prev ? (
             <Link href={albumHref(prev)} className="group">
               <span className="text-[10px] uppercase tracking-[0.25em] text-era-muted">&larr; Before this</span>
