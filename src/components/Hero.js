@@ -26,6 +26,9 @@ export default function Hero() {
   const copyOpacity = useTransform(p, [0, 0.35], [1, 0]);
   const copyY = useTransform(p, [0, 0.35], [0, -40]);
   const fade = useTransform(p, [0.4, 1], [0, 1]);
+  // Once the copy is gone, the bottom melts into the page color before the
+  // hero scrolls away, so there's no hard edge (a light page in light mode).
+  const edge = useTransform(p, [0.3, 0.42], [0, 1]);
 
   // Pointer tilt, springy so it never feels twitchy.
   const mx = useMotionValue(0);
@@ -85,6 +88,7 @@ export default function Hero() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-era-bg via-era-bg/70 to-transparent sm:h-1/3 sm:via-transparent" />
         {/* Darker scrim behind the copy so it stays readable over the stage lights. */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
+        <motion.div style={{ opacity: edge }} className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-era-bg to-transparent" />
         <motion.div style={{ opacity: fade }} className="pointer-events-none absolute inset-0 bg-era-bg" />
 
         <motion.div

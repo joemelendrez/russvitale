@@ -7,6 +7,8 @@ import FavoritesSync from "@/components/FavoritesSync";
 import { SpotifyLinksProvider } from "@/components/SpotifyLinks";
 import { PhonePlayerProvider } from "@/components/PhonePlayer";
 import { SITE } from "@/data/site";
+import { DEFAULT_PALETTE } from "@/data/eras";
+import { THEME_SCRIPT, paletteCss } from "@/lib/theme";
 
 export const metadata = {
   metadataBase: new URL(SITE.url),
@@ -44,8 +46,11 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Light or dark before the first paint: the saved choice, else the phone's setting. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <style>{paletteCss(DEFAULT_PALETTE)}</style>
         {/* Impact (Ticketmaster affiliate program) site verification. */}
         <meta name="impact-site-verification" value="0f51a803-5e30-40e5-b84e-28d74d8989f0" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c") }} />

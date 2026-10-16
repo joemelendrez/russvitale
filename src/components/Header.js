@@ -7,8 +7,12 @@ import { fanAccounts, supabase } from "@/lib/supabase";
 import { displayName, useSession } from "@/lib/useSession";
 import { TAB_EVENT } from "./Timeline";
 import AppIcon from "./AppIcon";
+import ThemeToggle, { ThemeChoices } from "./ThemeToggle";
 
 const MENU = navMenu();
+
+// Over the home page's photo the header stays light in light mode too.
+const OVER_PHOTO = { color: "#f5f5f4", "--fg": "#f5f5f4", "--muted": "#d4d4d8", "--color-era-fg": "#f5f5f4", "--color-era-muted": "#d4d4d8" };
 
 const linkStyle =
   "relative whitespace-nowrap text-xs uppercase tracking-[0.2em] text-era-fg/80 lg:text-sm transition-colors hover:text-era-fg after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-era-accent after:transition-transform hover:after:scale-x-100";
@@ -185,6 +189,7 @@ export default function Header() {
             ? "border-b border-era-fg/10 bg-era-bg/95 md:bg-era-bg/70 md:backdrop-blur-xl"
             : "border-b border-transparent"
         }`}
+        style={onHome && !scrolled && !open ? OVER_PHOTO : undefined}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <a href={onHome ? "#top" : "/"} className="group flex items-baseline gap-2" onClick={() => setOpen(false)}>
@@ -221,6 +226,7 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2 md:ml-5 lg:ml-8">
+            <ThemeToggle className={`${accountButton} hidden md:grid`} />
             <Account session={session} />
             <button
               type="button"
@@ -280,6 +286,7 @@ export default function Header() {
               })}
             </nav>
             <div className="flex flex-col gap-3 text-sm text-era-muted">
+              <ThemeChoices />
               {fanAccounts && session === null && (
                 <a
                   href="/login"
