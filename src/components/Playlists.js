@@ -70,13 +70,11 @@ export default function Playlists() {
           {lists.map((list, i) => {
             const color = covers[list.spotify_id]?.color ?? swatchAt(i);
             return (
-            <li key={list.id} className="flex flex-col rounded-3xl border-2 p-5 transition-colors duration-500 sm:p-6" style={{ borderColor: color }}>
+            <li key={list.id} className="cover-edge flex flex-col rounded-3xl border-2 p-5 transition-colors duration-500 sm:p-6" style={{ "--cover": color }}>
               <Link
                 href={playlistHref(list.title)}
-                className="font-display text-4xl uppercase leading-none hover:underline"
-                // Pulled a little toward the text color so a very light or
-                // very dark cover still reads on either theme.
-                style={{ color: `color-mix(in oklab, ${color} 78%, var(--color-era-fg))` }}
+                className="cover-ink font-display text-4xl uppercase leading-none hover:underline"
+                style={{ "--cover": color }}
               >
                 {list.title}
               </Link>

@@ -237,3 +237,23 @@ html:active-view-transition-type(page) main {
     flex-shrink: 0;
   }
 }
+
+/* Text in a cover's color (set --cover), kept readable: a dark cover color
+   is lifted on the dark theme and a light one deepened on the light theme. */
+.cover-ink {
+  color: var(--cover);
+  color: oklch(from var(--cover) max(l, 0.76) min(c, 0.2) h);
+}
+:root[data-theme="light"] .cover-ink {
+  color: var(--cover);
+  color: oklch(from var(--cover) min(l, 0.44) c h);
+}
+/* A border in the cover's color that still shows against the page. */
+.cover-edge {
+  border-color: var(--cover);
+  border-color: oklch(from var(--cover) max(l, 0.42) c h);
+}
+:root[data-theme="light"] .cover-edge {
+  border-color: var(--cover);
+  border-color: oklch(from var(--cover) min(l, 0.78) c h);
+}
