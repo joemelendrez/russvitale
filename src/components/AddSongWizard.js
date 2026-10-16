@@ -6,6 +6,7 @@ import { VERSION_RELEASES } from "@/data/versions";
 import { dropToRelease } from "@/data/drops";
 import { sameSong } from "@/data/catalog";
 import { playerColumnsFromLinks } from "@/data/players";
+import Link from "next/link";
 
 const TYPES = [
   { key: "single", label: "Single", hint: "A song released on its own." },
@@ -131,9 +132,9 @@ export default function AddSongWizard({ drops, onSaved }) {
       {status?.done && step === 0 && (
         <p className="mb-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
           Added &quot;{status.done}&quot;. It&apos;s live for everyone.{" "}
-          <a href="/music" className="underline">
+          <Link href="/music" className="underline">
             See it on /music
-          </a>
+          </Link>
         </p>
       )}
 
