@@ -91,3 +91,27 @@ export async function savedPlaylists() {
     return [];
   }
 }
+
+// Releases fans who favorited this one also favorited (russ_also_loved,
+// totals only, never who). Up to `max` known releases; [] before migration
+// 0014 or with too few fans. Cached for an hour.
+export async function alsoLovedFor(releaseKeyValue, max = 6) {
+  if (!url || !key) return [];
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/russ_also_loved`, {
+      method: "POST",
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_key: releaseKeyValue }),
+      next: { revalidate: 3600, tags: ["favorite-counts"] },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return [];
+    const fans = new Map(rows.map((r) => [r.release_key, r.fans]));
+    const releases = await releasesForKeys(parseKeys(rows.map((r) => r.release_key).join(","), 12));
+    return releases.slice(0, max).map((r) => ({ release: r, fans: fans.get(releaseKey(r)) ?? 0 }));
+  } catch {
+    return [];
+  }
+}
