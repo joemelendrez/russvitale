@@ -207,7 +207,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           href={listen.href}
           target="_blank"
           rel="noreferrer"
-          className="mt-1 hidden shrink-0 text-xs uppercase tracking-[0.2em] opacity-60 sm:block transition-opacity hover:opacity-100"
+          className="mt-1 hidden shrink-0 text-xs uppercase tracking-[0.2em] text-era-muted sm:block transition-colors hover:text-era-fg"
           aria-label={`Open ${release.title} in ${listen.label}`}
         >
           {listen.label} &#8599;
