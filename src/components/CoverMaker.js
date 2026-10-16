@@ -1,18 +1,19 @@
 "use client";
-import { useState } from "react";
-import { COVER_CATEGORIES, COVER_FORMATS, ICON_NAMES, coverUrl, sectionShade } from "@/data/blogCovers";
-import { COVER_ICONS } from "@/data/coverIcons";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { COVER_CATEGORIES, COVER_FORMATS, DEFAULT_SHADE, SECTION_SHADES, coverUrl, sectionShade } from "@/data/blogCovers";
+import { COVER_ICONS, COVER_ICON_GROUPS } from "@/data/coverIcons";
 
 const label = "text-xs uppercase tracking-[0.2em] text-white/50";
 const chip = (on) => `rounded-full px-3 py-1.5 text-xs font-semibold ${on ? "bg-white text-black" : "border border-white/15 text-white/70"}`;
 
-function Icon({ name, className }) {
+function Icon({ name, className, strokeWidth = 1.5, style }) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth={strokeWidth}
+      style={style}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -20,6 +21,115 @@ function Icon({ name, className }) {
       // Fixed icon data from src/data/coverIcons.js, never user input.
       dangerouslySetInnerHTML={{ __html: COVER_ICONS[name] }}
     />
+  );
+}
+
+// The picture as /blog/cover draws it, built in the page so it changes as you
+// type and click. Sizes match the route: icon 17% of the short side (15% with
+// words), words 9% (7% when long), in Anton.
+function CoverPreview({ width, height, background, icon, text }) {
+  const side = Math.min(width, height);
+  const pct = (px) => `${(px / width) * 100}cqw`;
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center [container-type:inline-size]" style={{ background }}>
+      <Icon name={icon} strokeWidth={1.15} className="text-white" style={{ width: pct(side * (text ? 0.15 : 0.17)), height: pct(side * (text ? 0.15 : 0.17)) }} />
+      {text && (
+        <p
+          className="max-w-[80%] text-center font-display uppercase text-white"
+          style={{ marginTop: pct(side * 0.05), fontSize: pct(side * (text.length > 18 ? 0.07 : 0.09)), lineHeight: 1.05, letterSpacing: pct(2) }}
+        >
+          {text}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// A button showing the chosen icon that opens a searchable, grouped list.
+function IconPicker({ value, onChange, color }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const esc = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+
+  const q = query.trim().toLowerCase().replace(/\s+/g, "-");
+  const groups = useMemo(
+    () =>
+      q
+        ? [{ label: "Results", names: Object.keys(COVER_ICONS).filter((n) => n.includes(q)) }]
+        : COVER_ICON_GROUPS.filter((g) => g.names.length),
+    [q]
+  );
+
+  return (
+    <div ref={ref} className="relative mt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 rounded-lg border border-white/15 bg-black/50 px-3 py-2 text-left text-sm"
+      >
+        <span className="grid h-8 w-8 place-items-center rounded-md text-white" style={{ background: color }}>
+          <Icon name={value} className="h-5 w-5" />
+        </span>
+        <span className="flex-1">{value.replace(/-/g, " ")}</span>
+        <span className="text-white/50" aria-hidden="true">
+          &#9662;
+        </span>
+      </button>
+      {open && (
+        <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-xl border border-white/15 bg-neutral-900 p-3 shadow-2xl">
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${Object.keys(COVER_ICONS).length} icons`}
+            className="w-full rounded-lg border border-white/15 bg-black/50 px-3 py-2 text-base text-white placeholder:text-white/30 [color-scheme:dark]"
+          />
+          <div className="mt-3 max-h-80 space-y-4 overflow-y-auto overscroll-contain pr-1" data-lenis-prevent>
+            {groups.map((g) => (
+              <div key={g.label}>
+                <p className="mb-1.5 text-[11px] uppercase tracking-[0.2em] text-white/40">{g.label}</p>
+                {g.names.length === 0 ? (
+                  <p className="text-sm text-white/50">No icon by that name.</p>
+                ) : (
+                  <div className="grid grid-cols-8 gap-1.5 sm:grid-cols-10">
+                    {g.names.map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => {
+                          onChange(n);
+                          setOpen(false);
+                          setQuery("");
+                        }}
+                        aria-pressed={value === n}
+                        aria-label={n}
+                        title={n.replace(/-/g, " ")}
+                        className="grid aspect-square place-items-center rounded-lg text-white"
+                        style={{ background: value === n ? color : "rgba(255,255,255,0.06)" }}
+                      >
+                        <Icon name={n} className="h-5 w-5" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -33,11 +143,14 @@ export default function CoverMaker() {
   const [icon, setIcon] = useState(null);
   const [text, setText] = useState("");
   const [format, setFormat] = useState("wide");
+  const [shade, setShade] = useState(DEFAULT_SHADE);
   const [status, setStatus] = useState(null);
 
   const cat = COVER_CATEGORIES.find((c) => c.slug === category);
   const chosenIcon = icon ?? cat.icon;
-  const src = coverUrl({ category, icon: chosenIcon, text: variant === "section" ? text : "", variant, format });
+  const words = variant === "section" ? text.replace(/\s+/g, " ").trim().slice(0, 40) : "";
+  const src = coverUrl({ category, icon: chosenIcon, text: words, variant, format, shade });
+  const background = variant === "section" ? sectionShade(cat.color, shade) : cat.color;
   const { width, height } = COVER_FORMATS[format];
   const name = `russ-${category}-${variant}-${chosenIcon}${text ? `-${text.toLowerCase().replace(/[^a-z0-9]+/g, "-")}` : ""}.png`;
 
@@ -112,6 +225,20 @@ export default function CoverMaker() {
       </div>
 
       {variant === "section" && (
+        <div className="mt-5">
+          <p className={label}>Shade of {cat.name}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {Object.entries(SECTION_SHADES).map(([key, s]) => (
+              <button key={key} type="button" onClick={() => setShade(key)} aria-pressed={shade === key} className={`flex items-center gap-2 ${chip(shade === key)}`}>
+                <span className="h-3 w-3 rounded-full ring-1 ring-white/20" style={{ background: sectionShade(cat.color, key) }} aria-hidden="true" />
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {variant === "section" && (
         <label className="mt-5 block">
           <span className={label}>Words under the icon (optional)</span>
           <input
@@ -125,33 +252,17 @@ export default function CoverMaker() {
       )}
 
       <p className={`${label} mt-5`}>Icon</p>
-      <div className="mt-2 grid grid-cols-8 gap-1.5 sm:grid-cols-12">
-        {ICON_NAMES.map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => setIcon(n)}
-            aria-pressed={chosenIcon === n}
-            aria-label={n}
-            title={n}
-            className="grid aspect-square place-items-center rounded-lg text-white"
-            style={{ background: chosenIcon === n ? cat.color : "rgba(255,255,255,0.06)" }}
-          >
-            <Icon name={n} className="h-5 w-5" />
-          </button>
-        ))}
-      </div>
+      <IconPicker value={chosenIcon} onChange={setIcon} color={background} />
 
       <div
         className="mt-5 overflow-hidden rounded-xl"
         style={{
           aspectRatio: `${width} / ${height}`,
-          background: variant === "section" ? sectionShade(cat.color) : cat.color,
+          background,
           maxWidth: format === "pin" ? "16rem" : undefined,
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- drawn on request by /blog/cover */}
-        <img key={src} src={src} alt={`${cat.name} ${variant} with the ${chosenIcon} icon`} className="h-full w-full" />
+        <CoverPreview width={width} height={height} background={background} icon={chosenIcon} text={words} />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">

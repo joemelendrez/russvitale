@@ -8,6 +8,7 @@ import { ogFonts } from "@/lib/ogImage";
 // site's own colors and icons, so it can't be made to show anything else.
 //   /blog/cover?c=mindset&i=flame            the cover
 //   /blog/cover?c=mindset&i=target&t=Step 1&v=section   a section image
+//   &s=deep | light                          a section image's shade (default dark)
 //   &f=square | pin                          other sizes (default wide)
 export async function GET(request) {
   const q = new URL(request.url).searchParams;
@@ -16,7 +17,7 @@ export async function GET(request) {
   const text = (q.get("t") ?? "").replace(/\s+/g, " ").trim().slice(0, 40);
   const section = q.get("v") === "section";
   const { width, height } = COVER_FORMATS[q.get("f")] ?? COVER_FORMATS.wide;
-  const background = section ? sectionShade(category.color) : category.color;
+  const background = section ? sectionShade(category.color, q.get("s")) : category.color;
 
   const side = Math.min(width, height);
   const iconSize = Math.round(side * (text ? 0.15 : 0.17));

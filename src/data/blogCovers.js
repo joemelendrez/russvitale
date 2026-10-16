@@ -33,20 +33,33 @@ export function coverCategory(slugOrName) {
   return COVER_CATEGORIES.find((c) => c.slug === key || c.slug === key.replace(/-and-ownership$/, "")) ?? FALLBACK_CATEGORY;
 }
 
-// The off shade for section images: the same hue, a step darker.
-export function sectionShade(hex, amount = 0.16) {
+// Section images use a shade of their category's color, picked in admin:
+// mixed toward black (a negative amount) or white (positive).
+export const SECTION_SHADES = {
+  deep: { label: "Deep", amount: -0.5 },
+  dark: { label: "Dark", amount: -0.3 },
+  light: { label: "Light", amount: 0.22 },
+};
+export const DEFAULT_SHADE = "dark";
+
+export function sectionShade(hex, shade = DEFAULT_SHADE) {
+  const amount = (SECTION_SHADES[shade] ?? SECTION_SHADES[DEFAULT_SHADE]).amount;
   const n = parseInt(hex.slice(1), 16);
-  const ch = (shift) => Math.round(((n >> shift) & 255) * (1 - amount));
+  const ch = (shift) => {
+    const v = (n >> shift) & 255;
+    return Math.round(amount < 0 ? v * (1 + amount) : v + (255 - v) * amount);
+  };
   return `#${[16, 8, 0].map((s) => ch(s).toString(16).padStart(2, "0")).join("")}`;
 }
 
 // The URL of a cover image drawn by /blog/cover.
-export function coverUrl({ category, icon, text, variant, format } = {}) {
+export function coverUrl({ category, icon, text, variant, format, shade } = {}) {
   const p = new URLSearchParams();
   if (category) p.set("c", category);
   if (icon) p.set("i", icon);
   if (text) p.set("t", text);
   if (variant === "section") p.set("v", "section");
+  if (variant === "section" && shade && shade !== DEFAULT_SHADE) p.set("s", shade);
   if (format && format !== "wide") p.set("f", format);
   return `/blog/cover?${p}`;
 }
