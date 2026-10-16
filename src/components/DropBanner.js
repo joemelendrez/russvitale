@@ -66,7 +66,7 @@ export default function DropBanner() {
           <div className="flex items-start gap-3">
             <span className="relative mt-1.5 flex h-2.5 w-2.5 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-era-accent opacity-60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-era-accent" />
+              <span className="relative inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-era-accent" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-era-accent">New drop &middot; {formatDay(drop.released_on)}</p>

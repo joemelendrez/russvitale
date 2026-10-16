@@ -450,7 +450,7 @@ function SharePanel({ list }) {
             src={imageUrl}
             alt="Preview of your top 10 picture"
             onLoad={() => setLoaded(imageUrl)}
-            className={`h-full w-full object-cover transition-opacity duration-300 ${loaded === imageUrl ? "opacity-100" : "opacity-0"}`}
+            className={`h-full w-full shrink-0 object-cover transition-opacity duration-300 ${loaded === imageUrl ? "opacity-100" : "opacity-0"}`}
           />
         )}
         {loaded !== imageUrl && <span className="absolute inset-0 grid place-items-center text-sm text-era-muted">Drawing...</span>}

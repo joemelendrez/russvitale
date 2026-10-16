@@ -130,11 +130,11 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
                 style={{ background: palette.accent, color: palette.bg }}
               >
                 {playingOnPhone ? (
-                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="currentColor" aria-hidden="true">
                     <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6" fill="currentColor" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6 shrink-0" fill="currentColor" aria-hidden="true">
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 )}
@@ -149,11 +149,11 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
             aria-hidden="true"
           >
             {playingOnPhone ? (
-              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+              <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="currentColor">
                 <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6" fill="currentColor">
+              <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6 shrink-0" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}

@@ -14,6 +14,9 @@ import SpotifyEmbed from "./SpotifyEmbed";
 // own player, so every play counts on Spotify.
 export default function Playlists() {
   const [lists, setLists] = useState(() => (supabase ? null : []));
+  // Each playlist's main color from its picture on Spotify, so the card
+  // matches the cover people see there.
+  const [covers, setCovers] = useState({});
   useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => {
     if (!supabase) return;
@@ -28,6 +31,18 @@ export default function Playlists() {
       live = false;
     };
   }, []);
+  useEffect(() => {
+    const ids = (lists ?? []).map((l) => l.spotify_id).filter(Boolean);
+    if (!ids.length) return;
+    let live = true;
+    fetch(`/playlists/covers.json?ids=${ids.join(",")}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => live && d?.covers && setCovers(d.covers))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [lists]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
@@ -52,9 +67,17 @@ export default function Playlists() {
         </div>
       ) : (
         <ul className="mt-14 grid gap-6 md:grid-cols-2">
-          {lists.map((list, i) => (
-            <li key={list.id} className="flex flex-col rounded-3xl border-2 p-5 sm:p-6" style={{ borderColor: swatchAt(i) }}>
-              <Link href={playlistHref(list.title)} className="font-display text-4xl uppercase leading-none hover:underline" style={{ color: swatchAt(i) }}>
+          {lists.map((list, i) => {
+            const color = covers[list.spotify_id]?.color ?? swatchAt(i);
+            return (
+            <li key={list.id} className="flex flex-col rounded-3xl border-2 p-5 transition-colors duration-500 sm:p-6" style={{ borderColor: color }}>
+              <Link
+                href={playlistHref(list.title)}
+                className="font-display text-4xl uppercase leading-none hover:underline"
+                // Pulled a little toward the text color so a very light or
+                // very dark cover still reads on either theme.
+                style={{ color: `color-mix(in oklab, ${color} 78%, var(--color-era-fg))` }}
+              >
                 {list.title}
               </Link>
               {list.blurb && <p className="mt-3 text-era-muted">{list.blurb}</p>}
@@ -76,7 +99,8 @@ export default function Playlists() {
               </a>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 

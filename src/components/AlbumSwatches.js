@@ -48,7 +48,7 @@ export default function AlbumSwatches({ variant = "chips", className = "" }) {
   return (
     <ul className={`flex gap-1.5 ${className}`} aria-label="Album colors">
       {ALBUM_SWATCHES.map((s) => (
-        <li key={s.id} title={s.title} className="h-4 w-4 rounded-[4px] ring-1 ring-white/10" style={{ background: s.color }}>
+        <li key={s.id} title={s.title} className="h-4 w-4 shrink-0 rounded-[4px] ring-1 ring-white/10" style={{ background: s.color }}>
           <span className="sr-only">{s.title}</span>
         </li>
       ))}

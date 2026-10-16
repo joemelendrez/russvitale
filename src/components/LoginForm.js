@@ -35,7 +35,7 @@ export default function LoginForm() {
         <ul className="mt-8 space-y-3 text-sm text-era-fg/80">
           {["Your favorites, in your order, everywhere", "Your top 10, ready to share", "No password to remember, and nothing for sale"].map((t) => (
             <li key={t} className="flex items-center gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-era-accent" aria-hidden="true" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-era-accent" aria-hidden="true" />
               {t}
             </li>
           ))}

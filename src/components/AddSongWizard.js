@@ -282,7 +282,7 @@ export default function AddSongWizard({ drops, onSaved }) {
             <dd>{form.type === "single" ? "/music and the home page's Singles timeline" : form.type === "version" ? `/music, and under ${form.versionOf}` : "/music"}</dd>
           </dl>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.show_banner} onChange={set("show_banner")} className="h-4 w-4" />
+            <input type="checkbox" checked={form.show_banner} onChange={set("show_banner")} className="h-4 w-4 shrink-0" />
             Announce it with the &quot;New drop&quot; pop-up
           </label>
         </div>

@@ -230,3 +230,10 @@ html:active-view-transition-type(page) main {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Icons keep their shape in tight flex rows on phones. */
+@layer base {
+  svg {
+    flex-shrink: 0;
+  }
+}

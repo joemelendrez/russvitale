@@ -126,13 +126,13 @@ const menuItemStyle = (active) =>
     : "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-era-fg/80 transition-colors hover:bg-era-fg/[0.07] hover:pl-4 hover:text-era-fg [transition-property:color,background-color,padding]";
 
 const chevron = (
-  <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+  <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
     <path d="M2.5 4.5 6 8l3.5-3.5" />
   </svg>
 );
 
 const accountButton =
-  "grid h-9 w-9 place-items-center rounded-full border border-era-fg/20 text-era-fg transition-colors hover:border-era-accent hover:text-era-accent";
+  "grid h-9 w-9 shrink-0 place-items-center rounded-full border border-era-fg/20 text-era-fg transition-colors hover:border-era-accent hover:text-era-accent";
 
 // Whether the signed-in account can edit the site (russ_admins). Only used to
 // show the Admin link; /admin and RLS check again on their own.
@@ -154,7 +154,7 @@ function useIsAdmin(session) {
 // signed in it shows their initial and a menu.
 function Account({ session }) {
   const pathname = usePathname();
-  if (!fanAccounts || session === undefined) return <span className="h-9 w-9" aria-hidden="true" />;
+  if (!fanAccounts || session === undefined) return <span className="h-9 w-9 shrink-0" aria-hidden="true" />;
   if (!session) {
     const next = pathname && pathname !== "/" && pathname !== "/login" ? `?next=${encodeURIComponent(pathname)}` : "";
     return (
@@ -191,17 +191,17 @@ function AccountLinks({ session, itemClass, onPick }) {
     <>
       {admin && (
         <a href="/admin" onClick={onPick} className={itemClass}>
-          <AppIcon name="shield" className="h-4 w-4 opacity-70" /> Admin
+          <AppIcon name="shield" className="h-4 w-4 shrink-0 opacity-70" /> Admin
         </a>
       )}
       <a href="/favorites" onClick={onPick} className={itemClass}>
-        <AppIcon name="heart" className="h-4 w-4 opacity-70" /> Your favorites
+        <AppIcon name="heart" className="h-4 w-4 shrink-0 opacity-70" /> Your favorites
       </a>
       <a href="/top10" onClick={onPick} className={itemClass}>
-        <AppIcon name="list-ordered" className="h-4 w-4 opacity-70" /> Your top 10
+        <AppIcon name="list-ordered" className="h-4 w-4 shrink-0 opacity-70" /> Your top 10
       </a>
       <button type="button" onClick={() => supabase.auth.signOut()} className={itemClass}>
-        <AppIcon name="log-out" className="h-4 w-4 opacity-70" /> Sign out
+        <AppIcon name="log-out" className="h-4 w-4 shrink-0 opacity-70" /> Sign out
       </button>
     </>
   );
@@ -269,7 +269,7 @@ export default function Header() {
                         className={menuItemStyle(active)}
                       >
                         {item.label}
-                        {active && <span className="h-1.5 w-1.5 rounded-full bg-era-accent" aria-hidden="true" />}
+                        {active && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-era-accent" aria-hidden="true" />}
                       </a>
                     );
                   })}
@@ -301,7 +301,7 @@ export default function Header() {
             <Account session={session} />
             <button
               type="button"
-              className="relative z-50 flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+              className="relative z-50 flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 md:hidden"
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
@@ -364,14 +364,14 @@ export default function Header() {
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 rounded-2xl border border-era-fg/15 p-3 text-era-fg"
                 >
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-era-fg/10">
-                    <AppIcon name="user" className="h-5 w-5" />
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-era-fg/10">
+                    <AppIcon name="user" className="h-5 w-5 shrink-0" />
                   </span>
                   <span className="flex-1">
                     <span className="block font-semibold">Sign in or sign up</span>
                     <span className="block text-xs text-era-muted">Save favorites and your top 10</span>
                   </span>
-                  <AppIcon name="chevron-right" className="h-4 w-4 opacity-50" />
+                  <AppIcon name="chevron-right" className="h-4 w-4 shrink-0 opacity-50" />
                 </a>
               )}
               {session && (
@@ -451,7 +451,7 @@ function MenuScroller({ children }) {
             aria-hidden="true"
           >
             <span className="flex animate-bounce items-center gap-1 text-[11px] uppercase tracking-[0.3em] text-era-muted">
-              More <AppIcon name="chevron-down" className="h-3.5 w-3.5" />
+              More <AppIcon name="chevron-down" className="h-3.5 w-3.5 shrink-0" />
             </span>
           </div>
         </>

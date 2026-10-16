@@ -93,7 +93,7 @@ export default function BlogToc({ headings, variant = "sidebar" }) {
             <span className="text-[11px] font-semibold uppercase tracking-[0.25em]">In this post</span>
             <span className="rounded-full bg-era-fg/10 px-2 py-0.5 text-[11px] text-era-muted">{numbered} sections</span>
           </span>
-          <span aria-hidden="true" className="grid h-7 w-7 place-items-center rounded-full border border-era-fg/20 text-lg leading-none transition-transform group-open:rotate-45">
+          <span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-era-fg/20 text-lg leading-none transition-transform group-open:rotate-45">
             +
           </span>
         </summary>

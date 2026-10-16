@@ -10,6 +10,7 @@ import { DEFAULT_PALETTE } from "@/data/eras";
 import { PLAYLIST_IDEAS, inkFor, playlistCoverUrl, playlistIcon, playlistUrl } from "@/data/playlists";
 import { SITE } from "@/data/site";
 import { savedPlaylists } from "@/lib/releasesServer";
+import { spotifyCover } from "@/lib/spotifyCover";
 
 export const revalidate = 60;
 
@@ -25,7 +26,9 @@ async function findPlaylist(slug) {
   if (i < 0) return null;
   const list = lists[i];
   const idea = playlistIdea(slug);
-  return { ...list, index: i, color: swatchAt(i), tracks: idea ? playlistTracks(idea.songs) : [], others: lists.filter((_, j) => j !== i) };
+  // The picture saved on Spotify and its color, when Spotify answers.
+  const spotify = await spotifyCover(list.spotify_id);
+  return { ...list, index: i, color: spotify.color ?? swatchAt(i), image: spotify.image, tracks: idea ? playlistTracks(idea.songs) : [], others: lists.filter((_, j) => j !== i) };
 }
 
 function describe(list) {
@@ -51,7 +54,7 @@ export default async function PlaylistPage({ params }) {
   const list = await findPlaylist(slug);
   if (!list) notFound();
   const albums = [...new Set(list.tracks.map((t) => t.slug))].map(albumBySlug).filter(Boolean);
-  const cover = playlistCoverUrl({ color: list.color, icon: playlistIcon(list.title), text: list.title });
+  const cover = list.image ?? playlistCoverUrl({ color: list.color, icon: playlistIcon(list.title), text: list.title });
 
   return (
     <>
@@ -66,7 +69,7 @@ export default async function PlaylistPage({ params }) {
 
         <div className="mt-8 grid gap-8 md:grid-cols-[minmax(0,280px)_1fr] md:items-end">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={cover} alt={`${list.title} playlist cover`} width={280} height={280} className="aspect-square w-full max-w-[280px] rounded-2xl shadow-2xl" style={{ boxShadow: `0 30px 80px -30px ${list.color}` }} />
+          <img src={cover} alt={`${list.title} playlist cover`} width={280} height={280} className="aspect-square w-full max-w-[280px] rounded-2xl object-cover shadow-2xl" style={{ boxShadow: `0 30px 80px -30px ${list.color}` }} />
           <div>
             <p className="text-xs uppercase tracking-[0.35em]" style={{ color: list.color }}>
               Unofficial fan playlist
@@ -115,7 +118,7 @@ export default async function PlaylistPage({ params }) {
                         href={albumHref(a)}
                         className="inline-flex items-center gap-2 rounded-full border border-era-fg/15 px-3 py-1.5 text-xs font-semibold hover:border-era-accent"
                       >
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: ALBUM_SWATCHES.find((sw) => sw.id === a.era.id)?.color ?? a.era.palette.accent }} aria-hidden="true" />
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: ALBUM_SWATCHES.find((sw) => sw.id === a.era.id)?.color ?? a.era.palette.accent }} aria-hidden="true" />
                         {a.title}
                       </Link>
                     </li>

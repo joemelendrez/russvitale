@@ -307,7 +307,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
           <span className="hidden items-center gap-1.5 sm:flex" aria-label={`On ${SERVICES.filter((s) => HAS[s.key](release)).map((s) => s.label).join(", ") || "no service yet"}`}>
             {SERVICES.map((s) => (
               <span key={s.key} className={HAS[s.key](release) ? "" : "opacity-20 grayscale"} title={HAS[s.key](release) ? s.label : `Not linked on ${s.label} yet`}>
-                <ServiceMark service={s.key} className="h-4 w-4" />
+                <ServiceMark service={s.key} className="h-4 w-4 shrink-0" />
               </span>
             ))}
           </span>
@@ -317,11 +317,11 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
             aria-hidden="true"
           >
             {open ? (
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="currentColor">
                 <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4" fill="currentColor">
+              <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4 shrink-0" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -367,7 +367,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                         className="flex items-center gap-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] hover:text-era-accent"
                       >
                         {songsOpen ? "Hide songs" : `${album.tracks.length} songs`}
-                        <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition-transform ${songsOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 shrink-0 transition-transform ${songsOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                           <path d="m6 9 6 6 6-6" />
                         </svg>
                       </button>
