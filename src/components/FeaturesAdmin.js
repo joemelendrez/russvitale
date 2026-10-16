@@ -57,6 +57,7 @@ export default function FeaturesAdmin({ drops, onSaved }) {
   const [busy, setBusy] = useState(null);
 
   const run = async (key, action, failure) => {
+    if (busy) return;
     setError(null);
     setBusy(key);
     const { error } = await action();
@@ -166,6 +167,7 @@ function FeatureForm({ row, onSaved, onCancel }) {
 
   const save = async (e) => {
     e.preventDefault();
+    if (status === "saving") return;
     setError(null);
     setStatus("saving");
     let players;

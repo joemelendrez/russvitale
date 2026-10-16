@@ -7,6 +7,7 @@ import { useListenOn } from "@/lib/listenOn";
 import { supabase } from "@/lib/supabase";
 import { TAB_EVENT } from "./Timeline";
 import DropBanner from "./DropBanner";
+import { refreshSite } from "@/lib/refreshSite";
 
 // Song links fixed from the page itself, plus the newest drops, both kept in
 // Supabase (src/lib/supabase.js). Everyone reads them on top of src/data.
@@ -151,6 +152,7 @@ export function SpotifyLinksProvider({ children }) {
       else delete next[key];
       return next;
     });
+    refreshSite("links");
   }, []);
 
   const save = useCallback(async (release, link, remove = false) => {
@@ -167,6 +169,7 @@ export function SpotifyLinksProvider({ children }) {
     const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, ...parsed, updated_at: new Date().toISOString() });
     if (error) throw new Error("Couldn't save that link. Are you still signed in?");
     setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, ...parsed } }));
+    refreshSite("links");
   }, [clearRow]);
 
   // Uploads a new cover (shrunk on the device first) and points the release at it.
@@ -186,6 +189,7 @@ export function SpotifyLinksProvider({ children }) {
     }
     const old = coverPath(linksRef.current[key]?.cover_url);
     setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, cover_url } }));
+    refreshSite("links");
     if (old) bucket.remove([old]);
   }, []);
 
@@ -198,6 +202,7 @@ export function SpotifyLinksProvider({ children }) {
       const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, released_on: date, updated_at: new Date().toISOString() });
       if (error) throw new Error("Couldn't save that date. Are you still signed in?");
       setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, released_on: date } }));
+      refreshSite("links");
     },
     [clearRow]
   );

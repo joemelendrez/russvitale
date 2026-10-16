@@ -88,6 +88,7 @@ export default function AddSongWizard({ drops, onSaved }) {
   const pickTag = (tag) => setForm((f) => ({ ...f, title: `${f.versionOf.trim() || "Song"} (${tag})` }));
 
   const save = async () => {
+    if (status === "saving") return;
     setError(null);
     setStatus("saving");
     let players;
