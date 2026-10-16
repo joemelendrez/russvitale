@@ -21,7 +21,7 @@ export const ERAS = [
     palette: { bg: "#0b0c22", fg: "#eef0ff", muted: "#9c9fd0", accent: "#a7abff" },
     releases: [
       { title: "Velvet", year: 2011, date: "2011-12-09", type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
-      { title: "Apollo 13", year: 2012, date: "2012-01-24", type: "album" },
+      { title: "Apollo 13", year: 2012, date: "2012-01-24", type: "album", spotify: { kind: "album", id: "4FWRkDpjc2nCoYtGeNYNIp" } },
       { title: "5280", year: 2012, date: "2012-07-23", type: "album", spotify: { kind: "album", id: "6K4fDvF7E5uqN1BsvYUYFp" } },
       { title: "Vacation", year: 2012, date: "2012-09-24", type: "album", spotify: { kind: "album", id: "5vBogQencvbV8I0N38tf5E" } },
       { title: "Straight From Limbo", year: 2013, date: "2013-01-01", type: "album", spotify: { kind: "album", id: "5x1YzNGPlD0K2rExbgMa7k" } },
@@ -29,7 +29,7 @@ export const ERAS = [
       { title: "Color Blind", year: 2013, date: "2013-09-02", type: "album", spotify: { kind: "album", id: "3TS0aPsOU08Eu3Jr5NSWPz" } },
       { title: "Pink Elephant", year: 2014, date: "2014-01-23", type: "album", spotify: { kind: "album", id: "0NI2guYRXuRQvjAiSrhfh5" } },
       { title: "Brain Dead", year: 2014, date: "2014-03-24", type: "album", spotify: { kind: "album", id: "2kZ8n3EFPdiWXM5x2j0JxF" } },
-      { title: "Silence", year: 2014, date: "2014-06-11", type: "album" },
+      { title: "Silence", year: 2014, date: "2014-06-11", type: "album", spotify: { kind: "album", id: "2s7lwmva05g4kccq1f31oK" } },
       { title: "How to Rob", year: 2014, date: "2014-08-18", type: "album" },
     ],
   },
@@ -54,7 +54,7 @@ export const ERAS = [
       "The second album climbs to No. 4 on the Billboard 200, with Jessie Reyez on \"Basement\" and the late-year Just in Case EP closing things out.",
     palette: { bg: "#1a120a", fg: "#f4ead6", muted: "#ab977a", accent: "#e0a33e" },
     releases: [
-      { title: "Zoo", year: 2018, date: "2018-09-07", type: "album" },
+      { title: "Zoo", year: 2018, date: "2018-09-07", type: "album", spotify: { kind: "album", id: "48Kac3ieDtt9OSp9Fm4g9e" } },
       { title: "Just in Case", year: 2018, date: "2018-12-23", type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" } },
     ],
   },

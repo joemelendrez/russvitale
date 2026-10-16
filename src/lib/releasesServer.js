@@ -57,3 +57,37 @@ export async function keysForCode(code) {
     return [];
   }
 }
+
+// One release's saved link row (cover, date, links) from admin, or null.
+export async function savedLinkFor(releaseKeyValue) {
+  if (!url || !key) return null;
+  try {
+    const res = await fetch(`${url}/rest/v1/russ_release_links?select=*&release_key=eq.${encodeURIComponent(releaseKeyValue)}`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      next: { revalidate: 300, tags: ["links"] },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// The fan playlists saved in admin ({ title, blurb, spotify_id }), in order.
+export async function savedPlaylists() {
+  if (!url || !key) return [];
+  try {
+    const res = await fetch(`${url}/rest/v1/russ_playlists?select=title,blurb,spotify_id&order=position&order=created_at`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      next: { revalidate: 60, tags: ["playlists"] },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}

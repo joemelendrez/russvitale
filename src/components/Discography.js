@@ -16,6 +16,9 @@ import { usePhonePlayer } from "./PhonePlayer";
 import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
 import AlbumSwatches from "@/components/AlbumSwatches";
+import Link from "next/link";
+import { albumBySlug, albumHref, slugify } from "@/data/albums";
+import Tracklist from "./Tracklist";
 
 export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
 
@@ -267,6 +270,9 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
   const palette = release.era?.palette ?? DEFAULT_PALETTE;
   const playingOn = serviceOfPlayer(player);
   const { stop: stopPhoneBar } = usePhonePlayer();
+  // Albums and EPs from the timeline have a page and a tracklist.
+  const album = release.type === "album" || release.type === "ep" ? albumBySlug(slugify(release.title)) : null;
+  const [songsOpen, setSongsOpen] = useState(false);
 
   // One player at a time: opening a row closes the bar a song started from
   // the home page is still playing in.
@@ -294,7 +300,8 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                   ? featureCredit(release)
                   : TYPE_LABEL[release.type]}
               {versions?.length ? ` · +${versions.length} version${versions.length > 1 ? "s" : ""}` : ""}
-              {release.dropId ? " · New drop" : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
+              {release.dropId ? " · New drop" : ""}
+              {album?.tracks.length ? ` · ${album.tracks.length} songs` : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
             </span>
           </span>
           <span className="hidden items-center gap-1.5 sm:flex" aria-label={`On ${SERVICES.filter((s) => HAS[s.key](release)).map((s) => s.label).join(", ") || "no service yet"}`}>
@@ -349,6 +356,43 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                   </a>
                 ))}
               </div>
+              {album && (
+                <div className="mt-4 rounded-2xl border border-era-fg/10">
+                  <div className="flex items-center justify-between gap-3 px-4 py-2">
+                    {album.tracks.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setSongsOpen((o) => !o)}
+                        aria-expanded={songsOpen}
+                        className="flex items-center gap-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] hover:text-era-accent"
+                      >
+                        {songsOpen ? "Hide songs" : `${album.tracks.length} songs`}
+                        <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition-transform ${songsOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <span />
+                    )}
+                    <Link href={albumHref(album)} className="text-xs font-semibold uppercase tracking-[0.18em] text-era-muted hover:text-era-fg">
+                      {TYPE_LABEL[release.type]} page &rarr;
+                    </Link>
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {songsOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden border-t border-era-fg/10 px-2"
+                      >
+                        <Tracklist tracks={album.tracks} title={album.title} compact />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
               {(versions?.length > 0 || original) && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span className="text-[11px] uppercase tracking-[0.18em] text-era-muted">{original ? "Original" : "Other versions"}</span>

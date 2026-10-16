@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { applyPalette } from "./usePalette";
 import { DEFAULT_PALETTE } from "@/data/eras";
 import { playlistUrl } from "@/data/playlists";
+import { playlistHref } from "@/data/albums";
 import AlbumSwatches, { swatchAt } from "./AlbumSwatches";
 import NewsletterForm from "./NewsletterForm";
 import SpotifyEmbed from "./SpotifyEmbed";
@@ -52,19 +54,27 @@ export default function Playlists() {
         <ul className="mt-14 grid gap-6 md:grid-cols-2">
           {lists.map((list, i) => (
             <li key={list.id} className="flex flex-col rounded-3xl border-2 p-5 sm:p-6" style={{ borderColor: swatchAt(i) }}>
-              <p className="font-display text-4xl uppercase leading-none" style={{ color: swatchAt(i) }}>
+              <Link href={playlistHref(list.title)} className="font-display text-4xl uppercase leading-none hover:underline" style={{ color: swatchAt(i) }}>
                 {list.title}
-              </p>
+              </Link>
               {list.blurb && <p className="mt-3 text-era-muted">{list.blurb}</p>}
               <SpotifyEmbed id={list.spotify_id} title={list.title} className="mt-5" />
+              <div className="mt-5 flex flex-wrap gap-2">
+              <Link
+                href={playlistHref(list.title)}
+                className="rounded-full border border-era-fg/30 px-5 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:border-era-fg hover:bg-era-fg hover:text-era-bg"
+              >
+                See the songs <span aria-hidden="true">&rarr;</span>
+              </Link>
               <a
                 href={playlistUrl(list.spotify_id)}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-5 self-start rounded-full border border-era-fg/30 px-5 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:border-era-fg hover:bg-era-fg hover:text-era-bg"
+                className=" rounded-full border border-era-fg/30 px-5 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:border-era-fg hover:bg-era-fg hover:text-era-bg"
               >
                 Follow on Spotify <span aria-hidden="true">&#8599;</span>
               </a>
+              </div>
             </li>
           ))}
         </ul>
