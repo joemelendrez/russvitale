@@ -14,7 +14,8 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 //   /playlists/lists.json?top10=abc  a shared top 10 (russvitale.com/t/abc)
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Cache-Control": "public, max-age=300, s-maxage=300",
+  // Short, so a link saved in admin reaches the generator within a minute.
+  "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=60",
   // Keep ?top10= in Netlify's cache key, or every code gets the first answer.
   "Netlify-Vary": "query",
 };
@@ -31,7 +32,7 @@ async function savedPlaylists() {
   try {
     const res = await fetch(`${url}/rest/v1/russ_playlists?select=title,spotify_id&order=position`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
-      next: { revalidate: 300, tags: ["playlists"] },
+      cache: "no-store",
       signal: AbortSignal.timeout(6000),
     });
     const rows = res.ok ? await res.json() : [];

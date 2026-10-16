@@ -41,7 +41,7 @@ function Frame({ player, title, className, lazy, autoplay }) {
 // Spotify's iFrame API (developer.spotify.com/documentation/embeds). It calls
 // one global callback once, so every player shares one loader.
 let spotifyApi = null;
-function loadSpotifyApi() {
+export function loadSpotifyApi() {
   if (spotifyApi) return spotifyApi;
   spotifyApi = new Promise((resolve, reject) => {
     window.onSpotifyIframeApiReady = resolve;
@@ -55,6 +55,18 @@ function loadSpotifyApi() {
     document.body.appendChild(script);
   });
   return spotifyApi;
+}
+
+// Spotify players built with the API pause each other: when one starts, every
+// other one on the page stops, so two never play over each other.
+const playing = new Set();
+export function playOneAtATime(controller) {
+  playing.add(controller);
+  controller.addListener("playback_update", (e) => {
+    if (e?.data?.isPaused) return;
+    for (const other of playing) if (other !== controller) other.pause();
+  });
+  return () => playing.delete(controller);
 }
 
 function SpotifyAutoplay({ player, title, className }) {
@@ -80,6 +92,7 @@ function SpotifyAutoplay({ player, title, className }) {
             if (cancelled) return c.destroy();
             controller = c;
             clearTimeout(giveUp);
+            playOneAtATime(c);
             c.addListener("ready", () => c.play());
           },
         );
@@ -90,6 +103,7 @@ function SpotifyAutoplay({ player, title, className }) {
     return () => {
       cancelled = true;
       clearTimeout(giveUp);
+      if (controller) playing.delete(controller);
       controller?.destroy();
       node?.replaceChildren();
     };
