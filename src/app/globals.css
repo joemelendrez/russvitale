@@ -102,6 +102,18 @@ html.lenis, html.lenis body { height: auto; }
 .post-body hr { border-color: color-mix(in oklab, var(--fg) 12%, transparent); }
 .post-body code { font-size: 0.9em; }
 
+/* The widget is set up with white text and white separators (its colors are
+   inline), which vanish on light mode's paper. Text and lines follow the
+   theme instead; the buttons below keep their own colors. */
+.bit-widget-host .bit-widget,
+.bit-widget-host .bit-widget :where(div, span, a, p, h1, h2, h3, h4, time, svg) {
+  color: var(--color-era-fg) !important;
+  border-color: color-mix(in srgb, var(--color-era-fg) 15%, transparent) !important;
+}
+.bit-widget-host .bit-widget :is(.bit-offers, .bit-play-my-city-cta, .bit-follow-section-cta, .bit-rsvp, .bit-upcoming-events-show-all-button, .bit-past-events-show-all-button) * {
+  color: inherit !important;
+}
+
 /* Bandsintown's tour widget draws its buttons right on the page, so they take
    the site's pill style: accent fill for Tickets, outline for the rest. Its
    own colors come in as inline styles, hence !important. */
