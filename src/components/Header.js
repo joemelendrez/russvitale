@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { SITE, navMenu } from "@/data/site";
 import { fanAccounts, getSupabase } from "@/lib/supabaseConfig";
 import { displayName, useSession } from "@/lib/useSession";
@@ -104,7 +104,7 @@ function Dropdown({ label, ariaLabel, align = "left", buttonClass, children }) {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
@@ -112,7 +112,7 @@ function Dropdown({ label, ariaLabel, align = "left", buttonClass, children }) {
             className={`absolute top-full z-50 mt-4 min-w-52 rounded-2xl border border-era-fg/10 bg-era-bg/95 p-2 shadow-2xl backdrop-blur-xl ${align === "right" ? "right-0" : "-left-4"}`}
           >
             {children}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -313,8 +313,8 @@ export default function Header() {
                 setOpen((v) => !v);
               }}
             >
-              <motion.span animate={open ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
-              <motion.span animate={open ? { rotate: -45, y: -3 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
+              <m.span animate={open ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
+              <m.span animate={open ? { rotate: -45, y: -3 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
             </button>
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function Header() {
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             initial={{ clipPath: "circle(0% at 100% 0%)" }}
             animate={{ clipPath: "circle(150% at 100% 0%)" }}
             exit={{ clipPath: "circle(0% at 100% 0%)" }}
@@ -353,7 +353,7 @@ export default function Header() {
                   );
                 };
                 return (
-                  <motion.div
+                  <m.div
                     key={entry.group ?? entry.href}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -367,7 +367,7 @@ export default function Header() {
                     ) : (
                       link(entry)
                     )}
-                  </motion.div>
+                  </m.div>
                 );
               })}
             </MenuScroller>
@@ -416,7 +416,7 @@ export default function Header() {
                 Official site: russworld.com
               </a>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { useSpotifyLinks } from "./SpotifyLinks";
@@ -50,7 +50,7 @@ function PhonePlayerBar({ current, onClose }) {
   return (
     <AnimatePresence>
       {release && (
-        <motion.div
+        <m.div
           key="phone-player"
           initial={{ y: "120%" }}
           animate={{ y: 0 }}
@@ -88,7 +88,7 @@ function PhonePlayerBar({ current, onClose }) {
               <span aria-hidden="true">&#8599;</span>
             </a>
           )}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

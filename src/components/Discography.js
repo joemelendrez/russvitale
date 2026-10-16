@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { DEFAULT_PALETTE, eraForYear } from "@/data/eras";
 import { baseReleases } from "@/data/allReleases";
 import { sameSong } from "@/data/catalog";
@@ -105,15 +105,34 @@ export default function Discography() {
     return map;
   }, [all]);
 
+  // Typing stays quick: the list catches up with the search a beat later.
+  const search = useDeferredValue(query);
+
+  // Album and EP songs that match the search, by release key, so a song
+  // that only lives on an album still finds that album.
+  const trackHits = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const hits = new Map();
+    if (q.length < 2) return hits;
+    for (const r of all) {
+      if (r.type !== "album" && r.type !== "ep") continue;
+      const songs = (albumBySlug(slugify(r.title))?.tracks ?? []).filter((t) => t.title.toLowerCase().includes(q)).map((t) => t.title);
+      if (songs.length) hits.set(releaseKey(r), songs);
+    }
+    return hits;
+  }, [all, search]);
+
   // What the search leaves; the chips count from this, so they show how many
   // of each are left.
   const matched = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = search.trim().toLowerCase();
     if (!q) return all;
-    return all.filter((r) =>
-      `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)
+    return all.filter(
+      (r) =>
+        trackHits.has(releaseKey(r)) ||
+        `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)
     );
-  }, [all, query]);
+  }, [all, search, trackHits]);
 
   const counts = useMemo(() => countByType(matched), [matched]);
   const totals = useMemo(() => countByType(all), [all]);
@@ -185,7 +204,7 @@ export default function Discography() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by title, artist, year or era"
+              placeholder="Search songs, albums, artists or years"
               className="h-11 w-full rounded-full border border-era-fg/15 bg-era-fg/5 pl-10 pr-4 text-sm text-era-fg placeholder:text-era-muted focus:border-era-accent focus:outline-none"
             />
           </label>
@@ -248,6 +267,7 @@ export default function Discography() {
                   versions={versionsOf.get(key)}
                   original={r.type === "version" ? all.find((o) => o.type !== "version" && o.type !== "feature" && sameSong(o.title, r.versionOf ?? "")) : null}
                   onOpen={openRelease}
+                  songHits={trackHits.get(key)}
                 />
               );
             })}
@@ -263,7 +283,7 @@ export default function Discography() {
   );
 }
 
-export function ReleaseRow({ release, open, editing, onToggle, versions, original, onOpen, as: Tag = "li" }) {
+export function ReleaseRow({ release, open, editing, onToggle, versions, original, onOpen, songHits, as: Tag = "li" }) {
   const service = useListenOn();
   const player = playerFor(release, service);
   const listen = listenLink(release, service);
@@ -303,6 +323,12 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
               {release.dropId ? " · New drop" : ""}
               {album?.tracks.length ? ` · ${album.tracks.length} songs` : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
             </span>
+            {songHits?.length > 0 && (
+              <span className="mt-1 block truncate text-xs text-era-accent">
+                Has {songHits.slice(0, 2).map((t) => `"${t}"`).join(", ")}
+                {songHits.length > 2 ? ` +${songHits.length - 2} more` : ""}
+              </span>
+            )}
           </span>
           <span className="hidden items-center gap-1.5 sm:flex" aria-label={`On ${SERVICES.filter((s) => HAS[s.key](release)).map((s) => s.label).join(", ") || "no service yet"}`}>
             {SERVICES.map((s) => (
@@ -332,7 +358,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
 
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -380,7 +406,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                   </div>
                   <AnimatePresence initial={false}>
                     {songsOpen && (
-                      <motion.div
+                      <m.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -388,7 +414,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                         className="overflow-hidden border-t border-era-fg/10 px-2"
                       >
                         <Tracklist tracks={album.tracks} title={album.title} compact />
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -416,7 +442,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                 </div>
               )}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </Tag>

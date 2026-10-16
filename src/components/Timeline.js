@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useInView, useScroll, useSpring } from "framer-motion";
+import { m, useInView, useScroll, useSpring } from "framer-motion";
 import { ERAS } from "@/data/eras";
 import { singlesWithDrops } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
@@ -76,7 +76,7 @@ export default function Timeline() {
     <div id="music" ref={ref} className="relative scroll-mt-16">
       <header className="mx-auto max-w-7xl px-4 pb-6 pt-24 sm:px-6 sm:pt-32">
         <p className="text-xs uppercase tracking-[0.35em] text-era-muted">The music, 2011 to now</p>
-        <motion.h2
+        <m.h2
           key={tab}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -84,7 +84,7 @@ export default function Timeline() {
           className="mt-4 max-w-4xl font-display text-5xl uppercase leading-[0.95] sm:text-7xl"
         >
           {COPY[tab].title}
-        </motion.h2>
+        </m.h2>
         <p className="mt-6 max-w-xl text-era-muted">{COPY[tab].sub}</p>
       </header>
 
@@ -106,7 +106,7 @@ export default function Timeline() {
                   }`}
                 >
                   {tab === t.key && (
-                    <motion.span layoutId="music-tab-pill" className="absolute inset-0 rounded-full bg-era-accent" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+                    <m.span layoutId="music-tab-pill" className="absolute inset-0 rounded-full bg-era-accent" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
                   )}
                   <span className="relative">{t.label}</span>
                 </button>
@@ -128,7 +128,7 @@ export default function Timeline() {
       <div className="pointer-events-none absolute bottom-0 left-4 top-0 hidden xl:block">
         <div className="sticky top-1/2 -translate-y-1/2">
           <div className="relative h-[50vh] w-px bg-era-fg/15">
-            <motion.div style={{ scaleY: progress }} className="absolute inset-0 origin-top bg-era-accent" />
+            <m.div style={{ scaleY: progress }} className="absolute inset-0 origin-top bg-era-accent" />
           </div>
         </div>
       </div>

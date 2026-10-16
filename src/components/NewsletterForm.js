@@ -3,8 +3,9 @@ import { useState } from "react";
 
 // Email signup for tour dates, new drops and site updates. The server sends a
 // confirmation email; nobody is added until they tap it.
-export default function NewsletterForm({ id = "newsletter-email" }) {
+export default function NewsletterForm({ id = "newsletter-email", withCity = false, label = "Get tour dates and new drops by email" }) {
   const [email, setEmail] = useState("");
+  const [city, setCity] = useState("");
   const [website, setWebsite] = useState("");
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState(null);
@@ -18,7 +19,7 @@ export default function NewsletterForm({ id = "newsletter-email" }) {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), website }),
+        body: JSON.stringify({ email: email.trim(), website, ...(withCity && city.trim() ? { city: city.trim() } : {}) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Couldn't sign you up. Try again later.");
@@ -34,8 +35,22 @@ export default function NewsletterForm({ id = "newsletter-email" }) {
   return (
     <form onSubmit={submit} className="w-full max-w-md">
       <label htmlFor={id} className="block text-xs uppercase tracking-[0.2em] text-era-muted">
-        Get tour dates and new drops by email
+        {label}
       </label>
+      {withCity && (
+        <input
+          id={`${id}-city`}
+          type="text"
+          required
+          autoComplete="address-level2"
+          maxLength={80}
+          placeholder="Your city, e.g. Atlanta, GA"
+          aria-label="Your city"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="mt-3 w-full rounded-full border border-era-fg/15 bg-transparent px-4 py-2.5 text-base text-era-fg placeholder:text-era-muted/60"
+        />
+      )}
       <div className="mt-3 flex gap-2">
         <input
           id={id}

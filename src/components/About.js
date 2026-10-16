@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { CoverEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
 import { AMAZON_DISCLOSURE, BOOKS, SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
@@ -16,7 +16,7 @@ export default function About() {
   return (
     <PaletteSection id="about" className="relative scroll-mt-16 border-t border-era-fg/10 py-24 sm:py-36" aria-label="About">
       <div className="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 lg:grid-cols-2">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -50,11 +50,11 @@ export default function About() {
             </ul>
             <p className="mt-3 text-xs text-era-muted">{AMAZON_DISCLOSURE}</p>
           </div>
-        </motion.div>
+        </m.div>
 
         <div className="grid grid-cols-2 gap-px self-start overflow-hidden rounded-2xl border border-era-fg/10 bg-era-fg/10">
           {STATS.map((stat, i) => (
-            <motion.div
+            <m.div
               key={stat.label}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -64,7 +64,7 @@ export default function About() {
             >
               <p className="font-display text-5xl sm:text-6xl">{stat.value}</p>
               <p className={`mt-3 text-sm ${i === 0 ? "font-semibold text-black/70" : "text-era-muted"}`}>{stat.label}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

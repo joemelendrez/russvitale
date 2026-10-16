@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { SERVICES } from "@/data/players";
 import { setListenOn, useListenOn, useNowPlayingService } from "@/lib/listenOn";
 
@@ -71,16 +71,16 @@ export default function ListenToggle({ className = "" }) {
         className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-era-fg/15 bg-era-bg/90 shadow-lg transition-transform active:scale-95"
       >
         <AnimatePresence mode="wait" initial={false}>
-          <motion.span key={shown} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} transition={{ duration: 0.18 }}>
+          <m.span key={shown} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} transition={{ duration: 0.18 }}>
             <ServiceMark service={shown} className="h-6 w-6 shrink-0" />
-          </motion.span>
+          </m.span>
         </AnimatePresence>
         {elsewhere && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 animate-pulse rounded-full border-2 border-era-bg bg-emerald-400" aria-hidden="true" />}
       </button>
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             role="menu"
             aria-label="Play music on"
             initial={{ opacity: 0, y: -6, scale: 0.96 }}
@@ -112,7 +112,7 @@ export default function ListenToggle({ className = "" }) {
                 This song isn&apos;t on {labelOf(picked)}, so it&apos;s playing on {labelOf(playing)}.
               </p>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

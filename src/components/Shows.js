@@ -1,9 +1,10 @@
 "use client";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { SHOWS, TOUR_LINKS, TICKETMASTER_DISCLOSURE, hasTicketmasterAffiliate, ticketLink } from "@/data/shows";
 import PaletteSection from "./PaletteSection";
 import SectionHeading from "./SectionHeading";
 import BandsintownWidget from "./BandsintownWidget";
+import NewsletterForm from "./NewsletterForm";
 import { swatchAt } from "./AlbumSwatches";
 
 function upcoming() {
@@ -35,7 +36,7 @@ export default function Shows() {
             {shows.map((show, i) => {
               const d = formatDate(show.date);
               return (
-                <motion.li
+                <m.li
                   key={`${show.date}-${show.city}`}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +62,7 @@ export default function Shows() {
                       Tickets
                     </a>
                   )}
-                </motion.li>
+                </m.li>
               );
             })}
           </ul>
@@ -69,11 +70,22 @@ export default function Shows() {
 
         <BandsintownWidget />
 
+        <div className="mt-14 grid gap-6 rounded-3xl border border-era-fg/10 bg-era-fg/[0.03] p-6 sm:p-8 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="font-display text-3xl uppercase leading-none sm:text-4xl">Russ coming to your city?</p>
+            <p className="mt-3 max-w-md text-era-muted">
+              Leave your city and we&apos;ll email you when there&apos;s official show news near you, along with new drops. Dates always come from the
+              official listings.
+            </p>
+          </div>
+          <NewsletterForm id="shows-city-email" withCity label="Show news near you" />
+        </div>
+
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TOUR_LINKS.map((raw, i) => {
             const link = { ...raw, ...ticketLink(raw.href) };
             return (
-            <motion.a
+            <m.a
               key={raw.href}
               href={link.href}
               target="_blank"
@@ -95,7 +107,7 @@ export default function Shows() {
                   &#8599;
                 </span>
               </p>
-            </motion.a>
+            </m.a>
             );
           })}
         </div>

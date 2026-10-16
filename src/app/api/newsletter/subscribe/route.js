@@ -24,7 +24,13 @@ export async function POST(request) {
   const email = String(body.email ?? "").trim().toLowerCase();
   if (email.length > 254 || !EMAIL.test(email)) return NextResponse.json({ error: "That doesn't look like an email address." }, { status: 400 });
 
-  const { data: token, error } = await supabase.rpc("russ_subscribe", { p_email: email, p_secret: config.secret });
+  // A city ("Atlanta, GA") from the Shows signup, for show news near them.
+  const city = String(body.city ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
+  let { data: token, error } = city
+    ? await supabase.rpc("russ_subscribe_city", { p_email: email, p_secret: config.secret, p_city: city })
+    : await supabase.rpc("russ_subscribe", { p_email: email, p_secret: config.secret });
+  // Before migration 0014 there's no city function; sign them up without it.
+  if (error && city) ({ data: token, error } = await supabase.rpc("russ_subscribe", { p_email: email, p_secret: config.secret }));
   if (error) {
     console.error("russ_subscribe failed", error.message);
     return NextResponse.json({ error: "Couldn't sign you up. Try again later." }, { status: 500 });
@@ -34,7 +40,7 @@ export async function POST(request) {
   const confirm = `${SITE.url}/api/newsletter/confirm?token=${token}`;
   const { html, text } = renderEmail({
     heading: "Confirm your email",
-    body: "Tap the button to get tour dates, new drops and site updates from the Russ fan archive. If you didn't sign up, ignore this email and nothing happens.",
+    body: `Tap the button to get tour dates${city ? ` (with news for ${city})` : ""}, new drops and site updates from the Russ fan archive. If you didn't sign up, ignore this email and nothing happens.`,
     button: { href: confirm, label: "Yes, sign me up" },
     token,
     address: config.address,

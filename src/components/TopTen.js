@@ -7,9 +7,10 @@ import { featureCredit } from "@/data/features";
 import { releaseKey } from "@/data/releaseKey";
 import { useFavorites } from "@/lib/favorites";
 import { clearNowPlaying } from "@/lib/listenOn";
-import { supabase } from "@/lib/supabase";
+import { getSupabase, supabaseConfigured } from "@/lib/supabaseConfig";
 import { TOP10_MAX, setTop10, useTop10 } from "@/lib/top10";
 import { ReleaseRow, TYPE_LABEL, useAllReleases } from "./Discography";
+import ConfirmDialog from "./ConfirmDialog";
 import FavoritesAccount from "./FavoritesAccount";
 import MostLoved from "./MostLoved";
 import { applyPalette } from "./usePalette";
@@ -35,11 +36,13 @@ function useSettled(value, ms) {
 function useShortCode(list) {
   const [codes, setCodes] = useState({});
   useEffect(() => {
-    if (!list || !supabase || codes[list] !== undefined) return;
+    if (!list || !supabaseConfigured || codes[list] !== undefined) return;
     let live = true;
-    supabase.rpc("russ_top10_link", { p_keys: list.split(",") }).then(({ data, error }) => {
-      if (live) setCodes((c) => ({ ...c, [list]: error ? null : data }));
-    });
+    getSupabase()
+      .then((supabase) => supabase.rpc("russ_top10_link", { p_keys: list.split(",") }))
+      .then(({ data, error }) => {
+        if (live) setCodes((c) => ({ ...c, [list]: error ? null : data }));
+      });
     return () => {
       live = false;
     };
@@ -121,6 +124,20 @@ function Builder() {
   const list = keys.filter((k) => byKey.has(k));
   const full = list.length >= TOP10_MAX;
 
+  // Clear asks first, then offers Undo for a few seconds.
+  const [asking, setAsking] = useState(false);
+  const [undo, setUndo] = useState(null);
+  useEffect(() => {
+    if (!undo) return;
+    const t = setTimeout(() => setUndo(null), 6000);
+    return () => clearTimeout(t);
+  }, [undo]);
+  const clearAll = () => {
+    setUndo(list);
+    setTop10([]);
+    setAsking(false);
+  };
+
   const add = (key) => !full && !list.includes(key) && setTop10([...list, key]);
   const remove = (key) => setTop10(list.filter((k) => k !== key));
   const move = (key, by) => {
@@ -168,13 +185,38 @@ function Builder() {
             {list.length > 0 && (
               <button
                 type="button"
-                onClick={() => window.confirm("Clear your top 10?") && setTop10([])}
+                onClick={() => setAsking(true)}
                 className="text-sm text-era-muted underline hover:text-era-fg"
               >
                 Clear
               </button>
             )}
           </div>
+          <ConfirmDialog
+            open={asking}
+            title="Clear your top 10?"
+            body={`All ${list.length} picks come off this list. Your favorites stay saved.`}
+            confirmLabel="Clear it"
+            cancelLabel="Keep it"
+            danger
+            onConfirm={clearAll}
+            onCancel={() => setAsking(false)}
+          />
+          {undo && (
+            <div role="status" className="fixed inset-x-3 bottom-4 z-[70] mx-auto flex max-w-sm items-center justify-between gap-3 rounded-full bg-era-fg px-5 py-3 text-sm text-era-bg shadow-2xl">
+              Top 10 cleared
+              <button
+                type="button"
+                onClick={() => {
+                  setTop10(undo);
+                  setUndo(null);
+                }}
+                className="font-semibold uppercase tracking-[0.15em] underline"
+              >
+                Undo
+              </button>
+            </div>
+          )}
 
           {list.length > 0 && (
             <Reorder.Group axis="y" values={list} onReorder={setTop10} as="ol" className="mt-4 space-y-2">
