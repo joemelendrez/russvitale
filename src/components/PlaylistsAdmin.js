@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PLAYLIST_IDEAS, playlistCoverUrl, playlistIcon, playlistIdFromLink, playlistUrl } from "@/data/playlists";
 import { CATALOG_RELEASES } from "@/data/releaseKey";
-import { ALBUM_SWATCHES, swatchAt } from "./AlbumSwatches";
+import { COVER_COLORS, coverHex, swatchAt } from "./AlbumSwatches";
 import { IconPicker } from "./CoverMaker";
 import AppIcon from "./AppIcon";
 import Link from "next/link";
@@ -81,21 +81,7 @@ function PlaylistCover({ title, color: startColor }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={url} alt={`${title} cover`} width={144} height={144} className="h-36 w-36 rounded-lg bg-white/5 object-cover" />
         <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Cover color">
-            {ALBUM_SWATCHES.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                role="radio"
-                aria-checked={s.color === color}
-                aria-label={s.title}
-                title={s.title}
-                onClick={() => setColor(s.color)}
-                className={`h-7 w-7 rounded-md border-2 ${s.color === color ? "border-white" : "border-transparent"}`}
-                style={{ background: s.color }}
-              />
-            ))}
-          </div>
+          <CoverColors value={color} onChange={setColor} />
           <IconPicker value={icon} onChange={setIcon} color={color} />
           <label className="flex items-center gap-2 text-sm text-white/70">
             <input type="checkbox" checked={showName} onChange={(e) => setShowName(e.target.checked)} className="h-4 w-4" />
@@ -112,6 +98,37 @@ function PlaylistCover({ title, color: startColor }) {
 
 // One mood: its playlist link right on the card, saved with one tap. A
 // starter mood without a link yet is added to the site when its link is saved.
+// Quick-pick colors (every album's, plus a few plain ones) and a custom picker.
+function CoverColors({ value, onChange }) {
+  const current = value.toLowerCase();
+  const custom = !COVER_COLORS.some((c) => c.color.toLowerCase() === current);
+  return (
+    <div className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label="Cover color">
+      {COVER_COLORS.map((c) => (
+        <button
+          key={c.color}
+          type="button"
+          role="radio"
+          aria-checked={c.color.toLowerCase() === current}
+          aria-label={c.title}
+          title={c.title}
+          onClick={() => onChange(c.color)}
+          className={`h-7 w-7 rounded-md border-2 ${c.color.toLowerCase() === current ? "border-white" : "border-transparent"}`}
+          style={{ background: c.color }}
+        />
+      ))}
+      <label
+        title="Pick any color"
+        className={`relative grid h-7 w-7 cursor-pointer place-items-center overflow-hidden rounded-md border-2 ${custom ? "border-white" : "border-white/20"}`}
+        style={{ background: custom ? value : "conic-gradient(#ff4d3d, #ffd21f, #5fd39a, #62b6d0, #7c3aed, #ff5cd6, #ff4d3d)" }}
+      >
+        <span className="sr-only">Custom color</span>
+        <input type="color" value={coverHex(value) ?? "#000000"} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
+      </label>
+    </div>
+  );
+}
+
 function MoodCard({ row, idea, color, nextPosition, onSaved, onEdit, onRemove, onUp, onDown }) {
   const saved = row ? playlistUrl(row.spotify_id) : "";
   const [link, setLink] = useState(saved);
