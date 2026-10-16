@@ -2,6 +2,64 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PLAYLIST_IDEAS, playlistIdFromLink, playlistUrl } from "@/data/playlists";
+import { CATALOG_RELEASES } from "@/data/releaseKey";
+
+// A starter list's songs with their Spotify track links, from the catalog.
+function starterSongs(titles) {
+  return titles.map((title) => {
+    const r = CATALOG_RELEASES.find((x) => x.title === title);
+    return { title, url: r?.spotify?.kind === "track" ? `https://open.spotify.com/track/${r.spotify.id}` : null };
+  });
+}
+
+// One mood's starter list: open it to see the songs, copy the names or the
+// Spotify links into a playlist maker, or start the playlist form with it.
+function StarterList({ idea, onUse }) {
+  const [copied, setCopied] = useState(null);
+  const songs = starterSongs(idea.songs);
+  const copy = async (what) => {
+    const text = what === "links" ? songs.filter((s) => s.url).map((s) => s.url).join("\n") : songs.map((s) => `${s.title} - Russ`).join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(what);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {}
+  };
+  return (
+    <details className="group rounded-xl border border-white/10 px-4 py-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <span className="font-semibold">{idea.title}</span>
+        <span className="text-xs text-white/50">
+          {songs.length} songs <span className="inline-block transition-transform group-open:rotate-180" aria-hidden="true">&#9662;</span>
+        </span>
+      </summary>
+      <ol className="mt-3 list-decimal space-y-0.5 pl-5 text-sm text-white/80">
+        {songs.map((s) => (
+          <li key={s.title}>
+            {s.url ? (
+              <a href={s.url} target="_blank" rel="noreferrer" className="hover:underline">
+                {s.title}
+              </a>
+            ) : (
+              s.title
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+        <button type="button" onClick={() => copy("names")} className="rounded-full bg-white px-3 py-1.5 text-black">
+          {copied === "names" ? "Copied" : "Copy song names"}
+        </button>
+        <button type="button" onClick={() => copy("links")} className="rounded-full border border-white/20 px-3 py-1.5">
+          {copied === "links" ? "Copied" : "Copy Spotify links"}
+        </button>
+        <button type="button" onClick={onUse} className="rounded-full border border-white/20 px-3 py-1.5">
+          Add it here once made
+        </button>
+      </div>
+    </details>
+  );
+}
 
 const input = "w-full rounded-lg [color-scheme:dark] border border-white/15 bg-black/50 px-3 py-2.5 text-base text-white placeholder:text-white/30";
 const primary = "rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-40";
@@ -76,8 +134,6 @@ export default function PlaylistsAdmin() {
     if (results.some((r) => r.error)) setError("Couldn't save the new order.");
     load();
   };
-
-  const unused = PLAYLIST_IDEAS.filter((idea) => !(lists ?? []).some((l) => l.title.toLowerCase() === idea.title.toLowerCase()));
 
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
@@ -156,18 +212,15 @@ export default function PlaylistsAdmin() {
           <button type="button" onClick={() => open(null)} className={primary}>
             Add a playlist
           </button>
-          {unused.length > 0 && (
-            <div className="mt-4">
-              <p className="text-xs text-white/50">Mood ideas, tap one to start:</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {unused.map((idea) => (
-                  <button key={idea.title} type="button" onClick={() => open(null, idea)} className="rounded-full border border-white/20 px-3 py-1.5 text-xs hover:border-white/60">
-                    {idea.title}
-                  </button>
-                ))}
-              </div>
+          <div className="mt-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-white/50">Starter song lists</p>
+            <p className="mt-1 text-xs text-white/50">Copy a list into your playlist maker, make it on Spotify, then add its link here.</p>
+            <div className="mt-3 space-y-2">
+              {PLAYLIST_IDEAS.map((idea) => (
+                <StarterList key={idea.title} idea={idea} onUse={() => open(null, { title: idea.title, blurb: idea.blurb })} />
+              ))}
             </div>
-          )}
+          </div>
         </div>
       )}
     </section>
