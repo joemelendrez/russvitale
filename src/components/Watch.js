@@ -4,11 +4,12 @@ import { motion } from "framer-motion";
 import { VIDEOS } from "@/data/videos";
 import { SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
+import { SECTION_PALETTES } from "@/data/eras";
 import SectionHeading from "./SectionHeading";
 
 export default function Watch() {
   return (
-    <PaletteSection id="watch" className="relative scroll-mt-16 py-24 sm:py-36" aria-label="Watch">
+    <PaletteSection palette={SECTION_PALETTES.watch} id="watch" className="relative scroll-mt-16 py-24 sm:py-36" aria-label="Watch">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading eyebrow="Watch" title="Official videos">
           Played straight from YouTube. More on the{" "}
@@ -36,6 +37,7 @@ function Video({ video, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.7 }}
+      className="rounded-3xl border-2 border-era-fg p-3 pb-5"
     >
       <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
         {playing ? (
@@ -62,8 +64,8 @@ function Video({ video, index }) {
           </button>
         )}
       </div>
-      <p className="mt-4 font-semibold">{video.title}</p>
-      <p className="text-xs uppercase tracking-[0.2em] text-era-muted">{video.year}</p>
+      <p className="mt-4 px-1 font-semibold">{video.title}</p>
+      <p className="px-1 text-xs uppercase tracking-[0.2em] text-era-muted">{video.year}</p>
     </motion.div>
   );
 }

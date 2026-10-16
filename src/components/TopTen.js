@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Reorder, useDragControls } from "framer-motion";
-import { SECTION_PALETTES } from "@/data/eras";
+import { DEFAULT_PALETTE } from "@/data/eras";
 import { featureCredit } from "@/data/features";
 import { releaseKey } from "@/data/releaseKey";
 import { useFavorites } from "@/lib/favorites";
@@ -13,6 +13,7 @@ import { ReleaseRow, TYPE_LABEL, useAllReleases } from "./Discography";
 import FavoritesAccount from "./FavoritesAccount";
 import MostLoved from "./MostLoved";
 import { applyPalette } from "./usePalette";
+import AlbumSwatches, { swatchAt } from "@/components/AlbumSwatches";
 
 const pill = "rounded-full px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] disabled:opacity-40";
 
@@ -50,7 +51,7 @@ function useShortCode(list) {
 // With ?l= it shows the list someone shared, playable, with a way to make
 // your own.
 export default function TopTen({ shared }) {
-  useEffect(() => applyPalette(SECTION_PALETTES.top10), []);
+  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => () => clearNowPlaying("discography"), []);
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
@@ -91,7 +92,9 @@ function SharedList({ keys }) {
       <ol className="mt-8 divide-y divide-era-fg/10">
         {list.map((key, i) => (
           <li key={key} className="flex items-start gap-3">
-            <span className="mt-5 w-8 shrink-0 text-right font-display text-2xl text-era-accent">{i + 1}</span>
+            <span className="mt-5 w-8 shrink-0 text-right font-display text-2xl" style={{ color: swatchAt(i) }}>
+              {i + 1}
+            </span>
             <div className="min-w-0 flex-1">
               <ReleaseRow
                 as="div"
@@ -146,6 +149,7 @@ function Builder() {
 
   return (
     <>
+      <AlbumSwatches className="mb-6" />
       <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
         Your Russ <span className="text-era-accent">top 10</span>
@@ -310,7 +314,8 @@ function PickItem({ id, index, release, onMove, onRemove }) {
       value={id}
       dragListener={false}
       dragControls={controls}
-      className="flex items-center gap-3 rounded-2xl border border-era-fg/10 bg-era-bg px-3 py-2.5"
+      style={{ borderColor: swatchAt(index) }}
+      className="flex items-center gap-3 rounded-2xl border-2 bg-era-bg px-3 py-2.5"
     >
       <button
         type="button"
@@ -322,7 +327,8 @@ function PickItem({ id, index, release, onMove, onRemove }) {
           }
         }}
         aria-label={`Move ${release.title}, number ${index + 1}. Use the up and down arrow keys.`}
-        className="flex w-9 shrink-0 cursor-grab touch-none items-center justify-center font-display text-2xl text-era-accent active:cursor-grabbing"
+        style={{ color: swatchAt(index) }}
+        className="flex w-9 shrink-0 cursor-grab touch-none items-center justify-center font-display text-2xl active:cursor-grabbing"
       >
         {index + 1}
       </button>

@@ -62,15 +62,3 @@ export function iconFromTags(tags = []) {
   }
   return null;
 }
-
-// A post page's colors: its category color mixed deep into near black, with
-// the bright color itself as the accent.
-export function categoryPalette(slugOrName) {
-  const { color } = coverCategory(slugOrName);
-  const mix = (a, b, t) => {
-    const n = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-    const [x, y] = [n(a), n(b)];
-    return `#${x.map((v, i) => Math.round(v * t + y[i] * (1 - t)).toString(16).padStart(2, "0")).join("")}`;
-  };
-  return { bg: mix(color, "#08070c", 0.16), fg: "#f7f3f1", muted: mix(color, "#b4adb0", 0.3), accent: color };
-}

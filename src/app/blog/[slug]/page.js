@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import BlogFaq from "@/components/BlogFaq";
 import BlogToc from "@/components/BlogToc";
 import DefaultPalette from "@/components/DefaultPalette";
-import { categoryPalette } from "@/data/blogCovers";
 import Footer from "@/components/Footer";
 import ReadingProgress from "@/components/ReadingProgress";
 import { AMAZON_DISCLOSURE, SITE } from "@/data/site";
@@ -55,7 +54,7 @@ export default async function PostPage({ params }) {
 
   return (
     <>
-      <DefaultPalette palette={categoryPalette(post.category?.slug)} />
+      <DefaultPalette />
       <ReadingProgress targetId="article" />
       <JsonLd
         item={{

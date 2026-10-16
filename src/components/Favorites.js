@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { SECTION_PALETTES } from "@/data/eras";
+import { DEFAULT_PALETTE } from "@/data/eras";
 import { Reorder, useDragControls } from "framer-motion";
 import { listenLink } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
@@ -12,6 +12,7 @@ import FavoritesAccount from "./FavoritesAccount";
 import ListenToggle from "./ListenToggle";
 import MostLoved from "./MostLoved";
 import { applyPalette } from "./usePalette";
+import AlbumSwatches from "@/components/AlbumSwatches";
 
 // YouTube turns up to 50 video ids into a playlist anyone can open, no sign-in.
 const YOUTUBE_LIMIT = 50;
@@ -25,7 +26,7 @@ export default function Favorites() {
   const [openKey, setOpenKey] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => applyPalette(SECTION_PALETTES.favorites), []);
+  useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => () => clearNowPlaying("discography"), []);
 
   const byKey = useMemo(() => new Map(all.map((r) => [releaseKey(r), r])), [all]);
@@ -60,6 +61,7 @@ export default function Favorites() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-28 sm:px-6 sm:pt-36">
+      <AlbumSwatches className="mb-6" />
       <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Your favorites</h1>
       <p className="mt-6 max-w-xl text-era-muted">

@@ -4,6 +4,7 @@ import { SHOWS, TOUR_LINKS, TICKETMASTER_DISCLOSURE, hasTicketmasterAffiliate, t
 import PaletteSection from "./PaletteSection";
 import SectionHeading from "./SectionHeading";
 import BandsintownWidget from "./BandsintownWidget";
+import { swatchAt } from "./AlbumSwatches";
 
 function upcoming() {
   const today = new Date().toISOString().slice(0, 10);
@@ -81,9 +82,12 @@ export default function Shows() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.6 }}
-              className="group relative overflow-hidden rounded-2xl border border-era-fg/10 p-6 transition-colors hover:border-era-fg/30"
+              style={{ borderColor: swatchAt(i + 2) }}
+              className="group relative overflow-hidden rounded-2xl border-2 p-6 transition-transform hover:-translate-y-1"
             >
-              <p className="text-xs uppercase tracking-[0.25em] text-era-muted">{link.note}</p>
+              <p className="text-xs uppercase tracking-[0.25em]" style={{ color: swatchAt(i + 2) }}>
+                {link.note}
+              </p>
               <p className="mt-6 flex items-end justify-between font-display text-3xl uppercase">
                 {link.label}
                 <span className="text-2xl transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" aria-hidden="true">
