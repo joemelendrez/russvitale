@@ -15,6 +15,8 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Cache-Control": "public, max-age=300, s-maxage=300",
+  // Keep ?top10= in Netlify's cache key, or every code gets the first answer.
+  "Netlify-Vary": "query",
 };
 
 const song = (r, title = r?.title) => ({
