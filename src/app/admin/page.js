@@ -6,6 +6,9 @@ import NewsletterAdmin from "@/components/NewsletterAdmin";
 import FeaturesAdmin from "@/components/FeaturesAdmin";
 import CoverMaker from "@/components/CoverMaker";
 import PlaylistsAdmin from "@/components/PlaylistsAdmin";
+import Link from "next/link";
+import AppIcon from "@/components/AppIcon";
+import { swatchAt } from "@/components/AlbumSwatches";
 import { playerColumnsFromLinks, releaseYoutubeLink, rowLink, rowYoutubeLink } from "@/data/players";
 
 const TYPE_LABEL = { single: "Single", album: "Album", ep: "EP", version: "Version" };
@@ -37,12 +40,15 @@ export default function AdminPage() {
     };
   }, []);
 
+  if (supabase && session && admin) return <Dashboard email={session.user.email} />;
+
   return (
-    <div className="min-h-svh bg-neutral-950 px-4 pb-24 pt-24 text-white sm:px-6">
+    <div className="min-h-svh bg-neutral-950 px-4 pb-24 pt-16 text-white sm:px-6">
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs uppercase tracking-[0.35em] text-white/50">Russ fan archive</p>
-        <h1 className="mt-3 font-display text-5xl uppercase leading-none">Admin</h1>
-        <div className="mt-10">
+        <TopBar />
+        <p className="mt-8 text-xs uppercase tracking-[0.35em] text-white/50">Russ fan archive</p>
+        <h1 className="mt-2 font-display text-5xl uppercase leading-none">Admin</h1>
+        <div className="mt-8">
           {!supabase ? (
             <Card>The database isn&apos;t connected yet. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY on Netlify.</Card>
           ) : session === undefined ? (
@@ -51,17 +57,72 @@ export default function AdminPage() {
             <SignIn />
           ) : admin === null ? (
             <Card>Checking your account...</Card>
-          ) : !admin ? (
+          ) : (
             <Card>
               {session.user.email} can&apos;t edit this site. <SignOut />
             </Card>
-          ) : (
-            <Dashboard email={session.user.email} />
           )}
         </div>
       </div>
     </div>
   );
+}
+
+// The bar across the top: back to the site (or to the admin list inside a
+// section), and the open section's name once its big title scrolls away.
+function TopBar({ section, onBack }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 56);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const back = "flex items-center gap-0.5 text-sm font-semibold text-white/80 hover:text-white";
+  return (
+    <div
+      className={`fixed inset-x-0 top-0 z-40 transition-colors ${scrolled ? "border-b border-white/10 bg-neutral-950/80 backdrop-blur-xl" : "border-b border-transparent"}`}
+    >
+      <div className="relative mx-auto flex h-14 max-w-2xl items-center justify-between px-4 sm:px-6">
+        {section ? (
+          <button type="button" onClick={onBack} className={back}>
+            <AppIcon name="chevron-left" className="h-5 w-5" /> Admin
+          </button>
+        ) : (
+          <Link href="/" className={back}>
+            <AppIcon name="chevron-left" className="h-5 w-5" /> Site
+          </Link>
+        )}
+        <p
+          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 text-sm font-semibold transition-opacity ${scrolled ? "opacity-100" : "opacity-0"}`}
+        >
+          {section?.title ?? "Admin"}
+        </p>
+        <span className="font-display text-lg tracking-wide text-white/40">RUSS</span>
+      </div>
+    </div>
+  );
+}
+
+const SECTION_KEYS = ["add", "songs", "features", "playlists", "newsletter", "covers"];
+
+// The open section, from the URL's #hash, so a reload or the back button lands right.
+function useHashSection() {
+  const [hash, setHash] = useState(null);
+  useEffect(() => {
+    const read = () => {
+      const key = window.location.hash.slice(1);
+      setHash(SECTION_KEYS.includes(key) ? key : null);
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    window.addEventListener("popstate", read);
+    return () => {
+      window.removeEventListener("hashchange", read);
+      window.removeEventListener("popstate", read);
+    };
+  }, []);
+  return hash;
 }
 
 function Card({ children, title }) {
@@ -227,89 +288,228 @@ function Dashboard({ email }) {
     load();
   };
 
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-white/60">
-        Signed in as {email}. <SignOut />
+  const [playlistCount, setPlaylistCount] = useState(null);
+  const active = useHashSection();
+  // Opening a section adds a history entry, so the phone's back button returns to the list.
+  const go = (key) => {
+    history.pushState({ adminFromList: true }, "", `#${key}`);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    window.scrollTo(0, 0);
+  };
+  const back = () => {
+    if (history.state?.adminFromList) return history.back();
+    history.replaceState(null, "", window.location.pathname);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    window.scrollTo(0, 0);
+  };
+
+  const addedSongs = (
+    <Card title="Added songs">
+      {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+      {drops === null ? (
+        <p className="text-sm text-white/60">Loading...</p>
+      ) : songs.length === 0 ? (
+        <p className="text-sm text-white/60">Nothing added yet.</p>
+      ) : (
+        <ul className="divide-y divide-white/10">
+          {songs.map((drop) =>
+            editingId === drop.id ? (
+              <li key={drop.id} className="py-4">
+                <DropForm
+                  drop={drop}
+                  onCancel={() => setEditingId(null)}
+                  onSaved={() => {
+                    setEditingId(null);
+                    load();
+                  }}
+                />
+              </li>
+            ) : (
+              <li key={drop.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{drop.title}</p>
+                  <p className="text-xs text-white/50">
+                    {TYPE_LABEL[drop.release_type] ?? "Single"}
+                    {drop.version_of ? ` of ${drop.version_of}` : ""} · {drop.released_on}
+                    {drop.spotify_id ? ` · Spotify ${drop.kind}` : drop.soundcloud_url ? " · SoundCloud" : ""}
+                    {drop.youtube_id ? " · YouTube" : ""}
+                    {!drop.spotify_id && !drop.soundcloud_url && !drop.youtube_id ? " · no player" : ""}
+                    {drop.note ? ` · ${drop.note}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={drop.show_banner} onChange={(e) => update(drop.id, { show_banner: e.target.checked })} className="h-4 w-4" />
+                    Pop-up
+                  </label>
+                  <button type="button" onClick={() => setEditingId(drop.id)} className="font-semibold hover:underline">
+                    Edit
+                  </button>
+                  <button type="button" onClick={() => remove(drop)} className="text-red-400 hover:underline">
+                    Delete
+                  </button>
+                </div>
+              </li>
+            )
+          )}
+        </ul>
+      )}
+      <p className="mt-4 text-xs text-white/40">
+        Everything here shows on /music under its date. Singles also join the home page&apos;s Singles timeline, and versions show under the song they come from. One with the
+        same title as a release already on the site replaces it, so you can set its exact date. The newest one with Pop-up on slides down as a &quot;New drop&quot; notice, once
+        per visitor.
       </p>
+    </Card>
+  );
 
-      <Card title="Song links">
-        <p className="text-sm text-white/70">
-          {linkCount === null ? "Loading..." : `${linkCount} saved from the site.`} Open the site in edit mode to paste Spotify, YouTube Music or SoundCloud links into releases
-          without a player.
-        </p>
-        {/* A full page load, so the site picks up edit mode as it opens. */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/?edit=1" className={`${primary} mt-4 inline-block`}>
-          Fix song links on the site
-        </a>
-      </Card>
+  const sections = [
+    { key: "add", group: "Music", icon: "plus", title: "Add a song", sub: "Singles, albums, EPs and versions" },
+    { key: "songs", group: "Music", icon: "disc-3", title: "Added songs", sub: drops === null ? "Loading..." : `${songs.length} on the site` },
+    { key: "features", group: "Music", icon: "mic-vocal", title: "Features", sub: "Songs Russ is featured on" },
+    { key: "playlists", group: "Fans", icon: "list-music", title: "Playlists", sub: playlistCount === null ? "Mood playlists" : `${playlistCount} on /playlists` },
+    { key: "newsletter", group: "Fans", icon: "mail", title: "Newsletter", sub: "Subscribers and sending" },
+    { key: "covers", group: "Blog", icon: "image", title: "Blog covers", sub: "Make a cover image" },
+  ];
+  const open = sections.find((x) => x.key === active) ?? null;
+  const groups = [...new Set(sections.map((x) => x.group))];
 
-      <AddSongWizard drops={drops ?? []} onSaved={load} />
+  return (
+    <div className="min-h-svh bg-neutral-950 px-4 pb-24 pt-16 text-white sm:px-6">
+      <style>{PANE_CSS}</style>
+      <TopBar section={open} onBack={back} />
+      <div className="mx-auto max-w-2xl">
+        {!open && (
+          <div className="admin-fade">
+            <p className="mt-8 text-xs uppercase tracking-[0.35em] text-white/50">Russ fan archive</p>
+            <h1 className="mt-2 font-display text-5xl uppercase leading-none">Admin</h1>
 
-      <FeaturesAdmin drops={drops ?? []} onSaved={load} />
+            <div className="mt-8 grid grid-cols-3 gap-2">
+              <Stat label="Songs added" value={drops === null ? "…" : songs.length} />
+              <Stat label="Links saved" value={linkCount ?? "…"} />
+              <Stat label="Playlists" value={playlistCount ?? "…"} />
+            </div>
 
-      <PlaylistsAdmin />
+            <ListGroup label="Quick fix">
+              {/* A full page load, so the site picks up edit mode as it opens. */}
+              <ListRow href="/?edit=1" icon="link" color={swatchAt(0)} title="Fix song links on the site" sub="Paste players into releases without one" external />
+            </ListGroup>
 
-      <CoverMaker />
+            {groups.map((group) => (
+              <ListGroup key={group} label={group}>
+                {sections
+                  .filter((x) => x.group === group)
+                  .map((x) => (
+                    <ListRow key={x.key} icon={x.icon} color={swatchAt(sections.indexOf(x) + 1)} title={x.title} sub={x.sub} onClick={() => go(x.key)} />
+                  ))}
+              </ListGroup>
+            ))}
 
-      <NewsletterAdmin />
-
-      <Card title="Added songs">
-        {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
-        {drops === null ? (
-          <p className="text-sm text-white/60">Loading...</p>
-        ) : songs.length === 0 ? (
-          <p className="text-sm text-white/60">Nothing added yet.</p>
-        ) : (
-          <ul className="divide-y divide-white/10">
-            {songs.map((drop) =>
-              editingId === drop.id ? (
-                <li key={drop.id} className="py-4">
-                  <DropForm
-                    drop={drop}
-                    onCancel={() => setEditingId(null)}
-                    onSaved={() => {
-                      setEditingId(null);
-                      load();
-                    }}
-                  />
-                </li>
-              ) : (
-                <li key={drop.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold">{drop.title}</p>
-                    <p className="text-xs text-white/50">
-                      {TYPE_LABEL[drop.release_type] ?? "Single"}
-                      {drop.version_of ? ` of ${drop.version_of}` : ""} · {drop.released_on}
-                      {drop.spotify_id ? ` · Spotify ${drop.kind}` : drop.soundcloud_url ? " · SoundCloud" : ""}
-                      {drop.youtube_id ? " · YouTube" : ""}
-                      {!drop.spotify_id && !drop.soundcloud_url && !drop.youtube_id ? " · no player" : ""}
-                      {drop.note ? ` · ${drop.note}` : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" checked={drop.show_banner} onChange={(e) => update(drop.id, { show_banner: e.target.checked })} className="h-4 w-4" />
-                      Pop-up
-                    </label>
-                    <button type="button" onClick={() => setEditingId(drop.id)} className="font-semibold hover:underline">
-                      Edit
-                    </button>
-                    <button type="button" onClick={() => remove(drop)} className="text-red-400 hover:underline">
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              )
-            )}
-          </ul>
+            <ListGroup label="Account">
+              <div className="flex items-center gap-3 px-4 py-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10">
+                  <AppIcon name="shield" className="h-[18px] w-[18px]" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">Signed in</span>
+                  <span className="block truncate text-xs text-white/50">{email}</span>
+                </span>
+              </div>
+              <button type="button" onClick={() => supabase.auth.signOut()} className="flex w-full items-center gap-3 px-4 py-3 text-left text-red-400 hover:bg-white/[0.04]">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-red-500/15">
+                  <AppIcon name="log-out" className="h-[18px] w-[18px]" />
+                </span>
+                <span className="text-sm font-semibold">Sign out</span>
+              </button>
+            </ListGroup>
+          </div>
         )}
-        <p className="mt-4 text-xs text-white/40">
-          Everything here shows on /music under its date. Singles also join the home page&apos;s Singles timeline, and versions show under the song they come from. One with the same title as a release already on the site replaces it, so you can set its exact date. The newest one with Pop-up on slides down as a &quot;New drop&quot; notice, once per visitor.
-        </p>
-      </Card>
+
+        {open && (
+          <div key={open.key} className="admin-fade">
+            <div className="mt-8 flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl text-black" style={{ background: swatchAt(sections.indexOf(open) + 1) }}>
+                <AppIcon name={open.icon} className="h-6 w-6" />
+              </span>
+              <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">{open.title}</h1>
+            </div>
+          </div>
+        )}
+
+        {/* Every section stays mounted so a half-filled form survives a trip back to the list. */}
+        <div className="admin-pane mt-6" hidden={active !== "add"}>
+          <AddSongWizard drops={drops ?? []} onSaved={load} />
+        </div>
+        <div className="admin-pane mt-6" hidden={active !== "songs"}>
+          {addedSongs}
+        </div>
+        <div className="admin-pane mt-6" hidden={active !== "features"}>
+          <FeaturesAdmin drops={drops ?? []} onSaved={load} />
+        </div>
+        <div className="admin-pane mt-6" hidden={active !== "playlists"}>
+          <PlaylistsAdmin onChange={setPlaylistCount} />
+        </div>
+        <div className="admin-pane mt-6" hidden={active !== "newsletter"}>
+          <NewsletterAdmin />
+        </div>
+        <div className="admin-pane mt-6" hidden={active !== "covers"}>
+          <CoverMaker />
+        </div>
+      </div>
     </div>
+  );
+}
+
+// Inside a section the page is the card: the section's own frame and small
+// heading (the big title above says the same) are hidden.
+const PANE_CSS = `
+.admin-pane > section > h2:first-child, .admin-pane > section > div:first-child > h2 { display: none; }
+.admin-pane > section > div:first-child:has(> h2) { justify-content: flex-end; }
+.admin-pane > section { border: 0; background: none; padding: 0; }
+@keyframes admin-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.admin-fade { animation: admin-fade .25s ease-out; }
+@media (prefers-reduced-motion: reduce) { .admin-fade { animation: none; } }
+`;
+
+function Stat({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4">
+      <p className="font-display text-3xl leading-none">{value}</p>
+      <p className="mt-2 text-[11px] uppercase tracking-[0.15em] text-white/50">{label}</p>
+    </div>
+  );
+}
+
+function ListGroup({ label, children }) {
+  return (
+    <div className="mt-8">
+      <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-white/40">{label}</p>
+      <div className="divide-y divide-white/[0.07] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">{children}</div>
+    </div>
+  );
+}
+
+function ListRow({ icon, color, title, sub, onClick, href, external }) {
+  const body = (
+    <>
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-black" style={{ background: color }}>
+        <AppIcon name={icon} className="h-[18px] w-[18px]" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{title}</span>
+        {sub && <span className="block truncate text-xs text-white/50">{sub}</span>}
+      </span>
+      <AppIcon name={external ? "external-link" : "chevron-right"} className="h-4 w-4 shrink-0 text-white/30" />
+    </>
+  );
+  const style = "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.04] active:bg-white/[0.08]";
+  return href ? (
+    <a href={href} className={style}>
+      {body}
+    </a>
+  ) : (
+    <button type="button" onClick={onClick} className={style}>
+      {body}
+    </button>
   );
 }
 
