@@ -115,6 +115,6 @@ export async function GET(request) {
     width,
     height,
     fonts: await ogFonts(),
-    headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400" },
+    headers: { "Netlify-Vary": "query", "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400" },
   });
 }

@@ -50,9 +50,8 @@ const MOOD_ICONS = { gym: "dumbbell", "late night drive": "car", "bet on yoursel
 export const playlistIcon = (title) => MOOD_ICONS[String(title ?? "").trim().toLowerCase()] ?? "list-music";
 
 export function playlistCoverUrl({ color, icon, text }) {
-  const p = new URLSearchParams({ c: color.replace("#", ""), i: icon });
-  if (text) p.set("t", text);
-  return `/playlists/cover?${p}`;
+  const parts = [color.replace("#", "").toLowerCase(), icon, text].filter(Boolean).map(encodeURIComponent);
+  return `/playlists/cover/${parts.join("/")}`;
 }
 
 // Dark ink on light colors, white on the rest.
