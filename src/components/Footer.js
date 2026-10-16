@@ -1,4 +1,4 @@
-import { AMAZON_DISCLOSURE, NAV, SITE } from "@/data/site";
+import { NAV, SITE } from "@/data/site";
 import NewsletterForm from "./NewsletterForm";
 import AlbumSwatches from "./AlbumSwatches";
 import { SECTION_PALETTES } from "@/data/eras";
@@ -34,7 +34,7 @@ export default function Footer({ newsletter = true }) {
           <p className="font-display text-6xl leading-none sm:text-8xl">RUSS</p>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-era-muted">
             An unofficial fan site. Not affiliated with, endorsed by or connected to Russ, Diemon or any label. All music plays through
-            official Spotify, YouTube and SoundCloud embeds; nothing here is sold or hosted. Book links go to Amazon. {AMAZON_DISCLOSURE}
+            official Spotify, YouTube and SoundCloud embeds; nothing here is sold or hosted, and the site makes no money.
           </p>
           <p className="mt-4 text-sm text-era-muted">
             Fan site built by{" "}

@@ -1,6 +1,6 @@
 "use client";
 import { m } from "framer-motion";
-import { SHOWS, TOUR_LINKS, TICKETMASTER_DISCLOSURE, hasTicketmasterAffiliate, ticketLink } from "@/data/shows";
+import { SHOWS, TOUR_LINKS } from "@/data/shows";
 import PaletteSection from "./PaletteSection";
 import SectionHeading from "./SectionHeading";
 import BandsintownWidget from "./BandsintownWidget";
@@ -54,9 +54,9 @@ export default function Shows() {
                   </div>
                   {show.tickets && (
                     <a
-                      href={ticketLink(show.tickets).href}
+                      href={show.tickets}
                       target="_blank"
-                      rel={ticketLink(show.tickets).sponsored ? "sponsored noopener noreferrer" : "noreferrer"}
+                      rel="noreferrer"
                       className="rounded-full border border-era-fg/30 px-5 py-2 text-xs uppercase tracking-[0.2em] transition-colors hover:border-era-accent hover:bg-era-accent hover:text-era-bg"
                     >
                       Tickets
@@ -83,13 +83,13 @@ export default function Shows() {
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TOUR_LINKS.map((raw, i) => {
-            const link = { ...raw, ...ticketLink(raw.href) };
+            const link = raw;
             return (
             <m.a
               key={raw.href}
               href={link.href}
               target="_blank"
-              rel={link.sponsored ? "sponsored noopener noreferrer" : "noreferrer"}
+              rel="noreferrer"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -112,9 +112,6 @@ export default function Shows() {
           })}
         </div>
 
-        {hasTicketmasterAffiliate && (
-          <p className="mt-6 text-xs text-era-muted">{TICKETMASTER_DISCLOSURE}</p>
-        )}
       </div>
     </PaletteSection>
   );

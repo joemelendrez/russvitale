@@ -59,8 +59,35 @@ const gmt = (d) => (d ? new Date(/Z$/.test(d) ? d : `${d}Z`).toISOString() : nul
 // the excerpt field carries the same text, so the line is dropped from the body.
 const dropMetaLine = (html) => html.replace(/^\s*<p>\s*<em>[\s\S]*?<\/em>\s*<\/p>/i, "");
 
+// The site earns nothing, so post bodies carry no affiliate or cross-promo
+// links: Amazon links lose their tag, amzn.to short links (which hide one)
+// and links to Habit Nova become plain text.
+const AMAZON = /^https?:\/\/(?:www\.|smile\.)?amazon\.[a-z.]+\//i;
+const UNLINK = /^https?:\/\/(?:[a-z0-9-]+\.)*(?:habitnova\.com|amzn\.to)(?:[/?#]|$)/i;
+
+export function cleanLinks(html = "") {
+  return html.replace(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi, (whole, attrs, inner) => {
+    const href = decodeEntities(attrs.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2] ?? "");
+    if (UNLINK.test(href)) return inner;
+    if (!AMAZON.test(href)) return whole;
+    let clean = href;
+    try {
+      const url = new URL(href);
+      for (const key of ["tag", "ascsubtag", "linkCode", "linkId", "ref_"]) url.searchParams.delete(key);
+      clean = url.toString();
+    } catch {
+      return inner;
+    }
+    const rest = attrs
+      .replace(/\bhref\s*=\s*(["']).*?\1/i, "")
+      .replace(/\brel\s*=\s*(["']).*?\1/i, "")
+      .trim();
+    return `<a href="${clean.replace(/"/g, "&quot;")}" rel="noopener noreferrer"${rest ? ` ${rest}` : ""}>${inner}</a>`;
+  });
+}
+
 function toPost(node, withContent = false) {
-  const html = dropMetaLine(node.content || "");
+  const html = cleanLinks(dropMetaLine(node.content || ""));
   const words = stripTags(html).split(" ").filter(Boolean).length;
   const category = node.categories?.nodes?.find((c) => c.slug !== "uncategorized") ?? null;
   return {

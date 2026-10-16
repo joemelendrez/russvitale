@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { m } from "framer-motion";
 import { CoverEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
-import { AMAZON_DISCLOSURE, BOOKS, SITE } from "@/data/site";
+import { BOOKS, SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
 
 const STATS = [
@@ -48,7 +48,6 @@ export default function About() {
                 <BookCard key={book.title} book={book} />
               ))}
             </ul>
-            <p className="mt-3 text-xs text-era-muted">{AMAZON_DISCLOSURE}</p>
           </div>
         </m.div>
 
@@ -80,7 +79,7 @@ function BookCard({ book: raw }) {
       <a
         href={book.href}
         target="_blank"
-        rel="sponsored noopener noreferrer"
+        rel="noopener noreferrer"
         className="group flex flex-1 gap-4 rounded-2xl border border-era-fg/15 p-4 transition-colors hover:border-era-fg/40"
       >
         {book.cover && (
@@ -92,7 +91,7 @@ function BookCard({ book: raw }) {
           <span className="font-display text-2xl uppercase leading-none">{book.title}</span>
           <span className="mt-3 flex-1 text-sm leading-relaxed text-era-muted">{book.note}</span>
           <span className="mt-4 text-xs uppercase tracking-[0.2em] text-era-accent">
-            Get it on Amazon <span aria-hidden="true">&#8599;</span>
+            Find it on Amazon <span aria-hidden="true">&#8599;</span>
           </span>
         </span>
       </a>
