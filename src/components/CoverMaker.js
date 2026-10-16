@@ -46,7 +46,7 @@ function CoverPreview({ width, height, background, icon, text }) {
 }
 
 // A button showing the chosen icon that opens a searchable, grouped list.
-function IconPicker({ value, onChange, color }) {
+export function IconPicker({ value, onChange, color }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef(null);

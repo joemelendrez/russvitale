@@ -42,3 +42,25 @@ export const PLAYLIST_IDEAS = [
     songs: ["Goodbye", "Psycho", "KiKi", "The King", "Boomerang", "Do It Myself", "Willy Wonka (feat. Paulina and Jafé)", "Too Many", "February", "Out of Tune", "Lapped", "Dr. Seuss", "Brooklyn Freestyle", "Pull the Trigger", "Titanic", "Down for You", "Yung God", "DiMaggio"],
   },
 ];
+
+// Playlist covers (/playlists/cover): a square in one album color with a line
+// icon and the mood's name, to upload as the playlist's picture on Spotify.
+const MOOD_ICONS = { gym: "dumbbell", "late night drive": "car", "bet on yourself": "target", chill: "coffee", "in my feelings": "heart", "soundcloud era": "cloud" };
+
+export const playlistIcon = (title) => MOOD_ICONS[String(title ?? "").trim().toLowerCase()] ?? "list-music";
+
+export function playlistCoverUrl({ color, icon, text }) {
+  const p = new URLSearchParams({ c: color.replace("#", ""), i: icon });
+  if (text) p.set("t", text);
+  return `/playlists/cover?${p}`;
+}
+
+// Dark ink on light colors, white on the rest.
+export function inkFor(hex) {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4 ? "#111111" : "#ffffff";
+}
