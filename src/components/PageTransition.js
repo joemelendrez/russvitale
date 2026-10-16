@@ -88,7 +88,7 @@ export default function PageTransition() {
 // The site icon (src/app/icon.svg), its outlines in the page's text color.
 function Icon() {
   return (
-    <svg viewBox="0 0 64 64" className="relative h-32 w-32 animate-pulse" style={{ stroke: "var(--fg)" }}>
+    <svg viewBox="0 0 64 64" className="relative h-32 w-32 shrink-0 animate-pulse" style={{ stroke: "var(--fg)" }}>
       <circle cx="19" cy="32" r="13" fill="#C9781E" strokeWidth="4" />
       <circle cx="45" cy="32" r="13" fill="#3A2418" strokeWidth="4" />
       <circle cx="19" cy="32" r="5" fill="#1F2328" stroke="none" />

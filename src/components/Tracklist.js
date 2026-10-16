@@ -50,11 +50,11 @@ export default function Tracklist({ tracks, title, compact = false }) {
                 aria-hidden="true"
               >
                 {isOpen ? (
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="currentColor">
                     <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" className="ml-0.5 h-3.5 w-3.5" fill="currentColor">
+                  <svg viewBox="0 0 24 24" className="ml-0.5 h-3.5 w-3.5 shrink-0" fill="currentColor">
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 )}

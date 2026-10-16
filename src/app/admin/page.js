@@ -86,11 +86,11 @@ function TopBar({ section, onBack }) {
       <div className="relative mx-auto flex h-14 max-w-2xl items-center justify-between px-4 sm:px-6">
         {section ? (
           <button type="button" onClick={onBack} className={back}>
-            <AppIcon name="chevron-left" className="h-5 w-5" /> Admin
+            <AppIcon name="chevron-left" className="h-5 w-5 shrink-0" /> Admin
           </button>
         ) : (
           <Link href="/" className={back}>
-            <AppIcon name="chevron-left" className="h-5 w-5" /> Site
+            <AppIcon name="chevron-left" className="h-5 w-5 shrink-0" /> Site
           </Link>
         )}
         <p
@@ -195,7 +195,7 @@ function SignIn() {
         disabled={busy}
         className="flex w-full items-center justify-center gap-3 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-40"
       >
-        <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" aria-hidden="true">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
           <path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.43.34-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.77.43 3.45 1.18 4.94l3.66-2.84z" />
@@ -339,7 +339,7 @@ function Dashboard({ email }) {
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={drop.show_banner} onChange={(e) => update(drop.id, { show_banner: e.target.checked })} className="h-4 w-4" />
+                    <input type="checkbox" checked={drop.show_banner} onChange={(e) => update(drop.id, { show_banner: e.target.checked })} className="h-4 w-4 shrink-0" />
                     Pop-up
                   </label>
                   <button type="button" onClick={() => setEditingId(drop.id)} className="font-semibold hover:underline">
@@ -427,8 +427,8 @@ function Dashboard({ email }) {
         {open && (
           <div key={open.key} className="admin-fade">
             <div className="mt-8 flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl text-black" style={{ background: swatchAt(sections.indexOf(open) + 1) }}>
-                <AppIcon name={open.icon} className="h-6 w-6" />
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-black" style={{ background: swatchAt(sections.indexOf(open) + 1) }}>
+                <AppIcon name={open.icon} className="h-6 w-6 shrink-0" />
               </span>
               <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">{open.title}</h1>
             </div>
@@ -603,7 +603,7 @@ function DropForm({ drop, onSaved, onCancel }) {
         </div>
       </div>
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={form.show_banner} onChange={set("show_banner")} className="h-4 w-4" />
+        <input type="checkbox" checked={form.show_banner} onChange={set("show_banner")} className="h-4 w-4 shrink-0" />
         Show it as the &quot;New drop&quot; pop-up
       </label>
       {error && <p className="text-sm text-red-400">{error}</p>}

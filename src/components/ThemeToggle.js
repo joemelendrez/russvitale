@@ -67,7 +67,7 @@ export function ThemeChoices() {
             onClick={() => setMode(c.key)}
             className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${on ? "bg-era-accent text-era-bg" : "text-era-fg/80"}`}
           >
-            <AppIcon name={c.icon} className="h-4 w-4" /> {c.label}
+            <AppIcon name={c.icon} className="h-4 w-4 shrink-0" /> {c.label}
           </button>
         );
       })}

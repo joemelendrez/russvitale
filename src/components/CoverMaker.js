@@ -31,7 +31,7 @@ function CoverPreview({ width, height, background, icon, text }) {
   const side = Math.min(width, height);
   const pct = (px) => `${(px / width) * 100}cqw`;
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center [container-type:inline-size]" style={{ background }}>
+    <div className="flex h-full w-full shrink-0 flex-col items-center justify-center [container-type:inline-size]" style={{ background }}>
       <Icon name={icon} strokeWidth={1.15} className="text-white" style={{ width: pct(side * (text ? 0.15 : 0.17)), height: pct(side * (text ? 0.15 : 0.17)) }} />
       {text && (
         <p
@@ -79,8 +79,8 @@ export function IconPicker({ value, onChange, color }) {
         aria-expanded={open}
         className="flex w-full items-center gap-3 rounded-lg border border-white/15 bg-black/50 px-3 py-2 text-left text-sm"
       >
-        <span className="grid h-8 w-8 place-items-center rounded-md text-white" style={{ background: color }}>
-          <Icon name={value} className="h-5 w-5" />
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-white" style={{ background: color }}>
+          <Icon name={value} className="h-5 w-5 shrink-0" />
         </span>
         <span className="flex-1">{value.replace(/-/g, " ")}</span>
         <span className="text-white/50" aria-hidden="true">
@@ -119,7 +119,7 @@ export function IconPicker({ value, onChange, color }) {
                         className="grid aspect-square place-items-center rounded-lg text-white"
                         style={{ background: value === n ? color : "rgba(255,255,255,0.06)" }}
                       >
-                        <Icon name={n} className="h-5 w-5" />
+                        <Icon name={n} className="h-5 w-5 shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -194,7 +194,7 @@ export default function CoverMaker() {
             aria-pressed={category === c.slug}
             className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${category === c.slug ? "bg-white text-black" : "border border-white/15 text-white/70"}`}
           >
-            <span className="h-3 w-3 rounded-full" style={{ background: c.color }} aria-hidden="true" />
+            <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: c.color }} aria-hidden="true" />
             {c.name}
           </button>
         ))}
@@ -230,7 +230,7 @@ export default function CoverMaker() {
           <div className="mt-2 flex flex-wrap gap-2">
             {Object.entries(SECTION_SHADES).map(([key, s]) => (
               <button key={key} type="button" onClick={() => setShade(key)} aria-pressed={shade === key} className={`flex items-center gap-2 ${chip(shade === key)}`}>
-                <span className="h-3 w-3 rounded-full ring-1 ring-white/20" style={{ background: sectionShade(cat.color, key) }} aria-hidden="true" />
+                <span className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20" style={{ background: sectionShade(cat.color, key) }} aria-hidden="true" />
                 {s.label}
               </button>
             ))}

@@ -158,7 +158,7 @@ function FavoriteItem({ id, index, release, open, onToggle, onMove }) {
         className="mt-5 flex h-10 w-8 shrink-0 cursor-grab touch-none flex-col items-center justify-center text-era-fg/40 hover:text-era-fg active:cursor-grabbing"
       >
         <span className="text-[10px] font-semibold tabular-nums">{index + 1}</span>
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="currentColor" aria-hidden="true">
           <circle cx="9" cy="7" r="1.5" />
           <circle cx="15" cy="7" r="1.5" />
           <circle cx="9" cy="12" r="1.5" />

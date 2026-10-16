@@ -68,11 +68,11 @@ export default function ListenToggle({ className = "" }) {
         aria-label={elsewhere ? `Playing on ${labelOf(playing)}. Play music on: ${labelOf(picked)}` : `Play music on: ${labelOf(picked)}`}
         title={elsewhere ? `Playing on ${labelOf(playing)}` : `Play on ${labelOf(picked)}`}
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-era-fg/15 bg-era-bg/90 shadow-lg transition-transform active:scale-95"
+        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-era-fg/15 bg-era-bg/90 shadow-lg transition-transform active:scale-95"
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.span key={shown} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} transition={{ duration: 0.18 }}>
-            <ServiceMark service={shown} className="h-6 w-6" />
+            <ServiceMark service={shown} className="h-6 w-6 shrink-0" />
           </motion.span>
         </AnimatePresence>
         {elsewhere && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 animate-pulse rounded-full border-2 border-era-bg bg-emerald-400" aria-hidden="true" />}

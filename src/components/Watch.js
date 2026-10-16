@@ -54,10 +54,10 @@ function Video({ video, index }) {
               src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
               alt=""
               loading="lazy"
-              className="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+              className="h-full w-full shrink-0 object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
             />
             <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-era-accent text-era-bg transition-transform group-hover:scale-110">
-              <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7" fill="currentColor" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7 shrink-0" fill="currentColor" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </span>
