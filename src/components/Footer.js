@@ -49,6 +49,9 @@ export default function Footer({ newsletter = true }) {
               {item.label}
             </a>
           ))}
+          <a href="/contact" className="hover:text-era-fg">
+            Contact
+          </a>
           <a href={SITE.spotifyArtist} target="_blank" rel="noreferrer" className="hover:text-era-fg">
             Spotify
           </a>
