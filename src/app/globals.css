@@ -222,3 +222,11 @@ html:active-view-transition-type(page) main {
   background: #0b0b0d !important;
   color: #f5f5f4 !important;
 }
+
+/* Scroll areas that draw their own scroll bar (the phone menu). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
