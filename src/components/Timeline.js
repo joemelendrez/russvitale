@@ -90,8 +90,8 @@ export default function Timeline() {
 
       {/* Sticky tab switch, so you can flip timelines from anywhere in the section. */}
       <div id="music-tabs" className="sticky top-16 z-30 scroll-mt-16 py-3">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-1.5 px-3 min-[360px]:gap-2 min-[360px]:px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-1.5 min-[360px]:gap-2">
             <div role="tablist" aria-label="Timeline" className="inline-flex rounded-full border border-era-fg/15 bg-era-bg/90 p-1 shadow-lg">
               {TABS.map((t) => (
                 <button
@@ -101,7 +101,7 @@ export default function Timeline() {
                   aria-selected={tab === t.key}
                   aria-controls="music-panel"
                   onClick={() => choose(t.key)}
-                  className={`relative rounded-full px-4 py-2 text-xs sm:px-5 font-semibold uppercase tracking-[0.2em] transition-colors ${
+                  className={`relative rounded-full px-3 py-2 text-xs min-[360px]:px-4 sm:px-5 font-semibold uppercase tracking-[0.15em] min-[360px]:tracking-[0.2em] transition-colors ${
                     tab === t.key ? "text-era-bg" : "text-era-fg/70 hover:text-era-fg"
                   }`}
                 >
@@ -116,7 +116,7 @@ export default function Timeline() {
           </div>
           <Link
             href="/music"
-            className="rounded-full border border-era-fg/15 bg-era-bg/90 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-era-fg/80 shadow-lg transition-colors hover:text-era-fg"
+            className="shrink-0 rounded-full border border-era-fg/15 bg-era-bg/90 px-3 py-2.5 text-[11px] min-[360px]:px-4 font-semibold uppercase tracking-[0.15em] text-era-fg/80 shadow-lg transition-colors hover:text-era-fg"
           >
             <span className="sm:hidden">All</span>
             <span className="hidden sm:inline">Full discography</span> <span aria-hidden="true">&rarr;</span>

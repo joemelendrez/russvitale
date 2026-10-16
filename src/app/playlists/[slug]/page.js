@@ -67,7 +67,7 @@ export default async function PlaylistPage({ params }) {
           <span aria-hidden="true">/</span> {list.title}
         </nav>
 
-        <div className="mt-8 grid gap-8 md:grid-cols-[minmax(0,280px)_1fr] md:items-end">
+        <div className="mt-8 grid gap-8 grid-cols-[minmax(0,1fr)] md:grid-cols-[minmax(0,280px)_minmax(0,1fr)] md:items-end">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={cover} alt={`${list.title} playlist cover`} width={280} height={280} className="aspect-square w-full max-w-[280px] rounded-2xl object-cover shadow-2xl" style={{ boxShadow: `0 30px 80px -30px ${list.color}` }} />
           <div>
@@ -88,7 +88,7 @@ export default async function PlaylistPage({ params }) {
           </div>
         </div>
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_minmax(0,380px)]">
+        <div className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
           <section aria-labelledby="listen">
             <h2 id="listen" className="font-display text-3xl uppercase">
               Play the playlist

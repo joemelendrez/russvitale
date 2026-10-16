@@ -70,7 +70,7 @@ export default function Shows() {
 
         <BandsintownWidget />
 
-        <div className="mt-14 grid gap-6 rounded-3xl border border-era-fg/10 bg-era-fg/[0.03] p-6 sm:p-8 md:grid-cols-[1fr_auto] md:items-center">
+        <div className="mt-14 grid gap-6 rounded-3xl border border-era-fg/10 bg-era-fg/[0.03] p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center [&>*]:min-w-0">
           <div>
             <p className="font-display text-3xl uppercase leading-none sm:text-4xl">Russ coming to your city?</p>
             <p className="mt-3 max-w-md text-era-muted">
