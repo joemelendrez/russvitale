@@ -1,9 +1,10 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { PLAYLIST_IDEAS, playlistIdFromLink, playlistUrl } from "@/data/playlists";
+import { PLAYLIST_IDEAS, playlistCoverUrl, playlistIcon, playlistIdFromLink, playlistUrl } from "@/data/playlists";
 import { CATALOG_RELEASES } from "@/data/releaseKey";
-import { swatchAt } from "./AlbumSwatches";
+import { ALBUM_SWATCHES, swatchAt } from "./AlbumSwatches";
+import { IconPicker } from "./CoverMaker";
 import AppIcon from "./AppIcon";
 
 // A starter list's songs with their Spotify track links, from the catalog.
@@ -54,6 +55,55 @@ function SongsToCopy({ songs }) {
         <button type="button" onClick={() => copy("links")} className="rounded-full border border-white/20 px-3 py-1.5">
           {copied === "links" ? "Copied" : "Copy Spotify links"}
         </button>
+      </div>
+    </details>
+  );
+}
+
+// A square cover for the playlist on Spotify: pick a color and an icon, then
+// download it and upload it as the playlist's picture.
+function PlaylistCover({ title, color: startColor }) {
+  const [color, setColor] = useState(startColor);
+  const [icon, setIcon] = useState(() => playlistIcon(title));
+  const [showName, setShowName] = useState(true);
+  const url = playlistCoverUrl({ color, icon, text: showName ? title : "" });
+  const file = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "playlist"}-cover.png`;
+  return (
+    <details className="group mt-3">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs font-semibold text-white/60 hover:text-white">
+        <AppIcon name="image" className="h-3.5 w-3.5" /> Cover image
+        <span className="inline-block transition-transform group-open:rotate-180" aria-hidden="true">
+          &#9662;
+        </span>
+      </summary>
+      <div className="mt-3 flex flex-wrap items-start gap-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={url} alt={`${title} cover`} width={144} height={144} className="h-36 w-36 rounded-lg bg-white/5 object-cover" />
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Cover color">
+            {ALBUM_SWATCHES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                role="radio"
+                aria-checked={s.color === color}
+                aria-label={s.title}
+                title={s.title}
+                onClick={() => setColor(s.color)}
+                className={`h-7 w-7 rounded-md border-2 ${s.color === color ? "border-white" : "border-transparent"}`}
+                style={{ background: s.color }}
+              />
+            ))}
+          </div>
+          <IconPicker value={icon} onChange={setIcon} color={color} />
+          <label className="flex items-center gap-2 text-sm text-white/70">
+            <input type="checkbox" checked={showName} onChange={(e) => setShowName(e.target.checked)} className="h-4 w-4" />
+            Show &quot;{title}&quot; on it
+          </label>
+          <a href={url} download={file} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-black">
+            Download PNG
+          </a>
+        </div>
       </div>
     </details>
   );
@@ -152,6 +202,7 @@ function MoodCard({ row, idea, color, nextPosition, onSaved, onEdit, onRemove, o
           </>
         )}
       </div>
+      <PlaylistCover title={title} color={color} />
       {songs && <SongsToCopy songs={songs} />}
     </li>
   );
