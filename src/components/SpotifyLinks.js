@@ -4,9 +4,11 @@ import { usePathname } from "next/navigation";
 import { ALL_RELEASES, CATALOG_RELEASES, releaseKey } from "@/data/releaseKey";
 import { expandSoundcloud, parsePlayerLink, playerFor, releaseFieldsFromRow, searchLinks } from "@/data/players";
 import { useListenOn } from "@/lib/listenOn";
-import { supabase } from "@/lib/supabase";
+import { getSupabase, supabaseConfigured } from "@/lib/supabaseConfig";
+import { DROP_SELECT, LINK_SELECT } from "@/data/releaseColumns";
 import { TAB_EVENT } from "./Timeline";
 import DropBanner from "./DropBanner";
+import { refreshSite } from "@/lib/refreshSite";
 
 // Song links fixed from the page itself, plus the newest drops, both kept in
 // Supabase (src/lib/supabase.js). Everyone reads them on top of src/data.
@@ -89,19 +91,36 @@ export function SpotifyLinksProvider({ children }) {
   );
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabaseConfigured) return;
     let cancelled = false;
-    supabase
-      .from("russ_release_links")
-      .select("release_key, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, cover_url, released_on")
-      .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
-    supabase
-      .from("russ_drops")
-      .select("id, title, kind, spotify_id, soundcloud_url, youtube_kind, youtube_id, note, released_on, show_banner, created_at, release_type, version_of, artist, replaces, hidden")
-      .order("released_on", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(500)
-      .then(({ data }) => !cancelled && data && setDrops(data));
+    let sub = null;
+    // Visitors read the saved links and drops from the site's own cached copy
+    // (/releases.json, refreshed when admin saves). Edit mode reads Supabase
+    // directly so an admin always sees what's saved this second.
+    const editMode = new URLSearchParams(window.location.search).has("edit") || storage("get");
+    const fromSite = () =>
+      fetch("/releases.json")
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d) => {
+          if (cancelled) return;
+          setLinks(linksFromRows(d.links ?? []));
+          setDrops(d.drops ?? []);
+        });
+    const fromSupabase = (supabase) => {
+      supabase
+        .from("russ_release_links")
+        .select(LINK_SELECT)
+        .then(({ data }) => !cancelled && data && setLinks(linksFromRows(data)));
+      supabase
+        .from("russ_drops")
+        .select(DROP_SELECT)
+        .order("released_on", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(500)
+        .then(({ data }) => !cancelled && data && setDrops(data));
+    };
+    if (editMode) getSupabase().then((supabase) => !cancelled && fromSupabase(supabase));
+    else fromSite().catch(() => getSupabase().then((supabase) => !cancelled && fromSupabase(supabase)));
 
     const url = new URL(window.location.href);
     if (url.searchParams.has("edit")) {
@@ -110,18 +129,21 @@ export function SpotifyLinksProvider({ children }) {
     }
 
     // Ask the database, the same check RLS uses on every save.
-    const check = async (session) => {
-      if (!session) return !cancelled && setAdmin("no");
-      const { data } = await supabase.rpc("russ_is_admin");
-      if (!cancelled) setAdmin(data === true ? "yes" : "no");
-    };
-    supabase.auth.getSession().then(({ data }) => check(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
-      if (event !== "INITIAL_SESSION") setTimeout(() => check(next), 0);
+    getSupabase().then((supabase) => {
+      if (cancelled) return;
+      const check = async (session) => {
+        if (!session) return !cancelled && setAdmin("no");
+        const { data } = await supabase.rpc("russ_is_admin");
+        if (!cancelled) setAdmin(data === true ? "yes" : "no");
+      };
+      supabase.auth.getSession().then(({ data }) => check(data.session));
+      sub = supabase.auth.onAuthStateChange((event, next) => {
+        if (event !== "INITIAL_SESSION") setTimeout(() => check(next), 0);
+      }).data.subscription;
     });
     return () => {
       cancelled = true;
-      sub.subscription.unsubscribe();
+      sub?.unsubscribe();
     };
   }, []);
 
@@ -139,6 +161,7 @@ export function SpotifyLinksProvider({ children }) {
   const clearRow = useCallback(async (key, columns, message) => {
     const row = linksRef.current[key];
     if (!row) return;
+    const supabase = await getSupabase();
     const left = ROW_COLUMNS.some((c) => !columns.includes(c) && row[c]);
     const query = supabase.from("russ_release_links");
     const { error } = left
@@ -151,6 +174,7 @@ export function SpotifyLinksProvider({ children }) {
       else delete next[key];
       return next;
     });
+    refreshSite("links");
   }, []);
 
   const save = useCallback(async (release, link, remove = false) => {
@@ -162,11 +186,13 @@ export function SpotifyLinksProvider({ children }) {
     const found = parsePlayerLink(link);
     if (!found) throw new Error("That doesn't look like a Spotify, YouTube Music or SoundCloud link.");
     const parsed = await expandSoundcloud(found);
+    const supabase = await getSupabase();
     // Upsert only touches the pasted service's columns, so a YouTube link
     // keeps the release's saved Spotify link and the other way round.
     const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, ...parsed, updated_at: new Date().toISOString() });
     if (error) throw new Error("Couldn't save that link. Are you still signed in?");
     setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, ...parsed } }));
+    refreshSite("links");
   }, [clearRow]);
 
   // Uploads a new cover (shrunk on the device first) and points the release at it.
@@ -175,6 +201,7 @@ export function SpotifyLinksProvider({ children }) {
     const blob = await shrinkImage(file);
     const ext = blob.type === "image/webp" ? "webp" : "jpg";
     const path = `${key}-${Date.now()}.${ext}`;
+    const supabase = await getSupabase();
     const bucket = supabase.storage.from(COVER_BUCKET);
     const { error: upErr } = await bucket.upload(path, blob, { contentType: blob.type, cacheControl: "31536000" });
     if (upErr) throw new Error("Couldn't upload that image. Are you still signed in?");
@@ -186,6 +213,7 @@ export function SpotifyLinksProvider({ children }) {
     }
     const old = coverPath(linksRef.current[key]?.cover_url);
     setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, cover_url } }));
+    refreshSite("links");
     if (old) bucket.remove([old]);
   }, []);
 
@@ -195,9 +223,11 @@ export function SpotifyLinksProvider({ children }) {
       const key = releaseKey(release);
       if (!date) return clearRow(key, ["released_on"], "Couldn't clear that date. Are you still signed in?");
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Pick a full date.");
+      const supabase = await getSupabase();
       const { error } = await supabase.from("russ_release_links").upsert({ release_key: key, released_on: date, updated_at: new Date().toISOString() });
       if (error) throw new Error("Couldn't save that date. Are you still signed in?");
       setLinks((prev) => ({ ...prev, [key]: { ...prev[key], release_key: key, released_on: date } }));
+      refreshSite("links");
     },
     [clearRow]
   );
@@ -206,7 +236,7 @@ export function SpotifyLinksProvider({ children }) {
     const key = releaseKey(release);
     const old = coverPath(linksRef.current[key]?.cover_url);
     await clearRow(key, ["cover_url"], "Couldn't remove that cover. Are you still signed in?");
-    if (old) supabase.storage.from(COVER_BUCKET).remove([old]);
+    if (old) (await getSupabase()).storage.from(COVER_BUCKET).remove([old]);
   }, [clearRow]);
 
   const exitEdit = useCallback(() => {

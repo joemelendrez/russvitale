@@ -60,7 +60,7 @@ export default function DropBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "-130%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
-          className="fixed inset-x-2 top-[4.5rem] z-[60] mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-950/95 p-3 text-white shadow-2xl backdrop-blur sm:inset-x-auto sm:right-6"
+          className="drop-banner fixed inset-x-2 top-[4.5rem] z-[60] mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-950/95 p-3 text-white shadow-2xl backdrop-blur sm:inset-x-auto sm:right-6"
           aria-label="New drop"
         >
           <div className="flex items-start gap-3">

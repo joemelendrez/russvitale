@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { SITE, navMenu } from "@/data/site";
-import { fanAccounts, supabase } from "@/lib/supabase";
+import { fanAccounts, getSupabase } from "@/lib/supabaseConfig";
 import { displayName, useSession } from "@/lib/useSession";
 import { TAB_EVENT, TAB_SHOWN_EVENT } from "./Timeline";
 import AppIcon from "./AppIcon";
@@ -142,7 +142,7 @@ function useIsAdmin(session) {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    supabase.rpc("russ_is_admin").then(({ data }) => !cancelled && setAdmin({ id, value: data === true }));
+    getSupabase().then((supabase) => supabase.rpc("russ_is_admin")).then(({ data }) => !cancelled && setAdmin({ id, value: data === true }));
     return () => {
       cancelled = true;
     };
@@ -200,7 +200,7 @@ function AccountLinks({ session, itemClass, onPick }) {
       <a href="/top10" onClick={onPick} className={itemClass}>
         <AppIcon name="list-ordered" className="h-4 w-4 shrink-0 opacity-70" /> Your top 10
       </a>
-      <button type="button" onClick={() => supabase.auth.signOut()} className={itemClass}>
+      <button type="button" onClick={() => getSupabase().then((supabase) => supabase.auth.signOut())} className={itemClass}>
         <AppIcon name="log-out" className="h-4 w-4 shrink-0 opacity-70" /> Sign out
       </button>
     </>
@@ -210,6 +210,8 @@ function AccountLinks({ session, itemClass, onPick }) {
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  // The phone menu link just tapped, lit while the menu closes.
+  const [picked, setPicked] = useState(null);
   const pathname = usePathname();
   const onHome = pathname === "/";
   const session = useSession();
@@ -224,6 +226,8 @@ export default function Header() {
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
+    // The new-drop notice sits above the header; hide it while the menu covers the page.
+    document.documentElement.toggleAttribute("data-menu-open", open);
     const onKey = (e) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -304,7 +308,10 @@ export default function Header() {
               className="relative z-50 flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 md:hidden"
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
-              onClick={() => setOpen((v) => !v)}
+              onClick={() => {
+                setPicked(null);
+                setOpen((v) => !v);
+              }}
             >
               <motion.span animate={open ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
               <motion.span animate={open ? { rotate: -45, y: -3 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
@@ -324,19 +331,27 @@ export default function Header() {
           >
             <MenuScroller>
               {MENU.map((entry, i) => {
-                const link = (item, small) => (
-                  <a
-                    key={item.href}
-                    href={navHref(item, onHome)}
-                    onClick={(e) => {
-                      setOpen(false);
-                      openTab(e, item, onHome);
-                    }}
-                    className={`font-display uppercase leading-none tracking-tight ${small ? "text-4xl" : "text-6xl"}`}
-                  >
-                    {item.label}
-                  </a>
-                );
+                const link = (item, small) => {
+                  const active = picked ? picked === item.href : isActive(item, spot);
+                  return (
+                    <a
+                      key={item.href}
+                      href={navHref(item, onHome)}
+                      aria-current={active ? "page" : undefined}
+                      onClick={(e) => {
+                        setPicked(item.href);
+                        setOpen(false);
+                        openTab(e, item, onHome);
+                      }}
+                      className={`flex items-center gap-3 font-display uppercase leading-none tracking-tight transition-colors active:text-era-accent ${small ? "text-4xl" : "text-6xl"} ${
+                        active ? "text-era-accent" : ""
+                      }`}
+                    >
+                      {item.label}
+                      {active && <span className="h-2 w-2 shrink-0 rounded-full bg-era-accent" aria-hidden="true" />}
+                    </a>
+                  );
+                };
                 return (
                   <motion.div
                     key={entry.group ?? entry.href}

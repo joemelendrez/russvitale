@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PLAYLIST_IDEAS, playlistCoverUrl, playlistIcon, playlistIdFromLink, playlistUrl } from "@/data/playlists";
 import { CATALOG_RELEASES } from "@/data/releaseKey";
@@ -7,6 +7,7 @@ import { COVER_COLORS, coverHex, swatchAt } from "./AlbumSwatches";
 import { IconPicker } from "./CoverMaker";
 import AppIcon from "./AppIcon";
 import Link from "next/link";
+import { refreshSite } from "@/lib/refreshSite";
 
 // A starter list's songs with their Spotify track links, from the catalog.
 function starterSongs(titles) {
@@ -144,6 +145,7 @@ function MoodCard({ row, idea, color, nextPosition, onSaved, onEdit, onRemove, o
     e.preventDefault();
     const spotify_id = playlistIdFromLink(link);
     if (!spotify_id) return setError("That isn't a Spotify playlist link. On Spotify: ⋯ › Share › Copy link to playlist.");
+    if (busy) return;
     setBusy(true);
     setError(null);
     const { error } = row
@@ -259,6 +261,12 @@ export default function PlaylistsAdmin({ onChange }) {
     };
   }, [load]);
 
+  // After any change: reload this list and refresh the site's cached pages.
+  const saved = useCallback(() => {
+    refreshSite("playlists");
+    load();
+  }, [load]);
+
   const open = (row) => {
     setError(null);
     setEditing(row?.id ?? "new");
@@ -270,6 +278,7 @@ export default function PlaylistsAdmin({ onChange }) {
     const spotify_id = playlistIdFromLink(form.link);
     if (!spotify_id) return setError("Paste the playlist's Spotify link (Share › Copy link to playlist).");
     if (!form.title.trim()) return setError("Give it a mood name.");
+    if (busy) return;
     setBusy(true);
     setError(null);
     const row = { title: form.title.trim(), blurb: form.blurb.trim() || null, spotify_id };
@@ -281,26 +290,32 @@ export default function PlaylistsAdmin({ onChange }) {
     setBusy(false);
     if (error) return setError("Couldn't save that playlist. Are you still signed in?");
     setEditing(null);
-    load();
+    saved();
   };
 
   const remove = async (row) => {
     if (!window.confirm(`Remove "${row.title}" from the site?`)) return;
     const { error } = await supabase.from("russ_playlists").delete().eq("id", row.id);
     if (error) setError("Couldn't remove that playlist.");
-    load();
+    saved();
   };
 
   // Swaps a playlist with its neighbor, renumbering everything so ties can't stick.
+  // One reorder at a time: a quick second tap waits for the first to save,
+  // so two renumberings can't race and leave the order mixed up.
+  const moving = useRef(false);
   const move = async (i, by) => {
+    if (moving.current) return;
     const next = [...lists];
     const j = i + by;
     if (j < 0 || j >= next.length) return;
+    moving.current = true;
     [next[i], next[j]] = [next[j], next[i]];
     setLists(next);
     const results = await Promise.all(next.map((l, n) => supabase.from("russ_playlists").update({ position: n }).eq("id", l.id)));
+    moving.current = false;
     if (results.some((r) => r.error)) setError("Couldn't save the new order.");
-    load();
+    saved();
   };
 
   const editForm = (
@@ -367,7 +382,7 @@ export default function PlaylistsAdmin({ onChange }) {
                       row={row}
                       idea={ideaFor(row.title)}
                       color={swatchAt(i)}
-                      onSaved={load}
+                      onSaved={saved}
                       onEdit={() => open(row)}
                       onRemove={() => remove(row)}
                       onUp={i > 0 ? () => move(i, -1) : null}
@@ -384,7 +399,7 @@ export default function PlaylistsAdmin({ onChange }) {
               <p className="mt-1 text-xs text-white/50">Copy the starter songs into your playlist maker, make it on Spotify, then paste its link here.</p>
               <ul className="mt-3 space-y-3">
                 {waiting.map((idea, i) => (
-                  <MoodCard key={idea.title} idea={idea} color={swatchAt(lists.length + i)} nextPosition={nextPosition} onSaved={load} />
+                  <MoodCard key={idea.title} idea={idea} color={swatchAt(lists.length + i)} nextPosition={nextPosition} onSaved={saved} />
                 ))}
               </ul>
             </>

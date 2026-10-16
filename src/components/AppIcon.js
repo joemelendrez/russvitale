@@ -2,6 +2,7 @@
 // (lucide.dev, ISC license). Kept apart from the 288 cover icons so every
 // page doesn't load those.
 const ICONS = {
+  "refresh-cw": "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" /><path d=\"M21 3v5h-5\" /><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" /><path d=\"M8 16H3v5\" />",
   "plus": "<path d=\"M5 12h14\" /><path d=\"M12 5v14\" />",
   "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /><circle cx=\"9\" cy=\"7\" r=\"4\" /><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /><path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />",
   "list-music": "<path d=\"M21 15V6\" /><path d=\"M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z\" /><path d=\"M12 12H3\" /><path d=\"M16 6H3\" /><path d=\"M12 18H3\" />",

@@ -1,6 +1,7 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { refreshSite } from "@/lib/refreshSite";
 import AddSongWizard from "@/components/AddSongWizard";
 import NewsletterAdmin from "@/components/NewsletterAdmin";
 import FeaturesAdmin from "@/components/FeaturesAdmin";
@@ -270,11 +271,22 @@ function Dashboard({ email }) {
     };
   }, [load]);
 
+  // After any change to drops: reload them here and refresh the site's cached pages.
+  const saved = useCallback(() => {
+    refreshSite("drops");
+    load();
+  }, [load]);
+
+  // One save per drop at a time, so a double tap on a switch can't send two.
+  const saving = useRef(new Set());
   const update = async (id, patch) => {
+    if (saving.current.has(id)) return;
+    saving.current.add(id);
     setError(null);
     const { error } = await supabase.from("russ_drops").update(patch).eq("id", id);
+    saving.current.delete(id);
     if (error) setError("Couldn't save that change.");
-    load();
+    saved();
   };
 
   // Features have their own card.
@@ -285,10 +297,16 @@ function Dashboard({ email }) {
     setError(null);
     const { error } = await supabase.from("russ_drops").delete().eq("id", drop.id);
     if (error) setError("Couldn't delete that drop.");
-    load();
+    saved();
   };
 
   const [playlistCount, setPlaylistCount] = useState(null);
+  const [blogRefresh, setBlogRefresh] = useState(null); // working | done | failed
+  const refreshBlog = async () => {
+    if (blogRefresh === "working") return;
+    setBlogRefresh("working");
+    setBlogRefresh((await refreshSite("blog")) ? "done" : "failed");
+  };
   const active = useHashSection();
   // Opening a section adds a history entry, so the phone's back button returns to the list.
   const go = (key) => {
@@ -320,7 +338,7 @@ function Dashboard({ email }) {
                   onCancel={() => setEditingId(null)}
                   onSaved={() => {
                     setEditingId(null);
-                    load();
+                    saved();
                   }}
                 />
               </li>
@@ -392,6 +410,14 @@ function Dashboard({ email }) {
             <ListGroup label="Quick fix">
               {/* A full page load, so the site picks up edit mode as it opens. */}
               <ListRow href="/?edit=1" icon="link" color={swatchAt(0)} title="Fix song links on the site" sub="Paste players into releases without one" external />
+              {/* WordPress can't tell the site a post went live, so this asks for the new posts now. */}
+              <ListRow
+                icon="refresh-cw"
+                color={swatchAt(6)}
+                title="Show new blog posts now"
+                sub={blogRefresh === "working" ? "Refreshing..." : blogRefresh === "done" ? "Done. New posts show on the next visit." : blogRefresh === "failed" ? "Couldn't refresh. Try again." : "Otherwise they show within 5 minutes"}
+                onClick={refreshBlog}
+              />
             </ListGroup>
 
             {groups.map((group) => (
@@ -437,13 +463,13 @@ function Dashboard({ email }) {
 
         {/* Every section stays mounted so a half-filled form survives a trip back to the list. */}
         <div className="admin-pane mt-6" hidden={active !== "add"}>
-          <AddSongWizard drops={drops ?? []} onSaved={load} />
+          <AddSongWizard drops={drops ?? []} onSaved={saved} />
         </div>
         <div className="admin-pane mt-6" hidden={active !== "songs"}>
           {addedSongs}
         </div>
         <div className="admin-pane mt-6" hidden={active !== "features"}>
-          <FeaturesAdmin drops={drops ?? []} onSaved={load} />
+          <FeaturesAdmin drops={drops ?? []} onSaved={saved} />
         </div>
         <div className="admin-pane mt-6" hidden={active !== "playlists"}>
           <PlaylistsAdmin onChange={setPlaylistCount} />
@@ -532,6 +558,7 @@ function DropForm({ drop, onSaved, onCancel }) {
 
   const save = async (e) => {
     e.preventDefault();
+    if (status === "saving") return;
     setError(null);
     setStatus("saving");
     let players;

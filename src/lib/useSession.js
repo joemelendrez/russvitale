@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { fanAccounts, supabase } from "./supabase";
+import { fanAccounts, getSupabase } from "./supabaseConfig";
 
 // The signed-in fan's session: undefined while it loads, then a session or
 // null. Always null when fan accounts are off.
@@ -8,9 +8,17 @@ export function useSession() {
   const [session, setSession] = useState(fanAccounts ? undefined : null);
   useEffect(() => {
     if (!fanAccounts) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => data.subscription.unsubscribe();
+    let live = true;
+    let sub = null;
+    getSupabase().then((supabase) => {
+      if (!live) return;
+      supabase.auth.getSession().then(({ data }) => live && setSession(data.session));
+      sub = supabase.auth.onAuthStateChange((_e, s) => setSession(s)).data.subscription;
+    });
+    return () => {
+      live = false;
+      sub?.unsubscribe();
+    };
   }, []);
   return session;
 }
