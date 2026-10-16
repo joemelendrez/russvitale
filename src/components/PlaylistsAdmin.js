@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PLAYLIST_IDEAS, playlistIdFromLink, playlistUrl } from "@/data/playlists";
 import { CATALOG_RELEASES } from "@/data/releaseKey";
+import { swatchAt } from "./AlbumSwatches";
+import AppIcon from "./AppIcon";
 
 // A starter list's songs with their Spotify track links, from the catalog.
 function starterSongs(titles) {
@@ -12,11 +14,10 @@ function starterSongs(titles) {
   });
 }
 
-// One mood's starter list: open it to see the songs, copy the names or the
-// Spotify links into a playlist maker, or start the playlist form with it.
-function StarterList({ idea, onUse }) {
+// The songs for a mood: open it to see them, then copy the names or the
+// Spotify links into a playlist maker.
+function SongsToCopy({ songs }) {
   const [copied, setCopied] = useState(null);
-  const songs = starterSongs(idea.songs);
   const copy = async (what) => {
     const text = what === "links" ? songs.filter((s) => s.url).map((s) => s.url).join("\n") : songs.map((s) => `${s.title} - Russ`).join("\n");
     try {
@@ -26,11 +27,11 @@ function StarterList({ idea, onUse }) {
     } catch {}
   };
   return (
-    <details className="group rounded-xl border border-white/10 px-4 py-3">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-        <span className="font-semibold">{idea.title}</span>
-        <span className="text-xs text-white/50">
-          {songs.length} songs <span className="inline-block transition-transform group-open:rotate-180" aria-hidden="true">&#9662;</span>
+    <details className="group mt-3">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs font-semibold text-white/60 hover:text-white">
+        <AppIcon name="music" className="h-3.5 w-3.5" /> {songs.length} starter songs
+        <span className="inline-block transition-transform group-open:rotate-180" aria-hidden="true">
+          &#9662;
         </span>
       </summary>
       <ol className="mt-3 list-decimal space-y-0.5 pl-5 text-sm text-white/80">
@@ -53,11 +54,106 @@ function StarterList({ idea, onUse }) {
         <button type="button" onClick={() => copy("links")} className="rounded-full border border-white/20 px-3 py-1.5">
           {copied === "links" ? "Copied" : "Copy Spotify links"}
         </button>
-        <button type="button" onClick={onUse} className="rounded-full border border-white/20 px-3 py-1.5">
-          Add it here once made
-        </button>
       </div>
     </details>
+  );
+}
+
+// One mood: its playlist link right on the card, saved with one tap. A
+// starter mood without a link yet is added to the site when its link is saved.
+function MoodCard({ row, idea, color, nextPosition, onSaved, onEdit, onRemove, onUp, onDown }) {
+  const saved = row ? playlistUrl(row.spotify_id) : "";
+  const [link, setLink] = useState(saved);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [done, setDone] = useState(false);
+  const title = row?.title ?? idea.title;
+  const blurb = row ? row.blurb : idea.blurb;
+  const songs = idea ? starterSongs(idea.songs) : null;
+  const changed = link.trim() !== saved;
+
+  const save = async (e) => {
+    e.preventDefault();
+    const spotify_id = playlistIdFromLink(link);
+    if (!spotify_id) return setError("That isn't a Spotify playlist link. On Spotify: ⋯ › Share › Copy link to playlist.");
+    setBusy(true);
+    setError(null);
+    const { error } = row
+      ? await supabase.from("russ_playlists").update({ spotify_id }).eq("id", row.id)
+      : await supabase.from("russ_playlists").insert({ title: idea.title, blurb: idea.blurb || null, spotify_id, position: nextPosition });
+    setBusy(false);
+    if (error) return setError("Couldn't save that link. Are you still signed in?");
+    setDone(true);
+    setTimeout(() => setDone(false), 2000);
+    onSaved();
+  };
+
+  return (
+    <li className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-black" style={{ background: color }}>
+          <AppIcon name="list-music" className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold">{title}</p>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.15em] ${
+                row ? "bg-emerald-400/15 text-emerald-300" : "bg-amber-400/15 text-amber-300"
+              }`}
+            >
+              {row ? "On the site" : "Needs a link"}
+            </span>
+          </div>
+          {blurb && <p className="truncate text-xs text-white/50">{blurb}</p>}
+        </div>
+        {row && (
+          <div className="flex shrink-0 items-center gap-1 text-sm">
+            <button type="button" onClick={onUp} disabled={!onUp} aria-label={`Move ${title} up`} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/10 disabled:opacity-25">
+              &uarr;
+            </button>
+            <button type="button" onClick={onDown} disabled={!onDown} aria-label={`Move ${title} down`} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/10 disabled:opacity-25">
+              &darr;
+            </button>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={save} className="mt-3 flex gap-2">
+        <label className="sr-only" htmlFor={`pl-${title}`}>
+          Spotify playlist link for {title}
+        </label>
+        <input
+          id={`pl-${title}`}
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          inputMode="url"
+          placeholder="Paste the Spotify playlist link"
+          className={`${input} min-w-0 flex-1`}
+        />
+        <button type="submit" disabled={busy || !changed || !link.trim()} className="shrink-0 rounded-lg bg-white px-4 text-sm font-semibold text-black disabled:opacity-40">
+          {busy ? "Saving..." : done ? "Saved" : row ? "Update" : "Save"}
+        </button>
+      </form>
+      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+        {row && (
+          <>
+            <a href={saved} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-white/60 hover:text-white">
+              Open on Spotify <AppIcon name="external-link" className="h-3 w-3" />
+            </a>
+            <button type="button" onClick={onEdit} className="font-semibold text-white/70 hover:text-white">
+              Rename
+            </button>
+            <button type="button" onClick={onRemove} className="text-red-400 hover:underline">
+              Remove
+            </button>
+          </>
+        )}
+      </div>
+      {songs && <SongsToCopy songs={songs} />}
+    </li>
   );
 }
 
@@ -67,7 +163,7 @@ const empty = { title: "", blurb: "", link: "" };
 
 // The mood playlists on /playlists: add one by pasting its Spotify link,
 // edit, move up or down, or remove it.
-export default function PlaylistsAdmin() {
+export default function PlaylistsAdmin({ onChange }) {
   const [lists, setLists] = useState(null);
   const [editing, setEditing] = useState(null); // a playlist id, or "new"
   const [form, setForm] = useState(empty);
@@ -77,8 +173,11 @@ export default function PlaylistsAdmin() {
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("russ_playlists").select("*").order("position").order("created_at");
     if (error) setError("Couldn't load playlists.");
-    else setLists(data);
-  }, []);
+    else {
+      setLists(data);
+      onChange?.(data.length);
+    }
+  }, [onChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,10 +190,10 @@ export default function PlaylistsAdmin() {
     };
   }, [load]);
 
-  const open = (row, idea) => {
+  const open = (row) => {
     setError(null);
     setEditing(row?.id ?? "new");
-    setForm(row ? { title: row.title, blurb: row.blurb ?? "", link: playlistUrl(row.spotify_id) } : { ...empty, ...idea });
+    setForm(row ? { title: row.title, blurb: row.blurb ?? "", link: playlistUrl(row.spotify_id) } : empty);
   };
 
   const save = async (e) => {
@@ -135,11 +234,46 @@ export default function PlaylistsAdmin() {
     load();
   };
 
+  const editForm = (
+    <form onSubmit={save} className="space-y-3 rounded-2xl border border-white/15 p-4">
+      <label className="block text-sm text-white/70">
+        Mood
+        <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} maxLength={60} placeholder="Gym" className={`${input} mt-1`} />
+      </label>
+      <label className="block text-sm text-white/70">
+        One line about it (optional)
+        <input value={form.blurb} onChange={(e) => setForm((f) => ({ ...f, blurb: e.target.value }))} maxLength={200} className={`${input} mt-1`} />
+      </label>
+      <label className="block text-sm text-white/70">
+        Spotify playlist link
+        <input
+          value={form.link}
+          onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
+          inputMode="url"
+          placeholder="https://open.spotify.com/playlist/..."
+          className={`${input} mt-1`}
+        />
+      </label>
+      <div className="flex gap-2">
+        <button type="submit" disabled={busy} className={primary}>
+          {busy ? "Saving..." : "Save playlist"}
+        </button>
+        <button type="button" onClick={() => setEditing(null)} className="px-3 text-sm text-white/60">
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+
+  const ideaFor = (title) => PLAYLIST_IDEAS.find((idea) => idea.title.toLowerCase() === title.trim().toLowerCase());
+  const waiting = PLAYLIST_IDEAS.filter((idea) => !(lists ?? []).some((l) => l.title.trim().toLowerCase() === idea.title.toLowerCase()));
+  const nextPosition = (lists ?? []).reduce((m, l) => Math.max(m, l.position), 0) + 1;
+
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Playlists</h2>
       <p className="text-sm text-white/70">
-        Make a playlist on Spotify, then paste its link here. It shows on{" "}
+        Paste each mood&apos;s Spotify playlist link and tap Save. It shows on{" "}
         <a href="/playlists" className="underline">
           /playlists
         </a>{" "}
@@ -150,78 +284,52 @@ export default function PlaylistsAdmin() {
       {lists === null ? (
         <p className="mt-4 text-sm text-white/60">Loading...</p>
       ) : (
-        lists.length > 0 && (
-          <ul className="mt-4 divide-y divide-white/10">
-            {lists.map((row, i) => (
-              <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{row.title}</p>
-                  {row.blurb && <p className="truncate text-xs text-white/50">{row.blurb}</p>}
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${row.title} up`} className="disabled:opacity-30">
-                    &uarr;
-                  </button>
-                  <button type="button" onClick={() => move(i, 1)} disabled={i === lists.length - 1} aria-label={`Move ${row.title} down`} className="disabled:opacity-30">
-                    &darr;
-                  </button>
-                  <button type="button" onClick={() => open(row)} className="font-semibold hover:underline">
-                    Edit
-                  </button>
-                  <button type="button" onClick={() => remove(row)} className="text-red-400 hover:underline">
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )
-      )}
-
-      {editing ? (
-        <form onSubmit={save} className="mt-4 space-y-3">
-          <label className="block text-sm text-white/70">
-            Mood
-            <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} maxLength={60} placeholder="Gym" className={`${input} mt-1`} />
-          </label>
-          <label className="block text-sm text-white/70">
-            One line about it (optional)
-            <input value={form.blurb} onChange={(e) => setForm((f) => ({ ...f, blurb: e.target.value }))} maxLength={200} className={`${input} mt-1`} />
-          </label>
-          <label className="block text-sm text-white/70">
-            Spotify playlist link
-            <input
-              value={form.link}
-              onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
-              inputMode="url"
-              placeholder="https://open.spotify.com/playlist/..."
-              className={`${input} mt-1`}
-            />
-          </label>
-          <div className="flex gap-2">
-            <button type="submit" disabled={busy} className={primary}>
-              {busy ? "Saving..." : "Save playlist"}
-            </button>
-            <button type="button" onClick={() => setEditing(null)} className="px-3 text-sm text-white/60">
-              Cancel
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="mt-4">
-          <button type="button" onClick={() => open(null)} className={primary}>
-            Add a playlist
-          </button>
+        <>
+          {lists.length > 0 && (
+            <>
+              <p className="mt-6 text-xs uppercase tracking-[0.2em] text-white/50">On the site</p>
+              <ul className="mt-3 space-y-3">
+                {lists.map((row, i) =>
+                  editing === row.id ? (
+                    <li key={row.id}>{editForm}</li>
+                  ) : (
+                    <MoodCard
+                      key={`${row.id}-${row.spotify_id}`}
+                      row={row}
+                      idea={ideaFor(row.title)}
+                      color={swatchAt(i)}
+                      onSaved={load}
+                      onEdit={() => open(row)}
+                      onRemove={() => remove(row)}
+                      onUp={i > 0 ? () => move(i, -1) : null}
+                      onDown={i < lists.length - 1 ? () => move(i, 1) : null}
+                    />
+                  )
+                )}
+              </ul>
+            </>
+          )}
+          {waiting.length > 0 && (
+            <>
+              <p className="mt-6 text-xs uppercase tracking-[0.2em] text-white/50">Waiting for a link</p>
+              <p className="mt-1 text-xs text-white/50">Copy the starter songs into your playlist maker, make it on Spotify, then paste its link here.</p>
+              <ul className="mt-3 space-y-3">
+                {waiting.map((idea, i) => (
+                  <MoodCard key={idea.title} idea={idea} color={swatchAt(lists.length + i)} nextPosition={nextPosition} onSaved={load} />
+                ))}
+              </ul>
+            </>
+          )}
           <div className="mt-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/50">Starter song lists</p>
-            <p className="mt-1 text-xs text-white/50">Copy a list into your playlist maker, make it on Spotify, then add its link here.</p>
-            <div className="mt-3 space-y-2">
-              {PLAYLIST_IDEAS.map((idea) => (
-                <StarterList key={idea.title} idea={idea} onUse={() => open(null, { title: idea.title, blurb: idea.blurb })} />
-              ))}
-            </div>
+            {editing === "new" ? (
+              editForm
+            ) : (
+              <button type="button" onClick={() => open(null)} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold">
+                <AppIcon name="plus" className="h-4 w-4" /> Add your own mood
+              </button>
+            )}
           </div>
-        </div>
+        </>
       )}
     </section>
   );

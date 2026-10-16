@@ -6,6 +6,7 @@ import { SITE, navMenu } from "@/data/site";
 import { fanAccounts, supabase } from "@/lib/supabase";
 import { displayName, useSession } from "@/lib/useSession";
 import { TAB_EVENT } from "./Timeline";
+import AppIcon from "./AppIcon";
 
 const MENU = navMenu();
 
@@ -76,14 +77,19 @@ const chevron = (
   </svg>
 );
 
+const accountButton =
+  "grid h-9 w-9 place-items-center rounded-full border border-era-fg/20 text-era-fg transition-colors hover:border-era-accent hover:text-era-accent";
+
+// The account icon in the header, for every fan: signed out it opens /login,
+// signed in it shows their initial and a menu.
 function Account({ session }) {
   const pathname = usePathname();
-  if (!fanAccounts || session === undefined) return null;
+  if (!fanAccounts || session === undefined) return <span className="h-9 w-9" aria-hidden="true" />;
   if (!session) {
     const next = pathname && pathname !== "/" && pathname !== "/login" ? `?next=${encodeURIComponent(pathname)}` : "";
     return (
-      <a href={`/login${next}`} className={linkStyle}>
-        Sign in
+      <a href={`/login${next}`} aria-label="Sign in or sign up" title="Sign in" className={accountButton}>
+        <AppIcon name="user" className="h-[18px] w-[18px]" />
       </a>
     );
   }
@@ -92,20 +98,35 @@ function Account({ session }) {
     <Dropdown
       align="right"
       ariaLabel={`Your account (${session.user.email})`}
-      buttonClass="grid h-9 w-9 place-items-center rounded-full border border-era-fg/20 font-display text-base uppercase text-era-fg transition-colors hover:border-era-accent"
+      buttonClass={`${accountButton} bg-era-fg/[0.06] font-display text-base uppercase`}
       label={name.slice(0, 1) || "?"}
     >
-      <p className="truncate px-3 pb-2 pt-1 text-xs text-era-muted">{session.user.email}</p>
-      <a href="/favorites" className={itemStyle}>
-        Your favorites
-      </a>
-      <a href="/top10" className={itemStyle}>
-        Your top 10
-      </a>
-      <button type="button" onClick={() => supabase.auth.signOut()} className={itemStyle}>
-        Sign out
-      </button>
+      <div className="flex items-center gap-3 px-3 pb-3 pt-2">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-era-accent font-display text-lg uppercase text-era-bg">{name.slice(0, 1) || "?"}</span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-era-fg">{name}</span>
+          <span className="block truncate text-xs text-era-muted">{session.user.email}</span>
+        </span>
+      </div>
+      <AccountLinks itemClass={`${itemStyle} flex items-center gap-3`} />
     </Dropdown>
+  );
+}
+
+// Favorites, Top 10 and Sign out, shared by the header menu and the phone menu.
+function AccountLinks({ itemClass, onPick }) {
+  return (
+    <>
+      <a href="/favorites" onClick={onPick} className={itemClass}>
+        <AppIcon name="heart" className="h-4 w-4 opacity-70" /> Your favorites
+      </a>
+      <a href="/top10" onClick={onPick} className={itemClass}>
+        <AppIcon name="list-ordered" className="h-4 w-4 opacity-70" /> Your top 10
+      </a>
+      <button type="button" onClick={() => supabase.auth.signOut()} className={itemClass}>
+        <AppIcon name="log-out" className="h-4 w-4 opacity-70" /> Sign out
+      </button>
+    </>
   );
 }
 
@@ -150,7 +171,7 @@ export default function Header() {
             </span>
           </a>
 
-          <nav className="hidden items-center gap-5 md:flex lg:gap-8" aria-label="Main">
+          <nav className="hidden items-center gap-5 md:ml-auto md:flex lg:gap-8" aria-label="Main">
             {MENU.map((entry) =>
               entry.group ? (
                 <Dropdown key={entry.group} label={<span className="flex items-center gap-1.5">{entry.group} {chevron}</span>} buttonClass={linkStyle}>
@@ -166,7 +187,6 @@ export default function Header() {
                 </a>
               )
             )}
-            <Account session={session} />
             <a
               href={SITE.spotifyArtist}
               target="_blank"
@@ -177,16 +197,19 @@ export default function Header() {
             </a>
           </nav>
 
-          <button
-            type="button"
-            className="relative z-50 flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-          >
-            <motion.span animate={open ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
-            <motion.span animate={open ? { rotate: -45, y: -3 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
-          </button>
+          <div className="flex items-center gap-2 md:ml-5 lg:ml-8">
+            <Account session={session} />
+            <button
+              type="button"
+              className="relative z-50 flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              onClick={() => setOpen((v) => !v)}
+            >
+              <motion.span animate={open ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
+              <motion.span animate={open ? { rotate: -45, y: -3 } : { rotate: 0, y: 0 }} className="h-px w-6 bg-era-fg" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -235,14 +258,39 @@ export default function Header() {
             </nav>
             <div className="flex flex-col gap-3 text-sm text-era-muted">
               {fanAccounts && session === null && (
-                <a href="/login" onClick={() => setOpen(false)} className="text-era-fg">
-                  Sign in or sign up
+                <a
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-2xl border border-era-fg/15 p-3 text-era-fg"
+                >
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-era-fg/10">
+                    <AppIcon name="user" className="h-5 w-5" />
+                  </span>
+                  <span className="flex-1">
+                    <span className="block font-semibold">Sign in or sign up</span>
+                    <span className="block text-xs text-era-muted">Save favorites and your top 10</span>
+                  </span>
+                  <AppIcon name="chevron-right" className="h-4 w-4 opacity-50" />
                 </a>
               )}
               {session && (
-                <button type="button" onClick={() => supabase.auth.signOut()} className="text-left">
-                  Signed in as {session.user.email}. Sign out
-                </button>
+                <div className="rounded-2xl border border-era-fg/15 p-2 text-era-fg">
+                  <div className="flex items-center gap-3 px-2 pb-2 pt-1">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-era-accent font-display text-lg uppercase text-era-bg">
+                      {displayName(session).slice(0, 1) || "?"}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">{displayName(session)}</span>
+                      <span className="block truncate text-xs text-era-muted">{session.user.email}</span>
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1">
+                    <AccountLinks
+                      onPick={() => setOpen(false)}
+                      itemClass="flex flex-col items-center gap-1.5 rounded-xl bg-era-fg/[0.06] px-2 py-3 text-center text-xs"
+                    />
+                  </div>
+                </div>
               )}
               <a href={SITE.spotifyArtist} target="_blank" rel="noreferrer" className="text-era-accent">
                 Listen on Spotify
