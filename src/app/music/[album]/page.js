@@ -9,6 +9,7 @@ import { ALBUMS, albumBySlug, albumHref, playlistHref, playlistsWithAlbum, total
 import { releaseKey } from "@/data/releaseKey";
 import { SITE } from "@/data/site";
 import { savedLinkFor } from "@/lib/releasesServer";
+import { paletteCss } from "@/lib/theme";
 
 export const revalidate = 300;
 
@@ -89,8 +90,8 @@ export default async function AlbumPage({ params }) {
 
   return (
     <>
-      {/* The album's colors from the first paint; DefaultPalette keeps them after client navigation. */}
-      <style>{`:root{--bg:${palette.bg};--fg:${palette.fg};--muted:${palette.muted};--accent:${palette.accent}}`}</style>
+      {/* The album's colors (light or dark) from the first paint; DefaultPalette keeps them after client navigation. */}
+      <style>{paletteCss(palette)}</style>
       <DefaultPalette palette={palette} />
       <JsonLd item={schema} />
       <JsonLd item={crumbs} />

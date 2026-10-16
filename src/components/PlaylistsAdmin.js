@@ -6,6 +6,7 @@ import { CATALOG_RELEASES } from "@/data/releaseKey";
 import { ALBUM_SWATCHES, swatchAt } from "./AlbumSwatches";
 import { IconPicker } from "./CoverMaker";
 import AppIcon from "./AppIcon";
+import Link from "next/link";
 
 // A starter list's songs with their Spotify track links, from the catalog.
 function starterSongs(titles) {
@@ -325,9 +326,9 @@ export default function PlaylistsAdmin({ onChange }) {
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Playlists</h2>
       <p className="text-sm text-white/70">
         Paste each mood&apos;s Spotify playlist link and tap Save. It shows on{" "}
-        <a href="/playlists" className="underline">
+        <Link href="/playlists" className="underline">
           /playlists
-        </a>{" "}
+        </Link>{" "}
         with Spotify&apos;s own player, so plays count on Spotify.
       </p>
       {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
