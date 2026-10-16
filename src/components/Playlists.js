@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { getSupabase, supabaseConfigured } from "@/lib/supabaseConfig";
 import { applyPalette } from "./usePalette";
 import { DEFAULT_PALETTE } from "@/data/eras";
 import { playlistUrl } from "@/data/playlists";
@@ -13,19 +13,16 @@ import SpotifyEmbed from "./SpotifyEmbed";
 // /playlists: fan-made Spotify playlists by mood. Each card loads Spotify's
 // own player, so every play counts on Spotify.
 export default function Playlists() {
-  const [lists, setLists] = useState(() => (supabase ? null : []));
+  const [lists, setLists] = useState(() => (supabaseConfigured ? null : []));
   // Each playlist's main color from its picture on Spotify, so the card
   // matches the cover people see there.
   const [covers, setCovers] = useState({});
   useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabaseConfigured) return;
     let live = true;
-    supabase
-      .from("russ_playlists")
-      .select("id, title, blurb, spotify_id")
-      .order("position")
-      .order("created_at")
+    getSupabase()
+      .then((supabase) => supabase.from("russ_playlists").select("id, title, blurb, spotify_id").order("position").order("created_at"))
       .then(({ data }) => live && setLists(data ?? []));
     return () => {
       live = false;

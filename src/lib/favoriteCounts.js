@@ -1,6 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { fanAccounts, supabase } from "./supabase";
+import { fanAccounts, getSupabase } from "./supabaseConfig";
 
 // How many signed-in fans have each release in their favorites
 // (russ_favorite_counts, totals only). A release shows up once MIN_FANS
@@ -15,7 +15,7 @@ const listeners = new Set();
 function load() {
   if (started || !fanAccounts) return;
   started = true;
-  supabase.rpc("russ_favorite_counts", { p_min: MIN_FANS }).then(({ data, error }) => {
+  getSupabase().then((supabase) => supabase.rpc("russ_favorite_counts", { p_min: MIN_FANS })).then(({ data, error }) => {
     if (error || !Array.isArray(data)) return;
     counts = new Map(data.map((row) => [row.release_key, row.fans]));
     listeners.forEach((fn) => fn());

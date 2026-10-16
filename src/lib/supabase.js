@@ -8,6 +8,6 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabase = url && key ? createClient(url, key, { auth: { flowType: "pkce" } }) : null;
 
-// Fan accounts (favorites sync) only turn on once the site has its own
-// project; until then it still shares Handoff Hero's, whose users they'd join.
-export const fanAccounts = Boolean(supabase) && !url.includes("eljtjrcjyxmqkkruaucl");
+// Pages everyone visits use getSupabase() from ./supabaseConfig instead,
+// which loads this file after the page is up.
+export { fanAccounts } from "./supabaseConfig";

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { fanAccounts } from "@/lib/supabase";
+import { fanAccounts } from "@/lib/supabaseConfig";
 import { useSession } from "@/lib/useSession";
 
 // One line under the title on /favorites and /top10: where the list is kept,

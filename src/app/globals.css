@@ -257,3 +257,8 @@ html:active-view-transition-type(page) main {
   border-color: var(--cover);
   border-color: oklch(from var(--cover) min(l, 0.78) c h);
 }
+
+/* The phone menu covers the page; the new-drop notice waits until it closes. */
+:root[data-menu-open] .drop-banner {
+  display: none;
+}

@@ -1,5 +1,5 @@
 "use client";
-import { supabase } from "./supabase";
+import { getSupabase, supabaseConfigured } from "./supabaseConfig";
 
 // Tells the server an admin save changed what cached pages show
 // (/api/revalidate). Saves made close together (a reorder, a run of
@@ -17,6 +17,7 @@ async function send() {
   timer = null;
   let ok = false;
   try {
+    const supabase = await getSupabase();
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (token) {
@@ -37,7 +38,7 @@ async function send() {
 // refreshSite("drops") or refreshSite(["drops", "links"]). Resolves to
 // true once the server has refreshed them; never throws.
 export function refreshSite(tags) {
-  if (!supabase) return Promise.resolve(false);
+  if (!supabaseConfigured) return Promise.resolve(false);
   for (const tag of [].concat(tags)) pending.add(tag);
   clearTimeout(timer);
   timer = setTimeout(send, WAIT);

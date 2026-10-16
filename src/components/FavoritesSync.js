@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { getFavorites, setFavorites, subscribeFavorites } from "@/lib/favorites";
 import { getTop10, setTop10, subscribeTop10 } from "@/lib/top10";
-import { fanAccounts, supabase } from "@/lib/supabase";
+import { fanAccounts, getSupabase } from "@/lib/supabaseConfig";
 
 const strings = (v) => (Array.isArray(v) ? v.filter((k) => typeof k === "string") : []);
 
@@ -13,6 +13,9 @@ const strings = (v) => (Array.isArray(v) ? v.filter((k) => typeof k === "string"
 export default function FavoritesSync() {
   useEffect(() => {
     if (!fanAccounts) return;
+    let supabase = null;
+    let live = true;
+    let auth = null;
     let userId = null;
     let lastSaved = null;
     let timer = null;
@@ -59,16 +62,21 @@ export default function FavoritesSync() {
     };
     const offFavorites = subscribeFavorites(later);
     const offTop10 = subscribeTop10(later);
-    supabase.auth.getSession().then(({ data }) => start(data.session));
-    const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Run outside the auth callback; Supabase warns against awaiting in it.
-      setTimeout(() => start(session), 0);
+    getSupabase().then((client) => {
+      if (!live) return;
+      supabase = client;
+      supabase.auth.getSession().then(({ data }) => start(data.session));
+      auth = supabase.auth.onAuthStateChange((_event, session) => {
+        // Run outside the auth callback; Supabase warns against awaiting in it.
+        setTimeout(() => start(session), 0);
+      }).data;
     });
     return () => {
+      live = false;
       offFavorites();
       offTop10();
       clearTimeout(timer);
-      auth.subscription.unsubscribe();
+      auth?.subscription.unsubscribe();
     };
   }, []);
   return null;
