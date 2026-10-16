@@ -80,7 +80,7 @@ function PlaylistCover({ title, color: startColor }) {
       <div className="mt-3 flex flex-wrap items-start gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={url} alt={`${title} cover`} width={144} height={144} className="h-36 w-36 shrink-0 rounded-lg bg-white/5 object-cover" />
-        <div className="min-w-0 flex-1 space-y-3">
+        <div className="min-w-[15rem] flex-1 basis-60 space-y-3">
           <CoverColors value={color} onChange={setColor} />
           <IconPicker value={icon} onChange={setIcon} color={color} />
           <label className="flex items-center gap-2 text-sm text-white/70">

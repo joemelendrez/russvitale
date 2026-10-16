@@ -103,7 +103,7 @@ export function IconPicker({ value, onChange, color }) {
                 {g.names.length === 0 ? (
                   <p className="text-sm text-white/50">No icon by that name.</p>
                 ) : (
-                  <div className="grid grid-cols-8 gap-1.5 sm:grid-cols-10">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1.5">
                     {g.names.map((n) => (
                       <button
                         key={n}
