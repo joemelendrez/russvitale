@@ -71,7 +71,7 @@ export default async function PlaylistPage({ params }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={cover} alt={`${list.title} playlist cover`} width={280} height={280} className="aspect-square w-full max-w-[280px] rounded-2xl object-cover shadow-2xl" style={{ boxShadow: `0 30px 80px -30px ${list.color}` }} />
           <div>
-            <p className="text-xs uppercase tracking-[0.35em]" style={{ color: list.color }}>
+            <p className="cover-ink text-xs uppercase tracking-[0.35em]" style={{ "--cover": list.color }}>
               Unofficial fan playlist
             </p>
             <h1 className="mt-4 font-display text-5xl uppercase leading-[0.9] sm:text-7xl">{list.title}</h1>

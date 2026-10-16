@@ -92,7 +92,7 @@ function SharedList({ keys }) {
       <ol className="mt-8 divide-y divide-era-fg/10">
         {list.map((key, i) => (
           <li key={key} className="flex items-start gap-3">
-            <span className="mt-5 w-8 shrink-0 text-right font-display text-2xl" style={{ color: swatchAt(i) }}>
+            <span className="cover-ink mt-5 w-8 shrink-0 text-right font-display text-2xl" style={{ "--cover": swatchAt(i) }}>
               {i + 1}
             </span>
             <div className="min-w-0 flex-1">
@@ -327,8 +327,8 @@ function PickItem({ id, index, release, onMove, onRemove }) {
           }
         }}
         aria-label={`Move ${release.title}, number ${index + 1}. Use the up and down arrow keys.`}
-        style={{ color: swatchAt(index) }}
-        className="flex w-9 shrink-0 cursor-grab touch-none items-center justify-center font-display text-2xl active:cursor-grabbing"
+        style={{ "--cover": swatchAt(index) }}
+        className="cover-ink flex w-9 shrink-0 cursor-grab touch-none items-center justify-center font-display text-2xl active:cursor-grabbing"
       >
         {index + 1}
       </button>
