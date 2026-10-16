@@ -1,18 +1,17 @@
 import { ImageResponse } from "next/og";
-import { ALBUM_SWATCHES } from "@/components/AlbumSwatches";
+import { ALBUM_SWATCHES, coverHex } from "@/components/AlbumSwatches";
 import { COVER_ICONS } from "@/data/coverIcons";
 import { inkFor } from "@/data/playlists";
 import { ogFonts } from "@/lib/ogImage";
 
 const SIZE = 1000;
 
-// A playlist cover to upload on Spotify: one album color, a line icon and the
-// mood's name. Only the site's own colors and icons, like /blog/cover.
+// A playlist cover to upload on Spotify: one color (an album's, or any hex
+// from the custom picker), one of the site's line icons and the mood's name.
 // Served from /playlists/cover/<color>/<icon>/<text> (and the older
 // ?c=&i=&t= form).
 export async function playlistCoverImage({ c, i, t }) {
-  const wanted = `#${(c ?? "").toLowerCase()}`;
-  const background = ALBUM_SWATCHES.find((s) => s.color.toLowerCase() === wanted)?.color ?? ALBUM_SWATCHES[0].color;
+  const background = coverHex(c) ?? ALBUM_SWATCHES[0].color;
   const icon = COVER_ICONS[i] ? i : "list-music";
   const text = (t ?? "").replace(/\s+/g, " ").trim().slice(0, 30);
   const ink = inkFor(background);

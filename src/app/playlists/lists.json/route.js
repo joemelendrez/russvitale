@@ -1,4 +1,5 @@
-import { swatchAt } from "@/components/AlbumSwatches";
+import { COVER_COLORS, swatchAt } from "@/components/AlbumSwatches";
+import { COVER_ICONS } from "@/data/coverIcons";
 import { PLAYLIST_IDEAS, playlistCoverUrl, playlistIcon } from "@/data/playlists";
 import { CATALOG_RELEASES } from "@/data/releaseKey";
 import { keysForCode, releasesForKeys } from "@/lib/releasesServer";
@@ -10,7 +11,7 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 // Read by Joseph's playlist generator (spotifyplaylistgen.netlify.app), so it
 // can build each mood's playlist from the same song list admin shows, and
 // update the playlist already on /playlists instead of making a second one.
-//   /playlists/lists.json            every mood list
+//   /playlists/lists.json            every mood list, plus cover colors and icons
 //   /playlists/lists.json?top10=abc  a shared top 10 (russvitale.com/t/abc)
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -61,5 +62,7 @@ export async function GET(request) {
       songs: idea.songs.map((t) => song(CATALOG_RELEASES.find((r) => r.title === t), t)),
     };
   });
-  return Response.json({ lists }, { headers: HEADERS });
+  // For the generator's cover maker: quick-pick colors and icon names for
+  // /playlists/cover/<hex>/<icon>/<text>.
+  return Response.json({ lists, coverColors: COVER_COLORS, coverIcons: Object.keys(COVER_ICONS) }, { headers: HEADERS });
 }

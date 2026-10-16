@@ -251,7 +251,7 @@ export default function Header() {
             transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
             className="fixed inset-0 z-40 flex flex-col justify-between gap-8 bg-era-bg px-4 pb-10 pt-24 md:hidden"
           >
-            <nav className="flex min-h-0 flex-col gap-2 overflow-y-auto" aria-label="Mobile" data-lenis-prevent>
+            <MenuScroller>
               {MENU.map((entry, i) => {
                 const link = (item, small) => (
                   <a
@@ -284,7 +284,7 @@ export default function Header() {
                   </motion.div>
                 );
               })}
-            </nav>
+            </MenuScroller>
             <div className="flex flex-col gap-3 text-sm text-era-muted">
               <ThemeChoices />
               {fanAccounts && session === null && (
@@ -334,5 +334,57 @@ export default function Header() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+// The phone menu's links in a scroll area with its own scroll bar on the
+// right: an accent thumb on a thin track, a fade and a "More" arrow at the
+// bottom while there's more below. Only shows when the links overflow.
+function MenuScroller({ children }) {
+  const ref = useRef(null);
+  const [bar, setBar] = useState(null); // { top, size, atEnd } in %, or null when it all fits
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      if (scrollHeight - clientHeight < 4) return setBar(null);
+      const size = Math.max(12, (clientHeight / scrollHeight) * 100);
+      const top = (scrollTop / (scrollHeight - clientHeight)) * (100 - size);
+      setBar({ top, size, atEnd: scrollTop + clientHeight >= scrollHeight - 8 });
+    };
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    for (const child of el.children) ro.observe(child);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      ro.disconnect();
+    };
+  }, []);
+
+  return (
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <nav ref={ref} className="no-scrollbar flex min-h-0 flex-col gap-2 overflow-y-auto pr-6" aria-label="Mobile" data-lenis-prevent>
+        {children}
+      </nav>
+      {bar && (
+        <>
+          <div className="pointer-events-none absolute bottom-0 right-0 top-0 w-1 rounded-full bg-era-fg/10" aria-hidden="true">
+            <div className="absolute inset-x-0 rounded-full bg-era-accent transition-[top] duration-75" style={{ top: `${bar.top}%`, height: `${bar.size}%` }} />
+          </div>
+          <div
+            className={`pointer-events-none absolute inset-x-0 bottom-0 flex h-20 items-end justify-center bg-gradient-to-t from-era-bg to-transparent pb-1 transition-opacity duration-300 ${bar.atEnd ? "opacity-0" : "opacity-100"}`}
+            aria-hidden="true"
+          >
+            <span className="flex animate-bounce items-center gap-1 text-[11px] uppercase tracking-[0.3em] text-era-muted">
+              More <AppIcon name="chevron-down" className="h-3.5 w-3.5" />
+            </span>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
