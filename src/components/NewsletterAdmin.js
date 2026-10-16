@@ -10,6 +10,9 @@ export default function NewsletterAdmin() {
   const [stats, setStats] = useState(null);
   const [missing, setMissing] = useState(null);
   const [history, setHistory] = useState([]);
+  // Cities fans asked for show news in (migration 0014); empty before it.
+  const [cities, setCities] = useState([]);
+  const [city, setCity] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [status, setStatus] = useState(null);
@@ -17,13 +20,15 @@ export default function NewsletterAdmin() {
   const [error, setError] = useState(null);
 
   const load = useCallback(async () => {
-    const [s, h, env] = await Promise.all([
+    const [s, h, env, c] = await Promise.all([
       supabase.rpc("russ_newsletter_stats"),
       supabase.from("russ_newsletters").select("id, subject, recipients, sent_at").order("sent_at", { ascending: false }).limit(10),
       fetch("/api/newsletter/send")
         .then((r) => r.json())
         .catch(() => ({ missing: [] })),
+      supabase.rpc("russ_subscriber_cities"),
     ]);
+    setCities(c.error ? [] : (c.data ?? []));
     setStats(s.error ? false : (s.data?.[0] ?? { confirmed: 0, pending: 0, unsubscribed: 0 }));
     setHistory(h.data ?? []);
     setMissing(env.missing ?? []);
@@ -42,7 +47,7 @@ export default function NewsletterAdmin() {
 
   const send = async (test) => {
     if (status) return;
-    const count = Number(stats?.confirmed ?? 0);
+    const count = audience;
     if (!test && !window.confirm(`Send "${subject.trim()}" to ${count} ${count === 1 ? "person" : "people"}? This can't be undone.`)) return;
     setStatus(test ? "test" : "send");
     setError(null);
@@ -52,7 +57,7 @@ export default function NewsletterAdmin() {
       const res = await fetch("/api/newsletter/send", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` },
-        body: JSON.stringify({ subject, body, test }),
+        body: JSON.stringify({ subject, body, test, ...(city ? { city } : {}) }),
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error ?? "Couldn't send it.");
@@ -71,6 +76,7 @@ export default function NewsletterAdmin() {
   };
 
   const ready = missing !== null && missing.length === 0;
+  const audience = city ? Number(cities.find((c) => c.city === city)?.confirmed ?? 0) : Number(stats?.confirmed ?? 0);
   const filled = subject.trim() && body.trim();
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
@@ -89,6 +95,21 @@ export default function NewsletterAdmin() {
       )}
 
       <div className="mt-5 space-y-3">
+        {cities.length > 0 && (
+          <>
+            <label htmlFor="nl-city" className="block text-sm text-white/70">
+              Send to
+            </label>
+            <select id="nl-city" value={city} onChange={(e) => setCity(e.target.value)} className={input}>
+              <option value="">Everyone ({Number(stats?.confirmed ?? 0)})</option>
+              {cities.map((c) => (
+                <option key={c.city} value={c.city}>
+                  Fans near {c.city} ({c.confirmed})
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         <label htmlFor="nl-subject" className="block text-sm text-white/70">
           Subject
         </label>
@@ -119,10 +140,10 @@ export default function NewsletterAdmin() {
           <button
             type="button"
             onClick={() => send(false)}
-            disabled={!ready || !filled || status !== null || !Number(stats?.confirmed)}
+            disabled={!ready || !filled || status !== null || !audience}
             className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-40"
           >
-            {status === "send" ? "Sending..." : `Send to ${Number(stats?.confirmed ?? 0)}`}
+            {status === "send" ? "Sending..." : `Send to ${audience}`}
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { VIDEOS } from "@/data/videos";
 import { SITE } from "@/data/site";
 import PaletteSection from "./PaletteSection";
@@ -32,7 +32,7 @@ export default function Watch() {
 function Video({ video, index }) {
   const [playing, setPlaying] = useState(false);
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -66,6 +66,6 @@ function Video({ video, index }) {
       </div>
       <p className="mt-4 px-1 font-semibold">{video.title}</p>
       <p className="px-1 text-xs uppercase tracking-[0.2em] text-era-muted">{video.year}</p>
-    </motion.div>
+    </m.div>
   );
 }

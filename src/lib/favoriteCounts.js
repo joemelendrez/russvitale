@@ -1,11 +1,13 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { fanAccounts, getSupabase } from "./supabaseConfig";
+import { fanAccounts } from "./supabaseConfig";
+import { MIN_FANS } from "./favoriteCountsConfig";
 
 // How many signed-in fans have each release in their favorites
 // (russ_favorite_counts, totals only). A release shows up once MIN_FANS
-// fans have it. Fetched once per visit and shared by every heart.
-export const MIN_FANS = 5;
+// fans have it. Fetched once per visit from the site's cached copy
+// (/favorite-counts.json) and shared by every heart.
+export { MIN_FANS };
 
 const EMPTY = new Map();
 let counts = EMPTY;
@@ -15,11 +17,14 @@ const listeners = new Set();
 function load() {
   if (started || !fanAccounts) return;
   started = true;
-  getSupabase().then((supabase) => supabase.rpc("russ_favorite_counts", { p_min: MIN_FANS })).then(({ data, error }) => {
-    if (error || !Array.isArray(data)) return;
-    counts = new Map(data.map((row) => [row.release_key, row.fans]));
-    listeners.forEach((fn) => fn());
-  });
+  fetch("/favorite-counts.json")
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      if (!Array.isArray(data?.counts)) return;
+      counts = new Map(data.counts);
+      listeners.forEach((fn) => fn());
+    })
+    .catch(() => {});
 }
 
 function subscribe(callback) {

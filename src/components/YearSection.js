@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { m, useScroll, useTransform } from "framer-motion";
 import ReleaseCard from "./ReleaseCard";
 import { usePalette } from "./usePalette";
 import { eraForYear } from "@/data/eras";
@@ -19,13 +19,13 @@ export default function YearSection({ group }) {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-36">
-            <motion.h3
+            <m.h3
               id={`year-${group.year}-title`}
               style={{ y: yearY }}
               className="font-display text-7xl leading-none text-era-accent sm:text-8xl xl:text-9xl"
             >
               {group.year}
-            </motion.h3>
+            </m.h3>
             <p className="mt-3 text-xs uppercase tracking-[0.3em] text-era-muted">{era.title} era</p>
             <p className="mt-4 max-w-xs text-era-fg/85">{group.note}</p>
           </div>

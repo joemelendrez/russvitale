@@ -8,7 +8,7 @@ import Tracklist from "@/components/Tracklist";
 import { ALBUMS, albumBySlug, albumHref, playlistHref, playlistsWithAlbum, totalLength } from "@/data/albums";
 import { releaseKey } from "@/data/releaseKey";
 import { SITE } from "@/data/site";
-import { savedLinkFor } from "@/lib/releasesServer";
+import { alsoLovedFor, savedLinkFor } from "@/lib/releasesServer";
 import { paletteCss } from "@/lib/theme";
 
 export const revalidate = 300;
@@ -53,7 +53,7 @@ export default async function AlbumPage({ params }) {
   const album = albumBySlug(slug);
   if (!album) notFound();
 
-  const saved = await savedLinkFor(releaseKey(album));
+  const [saved, alsoLoved] = await Promise.all([savedLinkFor(releaseKey(album)), alsoLovedFor(releaseKey(album))]);
   const cover = saved?.cover_url ?? album.cover ?? null;
   const date = album.date ?? saved?.released_on ?? null;
   const spotify = saved?.spotify_id ? { kind: saved.kind ?? "album", id: saved.spotify_id } : album.spotify;
@@ -207,6 +207,39 @@ export default async function AlbumPage({ params }) {
                 </ul>
               )}
             </section>
+
+            {alsoLoved.length > 0 && (
+              <section aria-labelledby="also-loved">
+                <h2 id="also-loved" className="font-display text-3xl uppercase">
+                  Fans also love
+                </h2>
+                <p className="mt-2 text-sm text-era-muted">What fans who saved this one have in their favorites too.</p>
+                <ul className="mt-4 space-y-2">
+                  {alsoLoved.map(({ release, fans }) => {
+                    const page = ALBUMS.find((a) => releaseKey(a) === releaseKey(release));
+                    const label = (
+                      <>
+                        <span className="min-w-0 flex-1 truncate font-semibold">{release.title}</span>
+                        <span className="shrink-0 text-xs text-era-muted">
+                          {TYPE[release.type] ?? "Single"}, {release.year} &middot; {fans} fans
+                        </span>
+                      </>
+                    );
+                    return (
+                      <li key={releaseKey(release)}>
+                        {page ? (
+                          <Link href={albumHref(page)} className="flex items-center gap-3 rounded-xl border border-era-fg/10 px-4 py-3 text-sm hover:border-era-accent">
+                            {label}
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-3 rounded-xl border border-era-fg/10 px-4 py-3 text-sm">{label}</div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
 
             {playlists.length > 0 && (
               <section aria-labelledby="in-playlists">

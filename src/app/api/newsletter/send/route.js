@@ -26,10 +26,12 @@ export async function POST(request) {
   if (body.test) {
     recipients = [{ email: userData.user.email, token: null }];
   } else {
-    const { data, error } = await supabase.rpc("russ_newsletter_recipients");
+    // `city` sends only to fans who asked for show news there.
+    const city = String(body.city ?? "").trim();
+    const { data, error } = city ? await supabase.rpc("russ_newsletter_recipients_in", { p_city: city }) : await supabase.rpc("russ_newsletter_recipients");
     if (error) return NextResponse.json({ error: "Couldn't load subscribers." }, { status: 500 });
     recipients = data ?? [];
-    if (!recipients.length) return NextResponse.json({ error: "Nobody has confirmed a signup yet." }, { status: 400 });
+    if (!recipients.length) return NextResponse.json({ error: city ? `Nobody has confirmed a signup for ${city} yet.` : "Nobody has confirmed a signup yet." }, { status: 400 });
   }
 
   const emails = recipients.map(({ email, token }) => {

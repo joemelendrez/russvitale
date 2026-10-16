@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { albumBySlug, albumHref, slugify } from "@/data/albums";
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, m, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
 import { CoverEditor, SpotifyLinkEditor, useRelease, useSpotifyLinks } from "./SpotifyLinks";
@@ -70,7 +70,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
   };
 
   return (
-    <motion.article
+    <m.article
       initial={{ opacity: 0, y: 60 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-10% 0px" }}
@@ -78,7 +78,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
       className="group [perspective:900px]"
       data-missing-spotify={editing && !player ? "" : undefined}
     >
-      <motion.div
+      <m.div
         ref={ref}
         style={{ rotateX, rotateY }}
         onPointerMove={onPointerMove}
@@ -108,7 +108,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
           aria-pressed={lit}
           className="absolute inset-0 z-10 block h-full w-full cursor-pointer"
         >
-          <motion.div
+          <m.div
             animate={{ scale: lit ? 1.06 : 1, filter: lit ? "brightness(0.55)" : "brightness(1)" }}
             transition={{ duration: 0.5 }}
             className="absolute inset-0"
@@ -118,11 +118,11 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
             ) : (
               <GeneratedCover release={release} palette={palette} spinning={lit} />
             )}
-          </motion.div>
+          </m.div>
 
           <AnimatePresence>
             {lit && (
-              <motion.span
+              <m.span
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
@@ -138,7 +138,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 )}
-              </motion.span>
+              </m.span>
             )}
           </AnimatePresence>
 
@@ -161,7 +161,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
         </button>
 
         {/* Player tray */}
-        <motion.div
+        <m.div
           initial={false}
           animate={{ y: active ? "0%" : "150%" }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -180,8 +180,8 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
               <span aria-hidden="true">&#8599;</span>
             </a>
           )}
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
@@ -216,7 +216,7 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
       </div>
       {editing && <CoverEditor release={release} />}
       {editing && <SpotifyLinkEditor key={`${service}-${player?.key ?? "none"}`} release={release} />}
-    </motion.article>
+    </m.article>
   );
 }
 
@@ -230,7 +230,7 @@ function GeneratedCover({ release, palette, spinning }) {
           background: `radial-gradient(120% 90% at 85% 10%, ${palette.accent}55, transparent 55%), radial-gradient(90% 90% at 0% 100%, ${palette.accent}22, transparent 60%)`,
         }}
       />
-      <motion.div
+      <m.div
         animate={{ rotate: spinning ? 360 : 0 }}
         transition={spinning ? { duration: 6, repeat: Infinity, ease: "linear" } : { duration: 0.6 }}
         className="absolute -right-[22%] -top-[22%] aspect-square w-[85%] rounded-full"

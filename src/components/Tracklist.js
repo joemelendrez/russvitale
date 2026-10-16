@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { fmtLength } from "@/data/tracklists";
 import PlayerFrame from "./PlayerFrame";
 
@@ -63,7 +63,7 @@ export default function Tracklist({ tracks, title, compact = false }) {
             </button>
             <AnimatePresence initial={false}>
               {isOpen && (
-                <motion.div
+                <m.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -73,7 +73,7 @@ export default function Tracklist({ tracks, title, compact = false }) {
                   <div className="pb-3 pl-10">
                     <PlayerFrame player={trackPlayer(t.trackId)} title={t.title} autoplay />
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </li>

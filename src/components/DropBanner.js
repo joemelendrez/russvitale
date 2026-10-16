@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { bannerDrop, dropToRelease } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
@@ -54,7 +54,7 @@ export default function DropBanner() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.aside
+        <m.aside
           key={drop.id}
           initial={{ y: "-130%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -102,7 +102,7 @@ export default function DropBanner() {
             </button>
           </div>
           {playing && player && <PlayerFrame player={player} title={drop.title} className="mt-3" autoplay />}
-        </motion.aside>
+        </m.aside>
       )}
     </AnimatePresence>
   );

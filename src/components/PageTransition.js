@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 
 // Between pages: the site's icon over a blurred, faded wash of the page's
 // own color, and the new page opens at the top. Only for in-app link
@@ -52,7 +52,7 @@ export default function PageTransition() {
   return (
     <AnimatePresence>
       {showing && (
-        <motion.div
+        <m.div
           key="page-transition"
           aria-hidden="true"
           initial={{ opacity: 0 }}
@@ -66,7 +66,7 @@ export default function PageTransition() {
             WebkitBackdropFilter: "blur(18px) saturate(1.2)",
           }}
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.08, opacity: 0 }}
@@ -78,8 +78,8 @@ export default function PageTransition() {
               style={{ background: "color-mix(in srgb, var(--accent) 35%, transparent)" }}
             />
             <Icon />
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

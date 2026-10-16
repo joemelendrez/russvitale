@@ -2,6 +2,7 @@ import "@fontsource/anton/400.css";
 import "@fontsource-variable/inter";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
+import MotionProvider from "@/components/MotionProvider";
 import PageTransition from "@/components/PageTransition";
 import Header from "@/components/Header";
 import FavoritesSync from "@/components/FavoritesSync";
@@ -61,15 +62,17 @@ export default function RootLayout({ children }) {
           Skip to the music
         </a>
         <FavoritesSync />
-        <SpotifyLinksProvider>
-          <PhonePlayerProvider>
-            <SmoothScroll>
-              <Header />
-              <main>{children}</main>
-              <PageTransition />
-            </SmoothScroll>
-          </PhonePlayerProvider>
-        </SpotifyLinksProvider>
+        <MotionProvider>
+          <SpotifyLinksProvider>
+            <PhonePlayerProvider>
+              <SmoothScroll>
+                <Header />
+                <main>{children}</main>
+                <PageTransition />
+              </SmoothScroll>
+            </PhonePlayerProvider>
+          </SpotifyLinksProvider>
+        </MotionProvider>
       </body>
     </html>
   );
