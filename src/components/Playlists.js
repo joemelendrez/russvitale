@@ -6,6 +6,7 @@ import { DEFAULT_PALETTE } from "@/data/eras";
 import { playlistUrl } from "@/data/playlists";
 import AlbumSwatches, { swatchAt } from "./AlbumSwatches";
 import NewsletterForm from "./NewsletterForm";
+import SpotifyEmbed from "./SpotifyEmbed";
 
 // /playlists: fan-made Spotify playlists by mood. Each card loads Spotify's
 // own player, so every play counts on Spotify.
@@ -55,13 +56,7 @@ export default function Playlists() {
                 {list.title}
               </p>
               {list.blurb && <p className="mt-3 text-era-muted">{list.blurb}</p>}
-              <iframe
-                title={`${list.title} on Spotify`}
-                src={`https://open.spotify.com/embed/playlist/${list.spotify_id}?utm_source=generator&theme=0`}
-                loading="lazy"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                className="mt-5 h-[352px] w-full rounded-xl border-0"
-              />
+              <SpotifyEmbed id={list.spotify_id} title={list.title} className="mt-5" />
               <a
                 href={playlistUrl(list.spotify_id)}
                 target="_blank"
