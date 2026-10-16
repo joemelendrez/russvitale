@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SITE, navMenu } from "@/data/site";
 import { fanAccounts, supabase } from "@/lib/supabase";
 import { displayName, useSession } from "@/lib/useSession";
-import { TAB_EVENT } from "./Timeline";
+import { TAB_EVENT, TAB_SHOWN_EVENT } from "./Timeline";
 import AppIcon from "./AppIcon";
 import ThemeToggle, { ThemeChoices } from "./ThemeToggle";
 
@@ -14,8 +14,54 @@ const MENU = navMenu();
 // Over the home page's photo the header stays light in light mode too.
 const OVER_PHOTO = { color: "#f5f5f4", "--fg": "#f5f5f4", "--muted": "#d4d4d8", "--color-era-fg": "#f5f5f4", "--color-era-muted": "#d4d4d8" };
 
-const linkStyle =
-  "relative whitespace-nowrap text-xs uppercase tracking-[0.2em] text-era-fg/80 lg:text-sm transition-colors hover:text-era-fg after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-era-accent after:transition-transform hover:after:scale-x-100";
+const linkBase =
+  "relative whitespace-nowrap text-xs uppercase tracking-[0.2em] lg:text-sm transition-colors duration-200 after:absolute after:-bottom-1.5 after:left-0 after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-era-accent after:transition-transform after:duration-300";
+// The page (or home section) you're on keeps the accent color and underline;
+// the others brighten and draw the underline on hover.
+const linkStyle = (active) =>
+  `${linkBase} ${active ? "text-era-accent after:scale-x-100" : "text-era-fg/75 hover:text-era-fg after:scale-x-0 hover:after:scale-x-100"}`;
+
+const SECTIONS = ["music", "shows", "watch", "about"];
+
+// Whether a menu link points at where the visitor is: a page by its path, a
+// home section by the one under the header, Albums/Singles by the music tab.
+function isActive(item, { pathname, onHome, section, tab }) {
+  if (item.page) {
+    if (item.href.includes("#")) return false;
+    return pathname === item.href || pathname?.startsWith(`${item.href}/`);
+  }
+  if (!onHome) return false;
+  const id = item.href.slice(1);
+  if (item.tab) return section === "music" && tab === item.tab;
+  return section === id;
+}
+
+// The home section under the header, and the music tab picked last.
+function useHomeSpot(onHome) {
+  const [section, setSection] = useState(null);
+  const [tab, setTab] = useState("albums");
+  useEffect(() => {
+    if (!onHome) return;
+    const line = 120;
+    const onScroll = () => {
+      let hit = null;
+      for (const id of SECTIONS) {
+        const r = document.getElementById(id)?.getBoundingClientRect();
+        if (r && r.top <= line && r.bottom > line) hit = id;
+      }
+      setSection(hit);
+    };
+    const onTab = (e) => setTab(e.detail);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener(TAB_SHOWN_EVENT, onTab);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener(TAB_SHOWN_EVENT, onTab);
+    };
+  }, [onHome]);
+  return { section: onHome ? section : null, tab };
+}
 
 // Section links point at the home page; off it they need the leading "/".
 function navHref(item, onHome) {
@@ -74,6 +120,10 @@ function Dropdown({ label, ariaLabel, align = "left", buttonClass, children }) {
 }
 
 const itemStyle = "block w-full rounded-xl px-3 py-2.5 text-left text-sm text-era-fg/80 transition-colors hover:bg-era-fg/[0.07] hover:text-era-fg";
+const menuItemStyle = (active) =>
+  active
+    ? "flex w-full items-center justify-between gap-3 rounded-xl bg-era-accent/15 px-3 py-2.5 text-left text-sm font-medium text-era-accent"
+    : "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-era-fg/80 transition-colors hover:bg-era-fg/[0.07] hover:pl-4 hover:text-era-fg [transition-property:color,background-color,padding]";
 
 const chevron = (
   <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -163,6 +213,7 @@ export default function Header() {
   const pathname = usePathname();
   const onHome = pathname === "/";
   const session = useSession();
+  const spot = { pathname, onHome, ...useHomeSpot(onHome) };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -202,15 +253,35 @@ export default function Header() {
           <nav className="hidden items-center gap-5 md:ml-auto md:flex lg:gap-8" aria-label="Main">
             {MENU.map((entry) =>
               entry.group ? (
-                <Dropdown key={entry.group} label={<span className="flex items-center gap-1.5">{entry.group} {chevron}</span>} buttonClass={linkStyle}>
-                  {entry.items.map((item) => (
-                    <a key={item.href} href={navHref(item, onHome)} onClick={(e) => openTab(e, item, onHome)} className={itemStyle}>
-                      {item.label}
-                    </a>
-                  ))}
+                <Dropdown
+                  key={entry.group}
+                  label={<span className="flex items-center gap-1.5">{entry.group} {chevron}</span>}
+                  buttonClass={linkStyle(entry.items.some((item) => isActive(item, spot)))}
+                >
+                  {entry.items.map((item) => {
+                    const active = isActive(item, spot);
+                    return (
+                      <a
+                        key={item.href}
+                        href={navHref(item, onHome)}
+                        onClick={(e) => openTab(e, item, onHome)}
+                        aria-current={active ? (item.page ? "page" : "location") : undefined}
+                        className={menuItemStyle(active)}
+                      >
+                        {item.label}
+                        {active && <span className="h-1.5 w-1.5 rounded-full bg-era-accent" aria-hidden="true" />}
+                      </a>
+                    );
+                  })}
                 </Dropdown>
               ) : (
-                <a key={entry.href} href={navHref(entry, onHome)} onClick={(e) => openTab(e, entry, onHome)} className={linkStyle}>
+                <a
+                  key={entry.href}
+                  href={navHref(entry, onHome)}
+                  onClick={(e) => openTab(e, entry, onHome)}
+                  aria-current={isActive(entry, spot) ? (entry.page ? "page" : "location") : undefined}
+                  className={linkStyle(isActive(entry, spot))}
+                >
                   {entry.label}
                 </a>
               )

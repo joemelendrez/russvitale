@@ -10,6 +10,8 @@ import Link from "next/link";
 import ListenToggle from "./ListenToggle";
 
 export const TAB_EVENT = "russ:music-tab";
+// Sent whenever the shown tab changes, so the header can mark Albums or Singles.
+export const TAB_SHOWN_EVENT = "russ:music-tab-shown";
 
 const TABS = [
   { key: "albums", label: "Albums" },
@@ -41,6 +43,10 @@ export default function Timeline() {
       ? ERAS.map((era) => ({ id: `era-${era.id}`, label: era.title }))
       : singles.map((g) => ({ id: `year-${g.year}`, label: String(g.year) }));
   const active = useActiveSection(sections);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(TAB_SHOWN_EVENT, { detail: tab }));
+  }, [tab]);
 
   // The menu's Singles link and a #singles URL both open that tab.
   useEffect(() => {
