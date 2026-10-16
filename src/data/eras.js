@@ -9,7 +9,9 @@
 //            With neither, the card links to a Spotify search instead.
 //   date     release day, "YYYY-MM-DD" (an admin can set or fix it from edit mode)
 //   cover    optional path to artwork in /public/covers. Without one the card
-//            draws its own art in the era's colors.
+//            draws its own art in the release's colors.
+//   palette  optional { bg, fg, muted, accent } for the release's card and
+//            album page; without one it uses the era's.
 export const ERAS = [
   {
     id: "diemon",
@@ -20,17 +22,17 @@ export const ERAS = [
       "Russ co-founds Diemon in Atlanta, then self-releases eleven albums and 87 singles in under three years, producing, mixing and engineering nearly all of it himself.\n\nAfter that comes a song a week on SoundCloud for almost three years, until \"What They Want\" and \"Losin Control\" break into the Billboard Hot 100.",
     palette: { bg: "#0b0c22", fg: "#eef0ff", muted: "#9c9fd0", accent: "#a7abff" },
     releases: [
-      { title: "Velvet", year: 2011, date: "2011-12-09", type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" } },
-      { title: "Apollo 13", year: 2012, date: "2012-01-24", type: "album", spotify: { kind: "album", id: "4FWRkDpjc2nCoYtGeNYNIp" } },
-      { title: "5280", year: 2012, date: "2012-07-23", type: "album", spotify: { kind: "album", id: "6K4fDvF7E5uqN1BsvYUYFp" } },
-      { title: "Vacation", year: 2012, date: "2012-09-24", type: "album", spotify: { kind: "album", id: "5vBogQencvbV8I0N38tf5E" } },
-      { title: "Straight From Limbo", year: 2013, date: "2013-01-01", type: "album", spotify: { kind: "album", id: "5x1YzNGPlD0K2rExbgMa7k" } },
-      { title: "The Edge", year: 2013, date: "2013-06-12", type: "album", spotify: { kind: "album", id: "5Qn4TuVc7C8YENgsDo2B2k" } },
-      { title: "Color Blind", year: 2013, date: "2013-09-02", type: "album", spotify: { kind: "album", id: "3TS0aPsOU08Eu3Jr5NSWPz" } },
-      { title: "Pink Elephant", year: 2014, date: "2014-01-23", type: "album", spotify: { kind: "album", id: "0NI2guYRXuRQvjAiSrhfh5" } },
-      { title: "Brain Dead", year: 2014, date: "2014-03-24", type: "album", spotify: { kind: "album", id: "2kZ8n3EFPdiWXM5x2j0JxF" } },
-      { title: "Silence", year: 2014, date: "2014-06-11", type: "album", spotify: { kind: "album", id: "2s7lwmva05g4kccq1f31oK" } },
-      { title: "How to Rob", year: 2014, date: "2014-08-18", type: "album" },
+      { title: "Velvet", year: 2011, date: "2011-12-09", type: "album", spotify: { kind: "album", id: "5WzxgdzPvlq825wikQSRjv" }, palette: { bg: "#1f0710", fg: "#fbe9ee", muted: "#c9909f", accent: "#e0466e" } },
+      { title: "Apollo 13", year: 2012, date: "2012-01-24", type: "album", spotify: { kind: "album", id: "4FWRkDpjc2nCoYtGeNYNIp" }, palette: { bg: "#05101f", fg: "#eaf1ff", muted: "#8ea3c4", accent: "#ff8a3d" } },
+      { title: "5280", year: 2012, date: "2012-07-23", type: "album", spotify: { kind: "album", id: "6K4fDvF7E5uqN1BsvYUYFp" }, palette: { bg: "#0a1a14", fg: "#e8f6ee", muted: "#8fb5a1", accent: "#5fd39a" } },
+      { title: "Vacation", year: 2012, date: "2012-09-24", type: "album", spotify: { kind: "album", id: "5vBogQencvbV8I0N38tf5E" }, palette: { bg: "#04211f", fg: "#f0fbf8", muted: "#8fbdb6", accent: "#ff7a6b" } },
+      { title: "Straight From Limbo", year: 2013, date: "2013-01-01", type: "album", spotify: { kind: "album", id: "5x1YzNGPlD0K2rExbgMa7k" }, palette: { bg: "#15131b", fg: "#efedf6", muted: "#9c97ad", accent: "#b39cff" } },
+      { title: "The Edge", year: 2013, date: "2013-06-12", type: "album", spotify: { kind: "album", id: "5Qn4TuVc7C8YENgsDo2B2k" }, palette: { bg: "#0d0f12", fg: "#f1f3f5", muted: "#979ea8", accent: "#ff4d3d" } },
+      { title: "Color Blind", year: 2013, date: "2013-09-02", type: "album", spotify: { kind: "album", id: "3TS0aPsOU08Eu3Jr5NSWPz" }, palette: { bg: "#1a0b24", fg: "#fbeeff", muted: "#bf98cc", accent: "#ff5cd6" } },
+      { title: "Pink Elephant", year: 2014, date: "2014-01-23", type: "album", spotify: { kind: "album", id: "0NI2guYRXuRQvjAiSrhfh5" }, palette: { bg: "#2a0a1c", fg: "#ffeef7", muted: "#d698b9", accent: "#ff8cc6" } },
+      { title: "Brain Dead", year: 2014, date: "2014-03-24", type: "album", spotify: { kind: "album", id: "2kZ8n3EFPdiWXM5x2j0JxF" }, palette: { bg: "#0d1405", fg: "#f2fae6", muted: "#a3b78a", accent: "#b6ff3b" } },
+      { title: "Silence", year: 2014, date: "2014-06-11", type: "album", spotify: { kind: "album", id: "2s7lwmva05g4kccq1f31oK" }, palette: { bg: "#070707", fg: "#f4f4f4", muted: "#9a9a9a", accent: "#d8d8d8" } },
+      { title: "How to Rob", year: 2014, date: "2014-08-18", type: "album", palette: { bg: "#0b160c", fg: "#f3f6e8", muted: "#a5ae8c", accent: "#e3c04a" } },
     ],
   },
   {
@@ -55,7 +57,7 @@ export const ERAS = [
     palette: { bg: "#1a120a", fg: "#f4ead6", muted: "#ab977a", accent: "#e0a33e" },
     releases: [
       { title: "Zoo", year: 2018, date: "2018-09-07", type: "album", spotify: { kind: "album", id: "48Kac3ieDtt9OSp9Fm4g9e" } },
-      { title: "Just in Case", year: 2018, date: "2018-12-23", type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" } },
+      { title: "Just in Case", year: 2018, date: "2018-12-23", type: "ep", spotify: { kind: "album", id: "7CC9iqq2JZ3j4jF9SNNLL7" }, palette: { bg: "#0f1712", fg: "#eef4e6", muted: "#9daa92", accent: "#c9d65a" } },
     ],
   },
   {
@@ -80,8 +82,8 @@ export const ERAS = [
     palette: { bg: "#1e0606", fg: "#fff0e8", muted: "#c69a92", accent: "#ffd21f" },
     releases: [
       { title: "Chomp", year: 2020, date: "2020-11-17", type: "ep", spotify: { kind: "album", id: "6hTlfMRAEJBMyETemdH5Qq" } },
-      { title: "Chomp 2", year: 2021, date: "2021-12-08", type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" } },
-      { title: "If Not Now, When?", year: 2022, date: "2022-04-26", type: "ep", spotify: { kind: "album", id: "5K4Ygp0yLgeaYSKFizi15P" } },
+      { title: "Chomp 2", year: 2021, date: "2021-12-08", type: "album", spotify: { kind: "album", id: "6a1EFm7L9Nl1wTm7JsrYBK" }, palette: { bg: "#160a24", fg: "#f6eeff", muted: "#b29dcc", accent: "#ffbf2e" } },
+      { title: "If Not Now, When?", year: 2022, date: "2022-04-26", type: "ep", spotify: { kind: "album", id: "5K4Ygp0yLgeaYSKFizi15P" }, palette: { bg: "#04181c", fg: "#e9fbfb", muted: "#8db8bb", accent: "#ff8f4a" } },
     ],
   },
   {
@@ -106,7 +108,7 @@ export const ERAS = [
     palette: { bg: "#e5e2dc", fg: "#121417", muted: "#5f6168", accent: "#0a4fc8" },
     releases: [
       { title: "W!LD", year: 2025, date: "2025-06-27", type: "album", spotify: { kind: "album", id: "1gFQ6dGFvpDsHmnr4bPbTV" } },
-      { title: "W!LD Deluxe: The Elephant & The Rider", year: 2025, type: "album", spotify: { kind: "album", id: "4yfXdMJl2ckTYvEXes0aaQ" } },
+      { title: "W!LD Deluxe: The Elephant & The Rider", year: 2025, type: "album", spotify: { kind: "album", id: "4yfXdMJl2ckTYvEXes0aaQ" }, palette: { bg: "#0d1220", fg: "#edf1fa", muted: "#97a1b8", accent: "#5b8cff" } },
     ],
   },
 ];
@@ -114,6 +116,13 @@ export const ERAS = [
 // The palette the page uses outside the timeline (hero, shows, footer).
 // Its red comes from the stage lights and jersey in the hero photo.
 export const DEFAULT_PALETTE = { bg: "#08070c", fg: "#f5f5f4", muted: "#a1a1aa", accent: "#ff3b30" };
+
+// The hero over his photo keeps its dark stage colors in light mode too,
+// just a little lighter (`light` is the palette light mode shows).
+export const HERO_PALETTE = {
+  ...DEFAULT_PALETTE,
+  light: { bg: "#2a2830", fg: "#f7f7f6", muted: "#b9b9c2", accent: "#ff5a4f" },
+};
 
 // The few blocks outside the timeline that get their own colors; everything
 // else stays black.

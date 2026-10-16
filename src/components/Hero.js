@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import { HERO_COPY, HERO_LAYERS } from "@/data/hero";
-import { DEFAULT_PALETTE } from "@/data/eras";
+import { HERO_PALETTE } from "@/data/eras";
 import { usePalette } from "./usePalette";
 
 // Three photo layers plus the name, stacked in 3D. Scrolling pulls the layers
@@ -11,7 +11,7 @@ import { usePalette } from "./usePalette";
 // and the pointer tilts the whole stage a few degrees.
 export default function Hero() {
   const ref = useRef(null);
-  usePalette(ref, DEFAULT_PALETTE);
+  usePalette(ref, HERO_PALETTE);
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const p = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });

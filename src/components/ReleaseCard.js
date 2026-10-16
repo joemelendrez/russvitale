@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { albumBySlug, albumHref, slugify } from "@/data/albums";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { listenLink, playerFor } from "@/data/players";
 import { releaseKey } from "@/data/releaseKey";
@@ -36,6 +38,9 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
   const rotateY = useSpring(useTransform(rx, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 20 });
 
   const service = useListenOn();
+  // Albums and EPs from the timeline have their own page (/music/<slug>).
+  const album = release.type === "album" || release.type === "ep" ? albumBySlug(slugify(release.title)) : null;
+  const page = album ? albumHref(album) : null;
   const player = playerFor(release, service);
   const listen = listenLink(release, service);
 
@@ -180,10 +185,23 @@ export default function ReleaseCard({ release: baseRelease, palette, index }) {
 
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
-          <h4 className="line-clamp-2 text-base font-semibold leading-snug sm:text-lg" title={release.title}>{release.title}</h4>
-          <p className="mt-1 text-xs uppercase tracking-[0.2em]" style={{ color: palette.muted }}>
+          <h4 className="line-clamp-2 text-base font-semibold leading-snug sm:text-lg" title={release.title}>
+            {page ? (
+              <Link href={page} className="transition-colors hover:text-era-accent">
+                {release.title}
+              </Link>
+            ) : (
+              release.title
+            )}
+          </h4>
+          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-era-muted">
             {TYPE_LABEL[release.type]} &middot; {release.year}
           </p>
+          {page && (
+            <Link href={page} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.15em] text-era-accent hover:underline">
+              {release.type === "ep" ? "EP page" : "Album page"} <span aria-hidden="true">&rarr;</span>
+            </Link>
+          )}
         </div>
         <a
           href={listen.href}

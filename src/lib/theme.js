@@ -47,19 +47,35 @@ function twin(p) {
     const fg = p.bg;
     return { bg, fg, muted: until(mix(fg, bg, 0.45), fg, bg, 4.6), accent: p.accent === p.fg ? fg : until(p.accent, "#ffffff", bg, 4.5) };
   }
-  // Dark era into light: a pale wash of its accent, its dark background as the text.
-  const bg = mix(p.accent, "#ffffff", 0.93);
-  const fg = until(p.bg, "#000000", bg, 12);
-  return { bg, fg, muted: until(mix(fg, bg, 0.45), fg, bg, 4.6), accent: until(p.accent, fg, bg, 3.4) };
+  // Dark era into light: a soft paper tinted with its accent, its dark
+  // background as the text.
+  return readable({ bg: mix(p.accent, PAPER, 0.86), fg: p.bg, accent: p.accent });
+}
+
+// Light mode's page tone: a warm grey paper rather than white, so it's easy
+// on the eyes.
+const PAPER = "#dcd8d0";
+
+function readable({ bg, fg: ink, accent: tint }) {
+  const fg = until(ink, "#000000", bg, 11);
+  return { bg, fg, muted: until(mix(fg, bg, 0.45), fg, bg, 4.6), accent: until(tint, fg, bg, 3.4) };
+}
+
+// A palette that's already light (the Wolf and W!LD eras), toned down to
+// the same paper.
+function soften(p) {
+  return readable({ bg: mix(p.bg, PAPER, 0.85), fg: p.fg, accent: p.accent });
 }
 
 const cache = new Map();
 
 // The palette to show in `mode` ("light" | "dark").
 export function themedPalette(palette, mode) {
-  if (!palette || (mode === "light") === isLight(palette)) return palette;
-  const key = `${palette.bg}${palette.fg}${palette.muted}${palette.accent}`;
-  if (!cache.has(key)) cache.set(key, twin(palette));
+  if (!palette || (mode === "dark" && !isLight(palette))) return palette;
+  // A palette can name its own light-mode colors.
+  if (mode === "light" && palette.light) return palette.light;
+  const key = `${mode}${palette.bg}${palette.fg}${palette.muted}${palette.accent}`;
+  if (!cache.has(key)) cache.set(key, mode === "light" && isLight(palette) ? soften(palette) : twin(palette));
   return cache.get(key);
 }
 

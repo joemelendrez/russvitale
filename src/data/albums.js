@@ -15,8 +15,8 @@ export function slugify(title) {
 }
 
 // Every album and EP from the timeline, oldest first, each with its era,
-// its page's slug and its songs (/music/<slug>).
-export const ALBUMS = ERAS.flatMap((era) => era.releases.map((r) => ({ ...r, era, slug: slugify(r.title), tracks: tracklistFor(r) })));
+// its page's slug, its own colors (or its era's) and its songs (/music/<slug>).
+export const ALBUMS = ERAS.flatMap((era) => era.releases.map((r) => ({ ...r, era, palette: r.palette ?? era.palette, slug: slugify(r.title), tracks: tracklistFor(r) })));
 
 export const albumBySlug = (slug) => ALBUMS.find((a) => a.slug === slug) ?? null;
 

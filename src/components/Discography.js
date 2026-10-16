@@ -267,7 +267,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
   const service = useListenOn();
   const player = playerFor(release, service);
   const listen = listenLink(release, service);
-  const palette = release.era?.palette ?? DEFAULT_PALETTE;
+  const palette = release.palette ?? release.era?.palette ?? DEFAULT_PALETTE;
   const playingOn = serviceOfPlayer(player);
   const { stop: stopPhoneBar } = usePhonePlayer();
   // Albums and EPs from the timeline have a page and a tracklist.

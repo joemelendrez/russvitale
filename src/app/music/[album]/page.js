@@ -57,7 +57,7 @@ export default async function AlbumPage({ params }) {
   const cover = saved?.cover_url ?? album.cover ?? null;
   const date = album.date ?? saved?.released_on ?? null;
   const spotify = saved?.spotify_id ? { kind: saved.kind ?? "album", id: saved.spotify_id } : album.spotify;
-  const { palette } = album.era;
+  const { palette } = album;
   const i = ALBUMS.indexOf(album);
   const prev = ALBUMS[i - 1];
   const next = ALBUMS[i + 1];
