@@ -207,3 +207,18 @@ html:active-view-transition-type(page) main {
     animation-delay: 0s !important;
   }
 }
+
+/* Light mode: the footer turns black, keeping the book's yellow as its
+   accent. !important beats the footer's own inline colors. */
+:root[data-theme="light"] .site-footer {
+  --bg: #0b0b0d !important;
+  --fg: #f5f5f4 !important;
+  --muted: #b4b4bb !important;
+  --accent: #ffe600 !important;
+  --color-era-bg: #0b0b0d !important;
+  --color-era-fg: #f5f5f4 !important;
+  --color-era-muted: #b4b4bb !important;
+  --color-era-accent: #ffe600 !important;
+  background: #0b0b0d !important;
+  color: #f5f5f4 !important;
+}
