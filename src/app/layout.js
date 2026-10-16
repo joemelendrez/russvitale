@@ -2,6 +2,7 @@ import "@fontsource/anton/400.css";
 import "@fontsource-variable/inter";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
+import PageTransition from "@/components/PageTransition";
 import Header from "@/components/Header";
 import FavoritesSync from "@/components/FavoritesSync";
 import { SpotifyLinksProvider } from "@/components/SpotifyLinks";
@@ -65,6 +66,7 @@ export default function RootLayout({ children }) {
             <SmoothScroll>
               <Header />
               <main>{children}</main>
+              <PageTransition />
             </SmoothScroll>
           </PhonePlayerProvider>
         </SpotifyLinksProvider>

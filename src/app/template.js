@@ -1,12 +1,5 @@
-import { ViewTransition } from "react";
-
-// Remounts on every in-app navigation (next/link), so the page fades and
-// lifts in with the same classes the full-page-load transition uses
-// (see "Page transitions" in globals.css).
+// Page changes inside the site are covered by <PageTransition /> (the icon
+// over a blurred wash of the page color), so the page itself just renders.
 export default function Template({ children }) {
-  return (
-    <ViewTransition enter="page-in" exit="page-out" default="none">
-      {children}
-    </ViewTransition>
-  );
+  return children;
 }
