@@ -143,3 +143,63 @@ html.lenis, html.lenis body { height: auto; }
   background-color: var(--color-era-accent) !important;
   color: var(--color-era-bg) !important;
 }
+
+/* Page transitions. Most links are plain <a>, so most moves between pages
+   are full page loads: the browser's cross-document view transition fades
+   the content out and lifts the new page in (Chrome, Edge, Safari 18.2+;
+   other browsers just load the page). Links that stay in the app
+   (next/link) get the same look from <ViewTransition> in app/template.js.
+   The header is held still so only the content moves. */
+@view-transition {
+  navigation: auto;
+  types: page;
+}
+html:active-view-transition-type(page) main {
+  view-transition-name: page;
+}
+.site-header {
+  view-transition-name: site-header;
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+::view-transition-old(page),
+::view-transition-old(.page-out) {
+  animation: 160ms ease-in both page-fade reverse;
+}
+::view-transition-new(page),
+::view-transition-new(.page-in) {
+  animation:
+    260ms ease-out 120ms both page-fade,
+    420ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both page-rise;
+}
+::view-transition {
+  pointer-events: none;
+}
+@keyframes page-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes page-rise {
+  from { translate: 0 18px; }
+  to { translate: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
