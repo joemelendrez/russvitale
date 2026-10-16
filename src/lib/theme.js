@@ -58,7 +58,8 @@ const PAPER = "#dcd8d0";
 
 function readable({ bg, fg: ink, accent: tint }) {
   const fg = until(ink, "#000000", bg, 11);
-  return { bg, fg, muted: until(mix(fg, bg, 0.45), fg, bg, 4.6), accent: until(tint, fg, bg, 3.4) };
+  // Secondary text stays dark enough to read easily on the paper.
+  return { bg, fg, muted: until(mix(fg, bg, 0.3), fg, bg, 7), accent: until(tint, fg, bg, 4.8) };
 }
 
 // A palette that's already light (the Wolf and W!LD eras), toned down to

@@ -22,7 +22,7 @@ const FOOTER_STYLE = {
 
 export default function Footer({ newsletter = true }) {
   return (
-    <footer className="pb-14 font-semibold" style={FOOTER_STYLE}>
+    <footer className="site-footer pb-14 font-semibold" style={FOOTER_STYLE}>
       <AlbumSwatches variant="band" className="mb-14" />
       {newsletter && (
         <div className="mx-auto mb-14 max-w-7xl px-4 sm:px-6">

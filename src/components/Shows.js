@@ -82,8 +82,9 @@ export default function Shows() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.6 }}
-              style={{ borderColor: swatchAt(i + 2) }}
-              className="group relative overflow-hidden rounded-2xl border-2 p-6 transition-transform hover:-translate-y-1"
+              // A dark card in both modes, so the album colors stand out.
+              style={{ borderColor: swatchAt(i + 2), background: "#141318", color: "#f5f5f4" }}
+              className="group relative overflow-hidden rounded-2xl border-2 p-6 shadow-xl shadow-black/20 transition-transform hover:-translate-y-1"
             >
               <p className="text-xs uppercase tracking-[0.25em]" style={{ color: swatchAt(i + 2) }}>
                 {link.note}
