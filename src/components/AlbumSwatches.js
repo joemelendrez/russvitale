@@ -10,6 +10,9 @@ export const ALBUM_SWATCHES = ERAS.map((era) => ({
   color: LIGHT_ERAS.has(era.id) ? era.palette.bg : era.palette.accent,
 }));
 
+// The swatch color for the nth item in a list, cycling through the albums.
+export const swatchAt = (i) => ALBUM_SWATCHES[i % ALBUM_SWATCHES.length].color;
+
 // "chips": a row of small squares, one per album. "band": a full-width strip.
 export default function AlbumSwatches({ variant = "chips", className = "" }) {
   if (variant === "band") {

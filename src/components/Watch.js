@@ -37,6 +37,7 @@ function Video({ video, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.7 }}
+      className="rounded-3xl border-2 border-era-fg p-3 pb-5"
     >
       <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
         {playing ? (
@@ -63,8 +64,8 @@ function Video({ video, index }) {
           </button>
         )}
       </div>
-      <p className="mt-4 font-semibold">{video.title}</p>
-      <p className="text-xs uppercase tracking-[0.2em] text-era-muted">{video.year}</p>
+      <p className="mt-4 px-1 font-semibold">{video.title}</p>
+      <p className="px-1 text-xs uppercase tracking-[0.2em] text-era-muted">{video.year}</p>
     </motion.div>
   );
 }
