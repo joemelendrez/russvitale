@@ -1,5 +1,7 @@
 import { baseReleases } from "@/data/allReleases";
 import { releaseKey } from "@/data/releaseKey";
+import { playlistIdea, slugify } from "@/data/albums";
+import { spotifyPlaylistSongs } from "@/lib/spotifyPlaylistSongs";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -90,6 +92,18 @@ export async function savedPlaylists() {
   } catch {
     return [];
   }
+}
+
+// The playlists on the site with their songs: what's in the playlist on
+// Spotify right now, or the starter songs for its mood when Spotify can't be read.
+export async function playlistsWithSongs() {
+  const lists = await savedPlaylists();
+  return Promise.all(
+    lists.map(async (list) => {
+      const songs = (await spotifyPlaylistSongs(list.spotify_id)) ?? playlistIdea(slugify(list.title))?.songs ?? [];
+      return { ...list, songs };
+    })
+  );
 }
 
 // Releases fans who favorited this one also favorited (russ_also_loved,

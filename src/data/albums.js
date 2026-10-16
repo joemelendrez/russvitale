@@ -27,9 +27,9 @@ export function albumForSong(title) {
   return ALBUMS.find((a) => a.tracks.some((t) => sameSong(t.title, title))) ?? null;
 }
 
-// The fan playlists that use any of this album's songs.
-export function playlistsWithAlbum(album) {
-  return PLAYLIST_IDEAS.filter((p) => p.songs.some((s) => album.tracks.some((t) => sameSong(t.title, s))));
+// The playlists on the site ({ title, songs }) that use any of this album's songs.
+export function playlistsWithAlbum(album, lists) {
+  return lists.filter((p) => p.songs.some((s) => album.tracks.some((t) => sameSong(t.title, s))));
 }
 
 export const playlistHref = (title) => `/playlists/${slugify(title)}`;

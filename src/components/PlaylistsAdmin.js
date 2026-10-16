@@ -240,6 +240,17 @@ export default function PlaylistsAdmin({ onChange }) {
   const [form, setForm] = useState(empty);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [refresh, setRefresh] = useState(null); // null | "busy" | "done" | "failed"
+
+  // Songs added to a playlist on Spotify reach the album pages within the
+  // hour on their own; this does it now.
+  const refreshSongs = async () => {
+    if (refresh === "busy") return;
+    setRefresh("busy");
+    const ok = await refreshSite("playlists");
+    setRefresh(ok ? "done" : "failed");
+    setTimeout(() => setRefresh(null), 3000);
+  };
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("russ_playlists").select("*").order("position").order("created_at");
@@ -361,8 +372,18 @@ export default function PlaylistsAdmin({ onChange }) {
         <Link href="/playlists" className="underline">
           /playlists
         </Link>{" "}
-        with Spotify&apos;s own player, so plays count on Spotify.
+        with Spotify&apos;s own player, so plays count on Spotify. Album pages list the playlists their songs are in, read from Spotify,
+        so adding a song to a playlist on Spotify shows up there within the hour.
       </p>
+      <button
+        type="button"
+        onClick={refreshSongs}
+        disabled={refresh === "busy"}
+        className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+      >
+        <AppIcon name="refresh-cw" className="h-4 w-4 shrink-0" />
+        {refresh === "busy" ? "Refreshing..." : refresh === "done" ? "Songs refreshed" : refresh === "failed" ? "Couldn't refresh, try again" : "Refresh songs from Spotify now"}
+      </button>
       {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 
       {lists === null ? (
