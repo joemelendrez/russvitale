@@ -260,6 +260,11 @@ html:active-view-transition-type(page) main {
   color: var(--cover);
   color: oklch(from var(--cover) min(l, 0.44) c h);
 }
+/* Same, for text on a card that stays dark in both themes: always lifted. */
+.cover-ink-lift {
+  color: var(--cover);
+  color: oklch(from var(--cover) max(l, 0.76) min(c, 0.2) h);
+}
 /* A border in the cover's color that still shows against the page. */
 .cover-edge {
   border-color: var(--cover);

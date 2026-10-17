@@ -98,7 +98,7 @@ export default function Shows() {
               style={{ borderColor: swatchAt(i + 2), background: "#141318", color: "#f5f5f4" }}
               className="group relative overflow-hidden rounded-2xl border-2 p-6 shadow-xl shadow-black/20 transition-transform hover:-translate-y-1"
             >
-              <p className="cover-ink text-xs uppercase tracking-[0.25em]" style={{ "--cover": swatchAt(i + 2) }}>
+              <p className="cover-ink-lift text-xs uppercase tracking-[0.25em]" style={{ "--cover": swatchAt(i + 2) }}>
                 {link.note}
               </p>
               <p className="mt-6 flex items-end justify-between font-display text-3xl uppercase">
