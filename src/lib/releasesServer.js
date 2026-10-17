@@ -81,7 +81,7 @@ export async function savedLinkFor(releaseKeyValue) {
 export async function savedPlaylists() {
   if (!url || !key) return [];
   try {
-    const res = await fetch(`${url}/rest/v1/russ_playlists?select=title,blurb,spotify_id&order=position&order=created_at`, {
+    const res = await fetch(`${url}/rest/v1/russ_playlists?select=id,title,blurb,spotify_id&order=position&order=created_at`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
       next: { revalidate: 60, tags: ["playlists"] },
       signal: AbortSignal.timeout(6000),
