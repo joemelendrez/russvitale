@@ -3,12 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import DefaultPalette from "@/components/DefaultPalette";
 import Footer from "@/components/Footer";
+import MoodList from "@/components/MoodList";
 import SpotifyEmbed from "@/components/SpotifyEmbed";
 import Tracklist from "@/components/Tracklist";
-import { ALBUMS, albumBySlug, albumHref, playlistHref, playlistsWithAlbum, totalLength } from "@/data/albums";
+import { ALBUMS, albumBySlug, albumHref, playlistsWithAlbum, totalLength } from "@/data/albums";
 import { releaseKey } from "@/data/releaseKey";
 import { SITE } from "@/data/site";
-import { alsoLovedFor, playlistsWithSongs, savedLinkFor } from "@/lib/releasesServer";
+import { alsoLovedFor, playlistsWithColors, savedLinkFor } from "@/lib/releasesServer";
 import { paletteCss } from "@/lib/theme";
 
 export const revalidate = 300;
@@ -53,7 +54,7 @@ export default async function AlbumPage({ params }) {
   const album = albumBySlug(slug);
   if (!album) notFound();
 
-  const [saved, alsoLoved, lists] = await Promise.all([savedLinkFor(releaseKey(album)), alsoLovedFor(releaseKey(album)), playlistsWithSongs()]);
+  const [saved, alsoLoved, lists] = await Promise.all([savedLinkFor(releaseKey(album)), alsoLovedFor(releaseKey(album)), playlistsWithColors()]);
   const cover = saved?.cover_url ?? album.cover ?? null;
   const date = album.date ?? saved?.released_on ?? null;
   const spotify = saved?.spotify_id ? { kind: saved.kind ?? "album", id: saved.spotify_id } : album.spotify;
@@ -244,17 +245,10 @@ export default async function AlbumPage({ params }) {
             {playlists.length > 0 && (
               <section aria-labelledby="in-playlists">
                 <h2 id="in-playlists" className="font-display text-3xl uppercase">
-                  In the playlists
+                  More moods
                 </h2>
-                <ul className="mt-4 flex flex-wrap gap-2">
-                  {playlists.map((p) => (
-                    <li key={p.title}>
-                      <Link href={playlistHref(p.title)} className="inline-block rounded-full bg-era-fg/10 px-3 py-1.5 text-xs font-semibold hover:bg-era-accent hover:text-era-bg">
-                        {p.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <p className="mt-2 text-sm text-era-muted">Fan playlists with songs from this {TYPE[album.type].toLowerCase()}.</p>
+                <MoodList lists={playlists} className="mt-4" />
               </section>
             )}
           </aside>
