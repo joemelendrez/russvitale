@@ -164,13 +164,21 @@ export default function Discography() {
   }, [matched, filter, newest, editing]);
 
   // Opens another row (an original or one of its versions) and scrolls to it,
-  // clearing a search or filter that would hide it.
+  // clearing a search or filter that would hide it. The scroll waits for the
+  // old row to fold up and the new player to open (0.3s), so it lands on the
+  // one now playing instead of where it was before the page shifted, and goes
+  // through Lenis so the smooth scroller doesn't pull it back.
   const openRelease = (r) => {
     const key = releaseKey(r);
     setQuery("");
     setFilter("all");
     setOpenKey(key);
-    requestAnimationFrame(() => document.getElementById(`row-${key}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    setTimeout(() => {
+      const row = document.getElementById(`row-${key}`);
+      if (!row) return;
+      if (window.__lenis) window.__lenis.scrollTo(row, { offset: -88 });
+      else window.scrollTo({ top: row.getBoundingClientRect().top + window.scrollY - 88, behavior: "smooth" });
+    }, 350);
   };
 
   const total = shown.reduce((n, g) => n + g.items.length, 0);
