@@ -2,6 +2,8 @@ import { baseReleases } from "@/data/allReleases";
 import { releaseKey } from "@/data/releaseKey";
 import { playlistIdea, slugify } from "@/data/albums";
 import { spotifyPlaylistSongs } from "@/lib/spotifyPlaylistSongs";
+import { spotifyCover } from "@/lib/spotifyCover";
+import { swatchAt } from "@/components/AlbumSwatches";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -104,6 +106,13 @@ export async function playlistsWithSongs() {
       return { ...list, songs };
     })
   );
+}
+
+// Saved playlists with songs and the color /playlists gives each one: its
+// Spotify cover's color, else the swatch for its place in the list.
+export async function playlistsWithColors() {
+  const lists = await playlistsWithSongs();
+  return Promise.all(lists.map(async (list, i) => ({ ...list, color: (await spotifyCover(list.spotify_id)).color ?? swatchAt(i) })));
 }
 
 // Releases fans who favorited this one also favorited (russ_also_loved,

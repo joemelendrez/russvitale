@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ALBUM_SWATCHES, swatchAt } from "@/components/AlbumSwatches";
+import { ALBUM_SWATCHES } from "@/components/AlbumSwatches";
 import DefaultPalette from "@/components/DefaultPalette";
 import Footer from "@/components/Footer";
+import MoodList from "@/components/MoodList";
 import SpotifyEmbed from "@/components/SpotifyEmbed";
 import Tracklist from "@/components/Tracklist";
 import { albumBySlug, albumHref, playlistHref, playlistTracks, slugify } from "@/data/albums";
 import { DEFAULT_PALETTE } from "@/data/eras";
 import { PLAYLIST_IDEAS, inkFor, playlistCoverUrl, playlistIcon, playlistUrl } from "@/data/playlists";
 import { SITE } from "@/data/site";
-import { playlistsWithSongs } from "@/lib/releasesServer";
+import { playlistsWithColors } from "@/lib/releasesServer";
 import { spotifyCover } from "@/lib/spotifyCover";
 
 export const revalidate = 60;
@@ -21,13 +22,13 @@ export function generateStaticParams() {
 // The playlist saved in admin for this slug, with its place in the list
 // (for its color) and its songs (what's on Spotify now, or the starter songs).
 async function findPlaylist(slug) {
-  const lists = await playlistsWithSongs();
+  const lists = await playlistsWithColors();
   const i = lists.findIndex((l) => slugify(l.title) === slug);
   if (i < 0) return null;
   const list = lists[i];
   // The picture saved on Spotify and its color, when Spotify answers.
   const spotify = await spotifyCover(list.spotify_id);
-  return { ...list, index: i, color: spotify.color ?? swatchAt(i), image: spotify.image, tracks: playlistTracks(list.songs), others: lists.filter((_, j) => j !== i) };
+  return { ...list, index: i, color: list.color, image: spotify.image, tracks: playlistTracks(list.songs), others: lists.filter((_, j) => j !== i) };
 }
 
 function describe(list) {
@@ -131,18 +132,7 @@ export default async function PlaylistPage({ params }) {
                 <h2 id="more" className="font-display text-3xl uppercase">
                   More moods
                 </h2>
-                <ul className="mt-4 space-y-2">
-                  {list.others.map((o) => (
-                    <li key={o.spotify_id}>
-                      <Link href={playlistHref(o.title)} className="group flex items-center justify-between border-b border-era-fg/10 py-2">
-                        <span className="font-display text-2xl uppercase group-hover:text-era-accent">{o.title}</span>
-                        <span aria-hidden="true" className="text-era-muted">
-                          &rarr;
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <MoodList lists={list.others} className="mt-4" />
               </section>
             )}
 
