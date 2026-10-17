@@ -11,15 +11,17 @@ import NewsletterForm from "./NewsletterForm";
 import SpotifyEmbed from "./SpotifyEmbed";
 
 // /playlists: fan-made Spotify playlists by mood. Each card loads Spotify's
-// own player, so every play counts on Spotify.
-export default function Playlists() {
-  const [lists, setLists] = useState(() => (supabaseConfigured ? null : []));
+// own player, so every play counts on Spotify. The page passes the lists and
+// cover colors it read on the server; they're only fetched here when it
+// couldn't.
+export default function Playlists({ initialLists = null, initialCovers = {} }) {
+  const [lists, setLists] = useState(() => initialLists ?? (supabaseConfigured ? null : []));
   // Each playlist's main color from its picture on Spotify, so the card
   // matches the cover people see there.
-  const [covers, setCovers] = useState({});
+  const [covers, setCovers] = useState(initialCovers);
   useEffect(() => applyPalette(DEFAULT_PALETTE), []);
   useEffect(() => {
-    if (!supabaseConfigured) return;
+    if (initialLists || !supabaseConfigured) return;
     let live = true;
     getSupabase()
       .then((supabase) => supabase.from("russ_playlists").select("id, title, blurb, spotify_id").order("position").order("created_at"))
@@ -27,18 +29,20 @@ export default function Playlists() {
     return () => {
       live = false;
     };
-  }, []);
+  }, [initialLists]);
   useEffect(() => {
-    const ids = (lists ?? []).map((l) => l.spotify_id).filter(Boolean);
+    const ids = (lists ?? []).map((l) => l.spotify_id).filter((id) => id && !covers[id]?.color);
     if (!ids.length) return;
     let live = true;
     fetch(`/playlists/covers.json?ids=${ids.join(",")}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => live && d?.covers && setCovers(d.covers))
+      .then((d) => live && d?.covers && setCovers((c) => ({ ...c, ...d.covers })))
       .catch(() => {});
     return () => {
       live = false;
     };
+    // Only when the lists change; covers it fills in itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lists]);
 
   return (

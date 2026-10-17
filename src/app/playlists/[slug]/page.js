@@ -5,11 +5,11 @@ import DefaultPalette from "@/components/DefaultPalette";
 import Footer from "@/components/Footer";
 import SpotifyEmbed from "@/components/SpotifyEmbed";
 import Tracklist from "@/components/Tracklist";
-import { albumBySlug, albumHref, playlistHref, playlistIdea, playlistTracks, slugify } from "@/data/albums";
+import { albumBySlug, albumHref, playlistHref, playlistTracks, slugify } from "@/data/albums";
 import { DEFAULT_PALETTE } from "@/data/eras";
 import { PLAYLIST_IDEAS, inkFor, playlistCoverUrl, playlistIcon, playlistUrl } from "@/data/playlists";
 import { SITE } from "@/data/site";
-import { savedPlaylists } from "@/lib/releasesServer";
+import { playlistsWithSongs } from "@/lib/releasesServer";
 import { spotifyCover } from "@/lib/spotifyCover";
 
 export const revalidate = 60;
@@ -19,16 +19,15 @@ export function generateStaticParams() {
 }
 
 // The playlist saved in admin for this slug, with its place in the list
-// (for its color) and the starter songs when its title matches one.
+// (for its color) and its songs (what's on Spotify now, or the starter songs).
 async function findPlaylist(slug) {
-  const lists = await savedPlaylists();
+  const lists = await playlistsWithSongs();
   const i = lists.findIndex((l) => slugify(l.title) === slug);
   if (i < 0) return null;
   const list = lists[i];
-  const idea = playlistIdea(slug);
   // The picture saved on Spotify and its color, when Spotify answers.
   const spotify = await spotifyCover(list.spotify_id);
-  return { ...list, index: i, color: spotify.color ?? swatchAt(i), image: spotify.image, tracks: idea ? playlistTracks(idea.songs) : [], others: lists.filter((_, j) => j !== i) };
+  return { ...list, index: i, color: spotify.color ?? swatchAt(i), image: spotify.image, tracks: playlistTracks(list.songs), others: lists.filter((_, j) => j !== i) };
 }
 
 function describe(list) {

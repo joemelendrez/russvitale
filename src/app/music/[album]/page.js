@@ -8,7 +8,7 @@ import Tracklist from "@/components/Tracklist";
 import { ALBUMS, albumBySlug, albumHref, playlistHref, playlistsWithAlbum, totalLength } from "@/data/albums";
 import { releaseKey } from "@/data/releaseKey";
 import { SITE } from "@/data/site";
-import { alsoLovedFor, savedLinkFor } from "@/lib/releasesServer";
+import { alsoLovedFor, playlistsWithSongs, savedLinkFor } from "@/lib/releasesServer";
 import { paletteCss } from "@/lib/theme";
 
 export const revalidate = 300;
@@ -53,7 +53,7 @@ export default async function AlbumPage({ params }) {
   const album = albumBySlug(slug);
   if (!album) notFound();
 
-  const [saved, alsoLoved] = await Promise.all([savedLinkFor(releaseKey(album)), alsoLovedFor(releaseKey(album))]);
+  const [saved, alsoLoved, lists] = await Promise.all([savedLinkFor(releaseKey(album)), alsoLovedFor(releaseKey(album)), playlistsWithSongs()]);
   const cover = saved?.cover_url ?? album.cover ?? null;
   const date = album.date ?? saved?.released_on ?? null;
   const spotify = saved?.spotify_id ? { kind: saved.kind ?? "album", id: saved.spotify_id } : album.spotify;
@@ -61,7 +61,7 @@ export default async function AlbumPage({ params }) {
   const i = ALBUMS.indexOf(album);
   const prev = ALBUMS[i - 1];
   const next = ALBUMS[i + 1];
-  const playlists = playlistsWithAlbum(album);
+  const playlists = playlistsWithAlbum(album, lists);
   const sameEra = ALBUMS.filter((a) => a.era.id === album.era.id && a.slug !== album.slug);
 
   const schema = {

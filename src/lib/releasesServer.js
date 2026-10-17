@@ -1,5 +1,7 @@
 import { baseReleases } from "@/data/allReleases";
 import { releaseKey } from "@/data/releaseKey";
+import { playlistIdea, slugify } from "@/data/albums";
+import { spotifyPlaylistSongs } from "@/lib/spotifyPlaylistSongs";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -79,7 +81,7 @@ export async function savedLinkFor(releaseKeyValue) {
 export async function savedPlaylists() {
   if (!url || !key) return [];
   try {
-    const res = await fetch(`${url}/rest/v1/russ_playlists?select=title,blurb,spotify_id&order=position&order=created_at`, {
+    const res = await fetch(`${url}/rest/v1/russ_playlists?select=id,title,blurb,spotify_id&order=position&order=created_at`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
       next: { revalidate: 60, tags: ["playlists"] },
       signal: AbortSignal.timeout(6000),
@@ -90,6 +92,18 @@ export async function savedPlaylists() {
   } catch {
     return [];
   }
+}
+
+// The playlists on the site with their songs: what's in the playlist on
+// Spotify right now, or the starter songs for its mood when Spotify can't be read.
+export async function playlistsWithSongs() {
+  const lists = await savedPlaylists();
+  return Promise.all(
+    lists.map(async (list) => {
+      const songs = (await spotifyPlaylistSongs(list.spotify_id)) ?? playlistIdea(slugify(list.title))?.songs ?? [];
+      return { ...list, songs };
+    })
+  );
 }
 
 // Releases fans who favorited this one also favorited (russ_also_loved,
