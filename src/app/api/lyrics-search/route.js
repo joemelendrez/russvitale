@@ -36,7 +36,7 @@ export async function GET(request) {
   if (limited(ip)) return NextResponse.json({ error: "Too many searches. Try again in a minute." }, { status: 429 });
 
   try {
-    const res = await fetch(`https://api.genius.com/search?q=${encodeURIComponent(`${q} Russ`)}`, {
+    const res = await fetch(`https://api.genius.com/search?per_page=20&q=${encodeURIComponent(`${q} Russ`)}`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(6000),
       next: { revalidate: 86400 },
@@ -53,9 +53,7 @@ export async function GET(request) {
       songs.push({ title: song.title, artists: song.artist_names ?? "Russ", url });
       if (songs.length === 5) break;
     }
-    // checked: how many Genius results came back before keeping Russ's own.
-    const all = data?.response?.hits ?? [];
-    return NextResponse.json({ available: true, songs, checked: all.length, artists: [...new Set(all.map((h) => h.result?.primary_artist?.name))].slice(0, 5) }, { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } });
+    return NextResponse.json({ available: true, songs }, { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } });
   } catch (err) {
     console.error("lyrics-search", err);
     return NextResponse.json({ error: "Couldn't reach Genius. Try again in a bit." }, { status: 502 });
