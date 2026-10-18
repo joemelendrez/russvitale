@@ -9,7 +9,7 @@ import { albumForSong, albumHref } from "@/data/albums";
 // Genius, linked from each match.
 export const looksLikeLyric = (q) => q.trim().split(/\s+/).length >= 3 && q.trim().length >= 6;
 
-export default function LyricMatches({ query, releases, onOpen }) {
+export default function LyricMatches({ query, releases, onOpen, onMatches }) {
   const q = query.trim().replace(/\s+/g, " ");
   const active = looksLikeLyric(q);
   const [result, setResult] = useState({ q: "", songs: [], error: null });
@@ -22,17 +22,22 @@ export default function LyricMatches({ query, releases, onOpen }) {
         const res = await fetch(`/api/lyrics-search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         if (!live) return;
+        const songs = res.ok ? data.songs ?? [] : [];
         if (data.available === false) setResult({ q, songs: [], error: null, off: true });
-        else setResult({ q, songs: data.songs ?? [], error: res.ok ? null : data.error });
+        else setResult({ q, songs, error: res.ok ? null : data.error });
+        // The list above counts and shows these songs too.
+        onMatches?.(q, songs.map((song) => song.title));
       } catch {
-        if (live) setResult({ q, songs: [], error: "Couldn't check the lyrics right now." });
+        if (!live) return;
+        setResult({ q, songs: [], error: "Couldn't check the lyrics right now." });
+        onMatches?.(q, []);
       }
     }, 600);
     return () => {
       live = false;
       clearTimeout(t);
     };
-  }, [q, active]);
+  }, [q, active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!active || result.off) return null;
   const done = result.q === q;
