@@ -43,30 +43,40 @@ export async function GET(request) {
     // Just the line, no "Russ" added: with his name in the search, Genius
     // ranks his popular songs first whatever the line is. Two pages of 20,
     // then only his songs are kept.
-    const pages = await Promise.all(
-      [1, 2].map(async (page) => {
-        const res = await fetch(`https://api.genius.com/search?per_page=20&page=${page}&q=${encodeURIComponent(q)}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: AbortSignal.timeout(6000),
-          next: { revalidate: 86400 },
-        });
-        if (!res.ok) throw new Error(`Genius answered ${res.status}`);
-        return (await res.json())?.response?.hits ?? [];
-      })
-    );
-    const seen = new Set();
-    const songs = [];
-    for (const { result: song } of pages.flat()) {
-      if (!song?.title || !byRuss(song) || seen.has(song.id)) continue;
-      seen.add(song.id);
-      // Only genius.com links go out, so a bad answer can't point anywhere else.
-      const url = /^https:\/\/genius\.com\//.test(song.url ?? "") ? song.url : null;
-      songs.push({ title: song.title, artists: song.artist_names ?? "Russ", url });
-      if (songs.length === 5) break;
-    }
+    let songs = await russSongs(q, token);
+    // Genius often spells it the way it's sung ("fuckin"), so a line typed
+    // with "-ing" gets a second try without the g.
+    const loose = q.replace(/(\w)ing\b/gi, "$1in");
+    if (!songs.length && loose !== q) songs = await russSongs(loose, token);
     return NextResponse.json({ available: true, songs }, { headers: NO_SHARED_CACHE });
   } catch (err) {
     console.error("lyrics-search", err);
     return NextResponse.json({ error: "Couldn't reach Genius. Try again in a bit." }, { status: 502 });
   }
+}
+
+// Russ's songs (up to 5) among Genius's first 40 results for a line.
+async function russSongs(q, token) {
+  const pages = await Promise.all(
+    [1, 2].map(async (page) => {
+      const res = await fetch(`https://api.genius.com/search?per_page=20&page=${page}&q=${encodeURIComponent(q)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(6000),
+        next: { revalidate: 86400 },
+      });
+      if (!res.ok) throw new Error(`Genius answered ${res.status}`);
+      return (await res.json())?.response?.hits ?? [];
+    })
+  );
+  const seen = new Set();
+  const songs = [];
+  for (const { result: song } of pages.flat()) {
+    if (!song?.title || !byRuss(song) || seen.has(song.id)) continue;
+    seen.add(song.id);
+    // Only genius.com links go out, so a bad answer can't point anywhere else.
+    const url = /^https:\/\/genius\.com\//.test(song.url ?? "") ? song.url : null;
+    songs.push({ title: song.title, artists: song.artist_names ?? "Russ", url });
+    if (songs.length === 5) break;
+  }
+  return songs;
 }
