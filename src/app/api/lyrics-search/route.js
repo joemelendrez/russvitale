@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sungSpelling } from "@/lib/fuzzy";
 
 // Finds which Russ song a remembered line is from, through Genius's search.
 // Only titles and the Genius link come back: the site never stores or shows
@@ -44,10 +45,10 @@ export async function GET(request) {
     // ranks his popular songs first whatever the line is. Two pages of 20,
     // then only his songs are kept.
     let songs = await russSongs(q, token);
-    // Genius often spells it the way it's sung ("fuckin"), so a line typed
-    // with "-ing" gets a second try without the g.
-    const loose = q.replace(/(\w)ing\b/gi, "$1in");
-    if (!songs.length && loose !== q) songs = await russSongs(loose, token);
+    // Genius writes lyrics the way they're sung ("fuckin", "gonna", "'cause"),
+    // so a line typed the long way gets a second try spelled like that.
+    const sung = songs.length ? null : sungSpelling(q);
+    if (sung) songs = await russSongs(sung, token);
     return NextResponse.json({ available: true, songs }, { headers: NO_SHARED_CACHE });
   } catch (err) {
     console.error("lyrics-search", err);

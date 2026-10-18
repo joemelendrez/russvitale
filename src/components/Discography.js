@@ -20,6 +20,7 @@ import AlbumSwatches from "@/components/AlbumSwatches";
 import Link from "next/link";
 import { albumBySlug, albumHref, slugify } from "@/data/albums";
 import Tracklist from "./Tracklist";
+import { fuzzy, fuzzyMatch } from "@/lib/fuzzy";
 
 export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
 
@@ -66,16 +67,6 @@ export function useAllReleases() {
     });
   }, [links, drops]);
 }
-
-// Loose matching for titles: case, punctuation and apostrophes don't count,
-// and "-ing" reads the same as "-in" ("fucking" finds "Fuckin'").
-const fuzzy = (text) =>
-  text
-    .toLowerCase()
-    .replace(/['\u2019]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/(\w)ing\b/g, "$1in")
-    .trim();
 
 // Every album, EP, single and drop in one searchable list, newest first,
 // each with the same players as the timeline and its saved links and covers.
@@ -136,7 +127,7 @@ export default function Discography() {
     for (const r of all) {
       if (r.type !== "album" && r.type !== "ep") continue;
       const songs = (albumBySlug(slugify(r.title))?.tracks ?? [])
-        .filter((t) => fuzzy(t.title).includes(q) || lyricTitles.some((title) => sameSong(t.title, title)))
+        .filter((t) => fuzzyMatch(t.title, q) || lyricTitles.some((title) => sameSong(t.title, title)))
         .map((t) => t.title);
       if (songs.length) hits.set(releaseKey(r), songs);
     }
@@ -153,7 +144,7 @@ export default function Discography() {
         trackHits.has(releaseKey(r)) ||
         lyricTitles.some((title) => sameSong(r.title, title)) ||
         `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(search.trim().toLowerCase()) ||
-        fuzzy(`${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""}`).includes(q)
+        fuzzyMatch(`${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""}`, q)
     );
   }, [all, search, fuzzyQ, trackHits, lyricTitles]);
 
