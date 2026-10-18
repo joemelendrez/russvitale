@@ -12,6 +12,7 @@ const FORMATS = {
 const TYPE = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
 
 function meta(r) {
+  if (r.type === "song") return `On ${r.album} · ${r.year}`;
   return r.type === "feature" ? `${featureCredit(r)} · ${r.year}` : `${TYPE[r.type] ?? "Song"} · ${r.year}`;
 }
 

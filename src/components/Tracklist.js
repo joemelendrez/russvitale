@@ -14,8 +14,9 @@ const trackPlayer = (id) => ({
 
 // An album's songs. Tapping one opens Spotify's own player for it under the
 // row (one at a time); other artists on a song, and the album it's from
-// (`from`, on playlist pages), show under its title.
-export default function Tracklist({ tracks, title, compact = false }) {
+// (`from`, on playlist pages), show under its title. Songs named in
+// `highlight` (the ones a search found) stand out.
+export default function Tracklist({ tracks, title, compact = false, highlight }) {
   const [open, setOpen] = useState(null);
   if (!tracks.length) return null;
   return (
@@ -26,6 +27,7 @@ export default function Tracklist({ tracks, title, compact = false }) {
           .filter((a) => a !== "Russ")
           .join(", ");
         const isOpen = open === t.trackId;
+        const hit = highlight?.includes(t.title);
         return (
           <li key={t.trackId}>
             <button
@@ -36,7 +38,10 @@ export default function Tracklist({ tracks, title, compact = false }) {
             >
               <span className="w-6 shrink-0 text-right text-xs tabular-nums text-era-muted">{t.n}</span>
               <span className="min-w-0 flex-1">
-                <span className={`block truncate ${compact ? "text-sm" : "font-semibold"}`}>{t.title}</span>
+                <span className={`block truncate ${compact ? "text-sm" : "font-semibold"} ${hit ? "font-semibold text-era-accent" : ""}`}>
+                  {t.title}
+                  {hit && <span className="sr-only"> (matches your search)</span>}
+                </span>
                 {(others || t.from) && (
                   <span className="block truncate text-xs text-era-muted">
                     {[others && `with ${others}`, t.from && `from ${t.from}`].filter(Boolean).join(" · ")}

@@ -3,7 +3,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, m } from "framer-motion";
 import { DEFAULT_PALETTE, eraForYear } from "@/data/eras";
-import { baseReleases } from "@/data/allReleases";
+import { albumSongs, baseReleases } from "@/data/allReleases";
 import { sameSong } from "@/data/catalog";
 import { featureCredit } from "@/data/features";
 import { SERVICES, listenLink, playerFor } from "@/data/players";
@@ -22,13 +22,14 @@ import { albumBySlug, albumHref, slugify } from "@/data/albums";
 import Tracklist from "./Tracklist";
 import { fuzzy, fuzzyMatch } from "@/lib/fuzzy";
 
-export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
+export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", song: "Song", version: "Version", feature: "Feature" };
 
 const FILTERS = [
   { key: "all", label: "All" },
   { key: "album", label: "Albums" },
   { key: "ep", label: "EPs" },
   { key: "single", label: "Singles" },
+  { key: "song", label: "Album songs" },
   { key: "version", label: "Versions" },
   { key: "feature", label: "Features" },
   { key: "drop", label: "Drops" },
@@ -44,7 +45,7 @@ function formatDate(date) {
 const yearOf = (r) => (r.date ? Number(r.date.slice(0, 4)) : r.year);
 
 function countByType(list) {
-  const c = { all: list.length, album: 0, ep: 0, single: 0, version: 0, feature: 0, drop: 0, nodate: 0 };
+  const c = { all: list.length, album: 0, ep: 0, single: 0, song: 0, version: 0, feature: 0, drop: 0, nodate: 0 };
   for (const r of list) {
     c[r.type] += 1;
     if (r.dropId) c.drop += 1;
@@ -60,11 +61,14 @@ const HAS = { spotify: (r) => r.spotify, youtube: (r) => r.youtube, soundcloud: 
 export function useAllReleases() {
   const { links, drops } = useSpotifyLinks();
   return useMemo(() => {
-    return baseReleases(drops).map((r) => {
+    const releases = baseReleases(drops).map((r) => {
       const saved = withSavedLinks(r, links[releaseKey(r)]);
       const shownYear = yearOf(saved);
       return { ...saved, shownYear, era: saved.era ?? eraForYear(shownYear) };
     });
+    // Album songs come after, built from the albums as shown (their saved
+    // covers and dates), each with any link saved for the song itself.
+    return [...releases, ...albumSongs(releases).map((s) => withSavedLinks(s, links[releaseKey(s)]))];
   }, [links, drops]);
 }
 
@@ -159,7 +163,7 @@ export default function Discography() {
     });
     // By date where there is one; within a year, undated releases go after
     // dated ones, albums before EPs before singles, then by title.
-    const rank = { album: 0, ep: 1, single: 2, version: 3, feature: 4 };
+    const rank = { album: 0, ep: 1, single: 2, song: 3, version: 4, feature: 5 };
     const dir = newest ? -1 : 1;
     list.sort(
       (a, b) =>
@@ -204,12 +208,12 @@ export default function Discography() {
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Every release</h1>
       <div className="mt-6 max-w-xl space-y-4 leading-relaxed text-era-muted">
         <p>
-          {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.version} other versions and {totals.feature} songs Russ is featured on,
-          from the Diemon days to the newest drops.
+          {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.song} more songs from the albums, {totals.version} other versions and{" "}
+          {totals.feature} songs Russ is featured on, from the Diemon days to the newest drops.
         </p>
         <p>Tap any one to play it on the service you pick with the round button.</p>
         <p>
-          The list follows Wikipedia&apos;s Russ discography. Songs that only live on his albums are on the album pages of each service.
+          The list follows Wikipedia&apos;s Russ discography, plus every song on his albums and EPs.
         </p>
         <p>The counts on the buttons below show how many are left as you search. Remember a line but not the title? Type the line and the matching song comes up.</p>
       </div>
@@ -233,7 +237,7 @@ export default function Discography() {
           <ListenToggle />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          {FILTERS.filter((f) => (f.key !== "drop" || totals.drop > 0) && (f.key !== "version" || totals.version > 0) && (f.key !== "feature" || totals.feature > 0) && (!f.editOnly || editing)).map((f) => (
+          {FILTERS.filter((f) => (f.key !== "drop" || totals.drop > 0) && (f.key !== "version" || totals.version > 0) && (f.key !== "feature" || totals.feature > 0) && (f.key !== "song" || totals.song > 0) && (!f.editOnly || editing)).map((f) => (
             <button
               key={f.key}
               type="button"
@@ -316,7 +320,9 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
   const { stop: stopPhoneBar } = usePhonePlayer();
   // Albums and EPs from the timeline have a page and a tracklist.
   const album = release.type === "album" || release.type === "ep" ? albumBySlug(slugify(release.title)) : null;
-  const [songsOpen, setSongsOpen] = useState(false);
+  // A search that found songs on this album shows them, picked out.
+  const [songsToggled, setSongsOpen] = useState(null);
+  const songsOpen = songsToggled ?? songHits?.length > 0;
 
   // One player at a time: opening a row closes the bar a song started from
   // the home page is still playing in.
@@ -342,7 +348,9 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                 ? `Version of ${release.versionOf}`
                 : release.type === "feature"
                   ? featureCredit(release)
-                  : TYPE_LABEL[release.type]}
+                  : release.type === "song"
+                    ? `On ${release.album}`
+                    : TYPE_LABEL[release.type]}
               {versions?.length ? ` · +${versions.length} version${versions.length > 1 ? "s" : ""}` : ""}
               {release.dropId ? " · New drop" : ""}
               {album?.tracks.length ? ` · ${album.tracks.length} songs` : ""} &middot; {release.date ? formatDate(release.date) : release.shownYear}
@@ -400,6 +408,11 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
               )}
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] uppercase tracking-[0.18em] text-era-muted">
                 {release.era && <span>{release.era.title} era</span>}
+                {release.type === "song" && albumBySlug(slugify(release.album)) && (
+                  <Link href={albumHref(albumBySlug(slugify(release.album)))} className="hover:text-era-fg">
+                    On {release.album} &rarr;
+                  </Link>
+                )}
                 {SERVICES.filter((s) => HAS[s.key](release)).map((s) => (
                   <a key={s.key} href={listenLink(release, s.key).href} target="_blank" rel="noreferrer" className="hover:text-era-fg">
                     Open on {s.label} &#8599;
@@ -412,7 +425,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                     {album.tracks.length > 0 ? (
                       <button
                         type="button"
-                        onClick={() => setSongsOpen((o) => !o)}
+                        onClick={() => setSongsOpen(!songsOpen)}
                         aria-expanded={songsOpen}
                         className="flex items-center gap-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] hover:text-era-accent"
                       >
@@ -437,7 +450,7 @@ export function ReleaseRow({ release, open, editing, onToggle, versions, origina
                         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden border-t border-era-fg/10 px-2"
                       >
-                        <Tracklist tracks={album.tracks} title={album.title} compact />
+                        <Tracklist tracks={album.tracks} title={album.title} compact highlight={songHits} />
                       </m.div>
                     )}
                   </AnimatePresence>
