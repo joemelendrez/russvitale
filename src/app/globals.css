@@ -7,8 +7,8 @@
 @property --accent { syntax: "<color>"; inherits: true; initial-value: #f5f5f4; }
 
 @theme {
-  --font-display: "Anton", "Impact", sans-serif;
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-anton), "Impact", sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-era-bg: var(--bg);
   --color-era-fg: var(--fg);
   --color-era-muted: var(--muted);
@@ -275,7 +275,19 @@ html:active-view-transition-type(page) main {
   border-color: oklch(from var(--cover) min(l, 0.78) c h);
 }
 
-/* The phone menu covers the page; the new-drop notice waits until it closes. */
-:root[data-menu-open] .drop-banner {
-  display: none;
+/* The phone menu covers the page; the new-drop notice fades out with it and
+   waits until it closes. !important beats framer's inline opacity. */
+.drop-banner {
+  transition: opacity 0.25s ease, visibility 0s;
 }
+:root[data-menu-open] .drop-banner {
+  opacity: 0 !important;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s 0.25s;
+}
+
+/* The hero's first-load spinner. */
+.hero-loader { animation: hero-spin 0.8s linear infinite; }
+@keyframes hero-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hero-loader { animation-duration: 2.4s; } }

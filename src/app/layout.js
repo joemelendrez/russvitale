@@ -1,5 +1,4 @@
-import "@fontsource/anton/400.css";
-import "@fontsource-variable/inter";
+import localFont from "next/font/local";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import MotionProvider from "@/components/MotionProvider";
@@ -42,13 +41,19 @@ const websiteSchema = {
   publisher: { "@type": "Person", name: SITE.builder.name, url: SITE.builder.url },
 };
 
+// Both fonts are served with the page and preloaded, so text doesn't show in
+// a stand-in font first and then jump. The big Anton headings wait for theirs
+// (block); body text shows at once in a fallback sized to match Inter.
+const anton = localFont({ src: "./fonts/anton-latin-400.woff2", weight: "400", display: "block", variable: "--font-anton", fallback: ["Impact", "sans-serif"] });
+const inter = localFont({ src: "./fonts/inter-latin-wght.woff2", weight: "100 900", display: "swap", variable: "--font-inter", adjustFontFallback: "Arial" });
+
 export const viewport = {
   themeColor: "#09090b",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${anton.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         {/* Light or dark before the first paint: the saved choice, else the phone's setting. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />

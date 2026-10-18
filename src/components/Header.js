@@ -226,7 +226,7 @@ export default function Header() {
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    // The new-drop notice sits above the header; hide it while the menu covers the page.
+    // The new-drop notice sits above the header; it fades out while the menu draws in.
     document.documentElement.toggleAttribute("data-menu-open", open);
     const onKey = (e) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
@@ -326,7 +326,7 @@ export default function Header() {
             initial={{ clipPath: "circle(0% at 100% 0%)" }}
             animate={{ clipPath: "circle(150% at 100% 0%)" }}
             exit={{ clipPath: "circle(0% at 100% 0%)" }}
-            transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-40 flex flex-col justify-between gap-8 bg-era-bg px-4 pb-10 pt-24 md:hidden"
           >
             <MenuScroller>

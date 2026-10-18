@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { m, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import { HERO_COPY, HERO_LAYERS } from "@/data/hero";
@@ -9,9 +9,29 @@ import { usePalette } from "./usePalette";
 // Three photo layers plus the name, stacked in 3D. Scrolling pulls the layers
 // apart at different speeds (background slowest, Russ fastest, toward you),
 // and the pointer tilts the whole stage a few degrees.
+// On the first load a small loader shows until the three photos and the fonts
+// are in, then everything fades in together (never more than 3s), so nothing
+// pops in one piece at a time.
+const LAYER_COUNT = 3;
+
 export default function Hero() {
   const ref = useRef(null);
   usePalette(ref, HERO_PALETTE);
+  const [loaded, setLoaded] = useState(0);
+  const [fontsIn, setFontsIn] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const ready = timedOut || (loaded >= LAYER_COUNT && fontsIn);
+  const onLayer = () => setLoaded((n) => n + 1);
+
+  useEffect(() => {
+    let live = true;
+    (document.fonts?.ready ?? Promise.resolve()).then(() => live && setFontsIn(true));
+    const t = setTimeout(() => setTimedOut(true), 3000);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, []);
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const p = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
@@ -54,10 +74,14 @@ export default function Hero() {
   return (
     <section id="top" ref={ref} className="relative isolate h-[170svh]" aria-label="Intro">
       <div className="sticky top-0 h-svh overflow-hidden [perspective:1200px]">
+        <div
+          className={`hero-stage absolute inset-0 transition-opacity duration-700 ease-out ${ready ? "opacity-100" : "opacity-0"}`}
+          data-ready={ready ? "" : undefined}
+        >
         <m.div style={{ rotateX, rotateY }} className="pointer-events-none absolute inset-0 [transform-style:preserve-3d]">
           {/* Background: venue and lights */}
           <m.div style={{ y: bgY, x: bgX, scale: bgScale }} className="absolute -inset-[6%]">
-            <Image src={HERO_LAYERS.background.src} alt={HERO_LAYERS.background.alt} fill priority sizes="100vw" className="object-cover" />
+            <Image src={HERO_LAYERS.background.src} onLoad={onLayer} alt={HERO_LAYERS.background.alt} fill priority sizes="100vw" className="object-cover" />
           </m.div>
 
           {/* The name sits between the venue and Russ, so he stands in front of it. */}
@@ -70,7 +94,7 @@ export default function Hero() {
 
           {/* Midground: crowd and stage rig */}
           <m.div style={{ y: midY, x: midX }} className="absolute inset-x-[-4%] bottom-[-2%] h-[34%]">
-            <Image src={HERO_LAYERS.midground.src} alt={HERO_LAYERS.midground.alt} fill sizes="100vw" className="object-cover object-bottom" />
+            <Image src={HERO_LAYERS.midground.src} onLoad={onLayer} alt={HERO_LAYERS.midground.alt} fill sizes="100vw" className="object-cover object-bottom" />
           </m.div>
 
           {/* Subject: Russ */}
@@ -78,7 +102,7 @@ export default function Hero() {
             style={{ y: subjectY, x: subjectX, scale: subjectScale }}
             className="absolute inset-x-0 bottom-[24%] mx-auto h-[50%] w-full max-w-3xl origin-bottom sm:bottom-[4%] sm:h-[68%]"
           >
-            <Image src={HERO_LAYERS.subject.src} alt={HERO_LAYERS.subject.alt} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-contain object-bottom" />
+            <Image src={HERO_LAYERS.subject.src} onLoad={onLayer} alt={HERO_LAYERS.subject.alt} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-contain object-bottom" />
           </m.div>
         </m.div>
 
@@ -120,7 +144,18 @@ export default function Hero() {
             </span>
           </a>
         </m.div>
+        </div>
+        <div
+          className={`pointer-events-none absolute inset-0 grid place-items-center transition-opacity duration-500 ${ready ? "opacity-0" : "opacity-100"}`}
+          aria-hidden="true"
+        >
+          <span className="hero-loader h-10 w-10 rounded-full border-2 border-white/15 border-t-white/80" />
+        </div>
       </div>
+      {/* Without scripts the loader never finishes, so show the stage as is. */}
+      <noscript>
+        <style>{`.hero-stage{opacity:1!important}.hero-loader{display:none}`}</style>
+      </noscript>
     </section>
   );
 }
