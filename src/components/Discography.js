@@ -29,7 +29,6 @@ const FILTERS = [
   { key: "album", label: "Albums" },
   { key: "ep", label: "EPs" },
   { key: "single", label: "Singles" },
-  { key: "song", label: "Album songs" },
   { key: "version", label: "Versions" },
   { key: "feature", label: "Features" },
   { key: "drop", label: "Drops" },
@@ -98,7 +97,10 @@ export default function Discography() {
     return () => window.removeEventListener("hashchange", fromHash);
   }, []);
 
-  const all = useAllReleases();
+  // Album songs stay on their album (search still finds them there); they
+  // are their own rows only in favorites and the top 10.
+  const allReleases = useAllReleases();
+  const all = useMemo(() => allReleases.filter((r) => r.type !== "song"), [allReleases]);
 
   // Other versions of each song, by the song's title.
   const versionsOf = useMemo(() => {
@@ -208,12 +210,12 @@ export default function Discography() {
       <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Every release</h1>
       <div className="mt-6 max-w-xl space-y-4 leading-relaxed text-era-muted">
         <p>
-          {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.song} more songs from the albums, {totals.version} other versions and{" "}
+          {totals.album} albums, {totals.ep} EPs, {totals.single} singles, {totals.version} other versions and{" "}
           {totals.feature} songs Russ is featured on, from the Diemon days to the newest drops.
         </p>
         <p>Tap any one to play it on the service you pick with the round button.</p>
         <p>
-          The list follows Wikipedia&apos;s Russ discography, plus every song on his albums and EPs.
+          The list follows Wikipedia&apos;s Russ discography. Search for a song on an album and the album comes up with that song picked out.
         </p>
         <p>The counts on the buttons below show how many are left as you search. Remember a line but not the title? Type the line and the matching song comes up.</p>
       </div>
@@ -237,7 +239,7 @@ export default function Discography() {
           <ListenToggle />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          {FILTERS.filter((f) => (f.key !== "drop" || totals.drop > 0) && (f.key !== "version" || totals.version > 0) && (f.key !== "feature" || totals.feature > 0) && (f.key !== "song" || totals.song > 0) && (!f.editOnly || editing)).map((f) => (
+          {FILTERS.filter((f) => (f.key !== "drop" || totals.drop > 0) && (f.key !== "version" || totals.version > 0) && (f.key !== "feature" || totals.feature > 0) && (!f.editOnly || editing)).map((f) => (
             <button
               key={f.key}
               type="button"
