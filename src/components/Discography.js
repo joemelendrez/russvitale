@@ -109,6 +109,13 @@ export default function Discography() {
   // Typing stays quick: the list catches up with the search a beat later.
   const search = useDeferredValue(query);
 
+  // Song titles Genius found for a typed lyric, for the search they answer.
+  const [lyric, setLyric] = useState({ q: "", titles: [] });
+  const lyricTitles = useMemo(
+    () => (lyric.q && lyric.q === search.trim().replace(/\s+/g, " ") ? lyric.titles : []),
+    [lyric, search]
+  );
+
   // Album and EP songs that match the search, by release key, so a song
   // that only lives on an album still finds that album.
   const trackHits = useMemo(() => {
@@ -117,11 +124,13 @@ export default function Discography() {
     if (q.length < 2) return hits;
     for (const r of all) {
       if (r.type !== "album" && r.type !== "ep") continue;
-      const songs = (albumBySlug(slugify(r.title))?.tracks ?? []).filter((t) => t.title.toLowerCase().includes(q)).map((t) => t.title);
+      const songs = (albumBySlug(slugify(r.title))?.tracks ?? [])
+        .filter((t) => t.title.toLowerCase().includes(q) || lyricTitles.some((title) => sameSong(t.title, title)))
+        .map((t) => t.title);
       if (songs.length) hits.set(releaseKey(r), songs);
     }
     return hits;
-  }, [all, search]);
+  }, [all, search, lyricTitles]);
 
   // What the search leaves; the chips count from this, so they show how many
   // of each are left.
@@ -131,9 +140,10 @@ export default function Discography() {
     return all.filter(
       (r) =>
         trackHits.has(releaseKey(r)) ||
+        lyricTitles.some((title) => sameSong(r.title, title)) ||
         `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)
     );
-  }, [all, search, trackHits]);
+  }, [all, search, trackHits, lyricTitles]);
 
   const counts = useMemo(() => countByType(matched), [matched]);
   const totals = useMemo(() => countByType(all), [all]);
@@ -248,7 +258,7 @@ export default function Discography() {
         {total === all.length ? `${total} releases` : `${total} of ${all.length} releases`}
       </p>
 
-      <LyricMatches query={search} releases={all} onOpen={openRelease} />
+      <LyricMatches query={search} releases={all} onOpen={openRelease} onMatches={(q, titles) => setLyric({ q, titles })} />
 
       {shown.length === 0 && !looksLikeLyric(search) && (
         <div className="mt-10 rounded-2xl border border-era-fg/10 p-8 text-center text-era-muted">

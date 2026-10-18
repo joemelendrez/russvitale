@@ -5,6 +5,10 @@ import { NextResponse } from "next/server";
 // lyrics. Needs GENIUS_ACCESS_TOKEN (a Genius API client access token).
 
 const MIN = 6;
+
+// Browser cache only: Netlify's edge cache ignored the ?q= and gave every
+// search the first answer it had saved.
+const NO_SHARED_CACHE = { "Cache-Control": "private, max-age=3600", "Netlify-CDN-Cache-Control": "no-store" };
 const MAX = 200;
 
 // A few searches per address per minute, per server instance.
@@ -36,16 +40,23 @@ export async function GET(request) {
   if (limited(ip)) return NextResponse.json({ error: "Too many searches. Try again in a minute." }, { status: 429 });
 
   try {
-    const res = await fetch(`https://api.genius.com/search?per_page=20&q=${encodeURIComponent(`${q} Russ`)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(6000),
-      next: { revalidate: 86400 },
-    });
-    if (!res.ok) throw new Error(`Genius answered ${res.status}`);
-    const data = await res.json();
+    // Just the line, no "Russ" added: with his name in the search, Genius
+    // ranks his popular songs first whatever the line is. Two pages of 20,
+    // then only his songs are kept.
+    const pages = await Promise.all(
+      [1, 2].map(async (page) => {
+        const res = await fetch(`https://api.genius.com/search?per_page=20&page=${page}&q=${encodeURIComponent(q)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(6000),
+          next: { revalidate: 86400 },
+        });
+        if (!res.ok) throw new Error(`Genius answered ${res.status}`);
+        return (await res.json())?.response?.hits ?? [];
+      })
+    );
     const seen = new Set();
     const songs = [];
-    for (const { result: song } of data?.response?.hits ?? []) {
+    for (const { result: song } of pages.flat()) {
       if (!song?.title || !byRuss(song) || seen.has(song.id)) continue;
       seen.add(song.id);
       // Only genius.com links go out, so a bad answer can't point anywhere else.
@@ -53,7 +64,7 @@ export async function GET(request) {
       songs.push({ title: song.title, artists: song.artist_names ?? "Russ", url });
       if (songs.length === 5) break;
     }
-    return NextResponse.json({ available: true, songs }, { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } });
+    return NextResponse.json({ available: true, songs }, { headers: NO_SHARED_CACHE });
   } catch (err) {
     console.error("lyrics-search", err);
     return NextResponse.json({ error: "Couldn't reach Genius. Try again in a bit." }, { status: 502 });
