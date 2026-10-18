@@ -53,7 +53,9 @@ export async function GET(request) {
       songs.push({ title: song.title, artists: song.artist_names ?? "Russ", url });
       if (songs.length === 5) break;
     }
-    return NextResponse.json({ available: true, songs }, { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } });
+    // checked: how many Genius results came back before keeping Russ's own.
+    const all = data?.response?.hits ?? [];
+    return NextResponse.json({ available: true, songs, checked: all.length, artists: [...new Set(all.map((h) => h.result?.primary_artist?.name))].slice(0, 5) }, { headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } });
   } catch (err) {
     console.error("lyrics-search", err);
     return NextResponse.json({ error: "Couldn't reach Genius. Try again in a bit." }, { status: 502 });
