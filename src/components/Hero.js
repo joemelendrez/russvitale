@@ -26,7 +26,7 @@ export default function Hero() {
   useEffect(() => {
     let live = true;
     (document.fonts?.ready ?? Promise.resolve()).then(() => live && setFontsIn(true));
-    const t = setTimeout(() => setTimedOut(true), 3000);
+    const t = setTimeout(() => setTimedOut(true), 2500);
     return () => {
       live = false;
       clearTimeout(t);
@@ -75,7 +75,7 @@ export default function Hero() {
     <section id="top" ref={ref} className="relative isolate h-[170svh]" aria-label="Intro">
       <div className="sticky top-0 h-svh overflow-hidden [perspective:1200px]">
         <div
-          className={`hero-stage absolute inset-0 transition-opacity duration-700 ease-out ${ready ? "opacity-100" : "opacity-0"}`}
+          className="hero-stage absolute inset-0"
           data-ready={ready ? "" : undefined}
         >
         <m.div style={{ rotateX, rotateY }} className="pointer-events-none absolute inset-0 [transform-style:preserve-3d]">
@@ -94,7 +94,7 @@ export default function Hero() {
 
           {/* Midground: crowd and stage rig */}
           <m.div style={{ y: midY, x: midX }} className="absolute inset-x-[-4%] bottom-[-2%] h-[34%]">
-            <Image src={HERO_LAYERS.midground.src} onLoad={onLayer} alt={HERO_LAYERS.midground.alt} fill sizes="100vw" className="object-cover object-bottom" />
+            <Image src={HERO_LAYERS.midground.src} onLoad={onLayer} alt={HERO_LAYERS.midground.alt} fill priority sizes="100vw" className="object-cover object-bottom" />
           </m.div>
 
           {/* Subject: Russ */}
@@ -146,7 +146,10 @@ export default function Hero() {
         </m.div>
         </div>
         <div
-          className={`pointer-events-none absolute inset-0 grid place-items-center transition-opacity duration-500 ${ready ? "opacity-0" : "opacity-100"}`}
+          // An opaque cover rather than a hidden stage: the photos still paint
+          // underneath, so the browser counts them as loaded (LCP) right away.
+          className={`hero-cover pointer-events-none absolute inset-0 grid place-items-center bg-neutral-950 transition-opacity duration-500 ease-out ${ready ? "invisible opacity-0" : "opacity-100"}`}
+          style={{ transitionProperty: "opacity, visibility" }}
           aria-hidden="true"
         >
           <span className="hero-loader h-10 w-10 rounded-full border-2 border-white/15 border-t-white/80" />
@@ -154,7 +157,7 @@ export default function Hero() {
       </div>
       {/* Without scripts the loader never finishes, so show the stage as is. */}
       <noscript>
-        <style>{`.hero-stage{opacity:1!important}.hero-loader{display:none}`}</style>
+        <style>{`.hero-cover{display:none}`}</style>
       </noscript>
     </section>
   );
