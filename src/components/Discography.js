@@ -20,6 +20,7 @@ import AlbumSwatches from "@/components/AlbumSwatches";
 import Link from "next/link";
 import { albumBySlug, albumHref, slugify } from "@/data/albums";
 import Tracklist from "./Tracklist";
+import { fuzzy, fuzzyMatch } from "@/lib/fuzzy";
 
 export const TYPE_LABEL = { album: "Album", ep: "EP", single: "Single", version: "Version", feature: "Feature" };
 
@@ -108,6 +109,7 @@ export default function Discography() {
 
   // Typing stays quick: the list catches up with the search a beat later.
   const search = useDeferredValue(query);
+  const fuzzyQ = fuzzy(search);
 
   // Song titles Genius found for a typed lyric, for the search they answer.
   const [lyric, setLyric] = useState({ q: "", titles: [] });
@@ -119,31 +121,32 @@ export default function Discography() {
   // Album and EP songs that match the search, by release key, so a song
   // that only lives on an album still finds that album.
   const trackHits = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = fuzzyQ;
     const hits = new Map();
     if (q.length < 2) return hits;
     for (const r of all) {
       if (r.type !== "album" && r.type !== "ep") continue;
       const songs = (albumBySlug(slugify(r.title))?.tracks ?? [])
-        .filter((t) => t.title.toLowerCase().includes(q) || lyricTitles.some((title) => sameSong(t.title, title)))
+        .filter((t) => fuzzyMatch(t.title, q) || lyricTitles.some((title) => sameSong(t.title, title)))
         .map((t) => t.title);
       if (songs.length) hits.set(releaseKey(r), songs);
     }
     return hits;
-  }, [all, search, lyricTitles]);
+  }, [all, fuzzyQ, lyricTitles]);
 
   // What the search leaves; the chips count from this, so they show how many
   // of each are left.
   const matched = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = fuzzyQ;
     if (!q) return all;
     return all.filter(
       (r) =>
         trackHits.has(releaseKey(r)) ||
         lyricTitles.some((title) => sameSong(r.title, title)) ||
-        `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)
+        `${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""} ${r.shownYear} ${r.date ? formatDate(r.date) : ""} ${r.era?.title ?? ""} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(search.trim().toLowerCase()) ||
+        fuzzyMatch(`${r.title} ${r.versionOf ?? ""} ${r.artist ?? ""}`, q)
     );
-  }, [all, search, trackHits, lyricTitles]);
+  }, [all, search, fuzzyQ, trackHits, lyricTitles]);
 
   const counts = useMemo(() => countByType(matched), [matched]);
   const totals = useMemo(() => countByType(all), [all]);
