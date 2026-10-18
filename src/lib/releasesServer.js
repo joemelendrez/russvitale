@@ -1,4 +1,4 @@
-import { baseReleases } from "@/data/allReleases";
+import { albumSongs, baseReleases } from "@/data/allReleases";
 import { releaseKey } from "@/data/releaseKey";
 import { playlistIdea, slugify } from "@/data/albums";
 import { spotifyPlaylistSongs } from "@/lib/spotifyPlaylistSongs";
@@ -39,7 +39,8 @@ export function parseKeys(value, max = 10) {
 // The releases those keys name, in order; unknown keys are skipped.
 export async function releasesForKeys(keys) {
   if (!keys.length) return [];
-  const all = baseReleases(await fetchDrops());
+  const base = baseReleases(await fetchDrops());
+  const all = [...base, ...albumSongs(base)];
   const byKey = new Map(all.map((r) => [releaseKey(r), r]));
   return keys.map((k) => byKey.get(k)).filter(Boolean);
 }

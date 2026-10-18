@@ -9,6 +9,7 @@ import { useFavorites } from "@/lib/favorites";
 import { clearNowPlaying } from "@/lib/listenOn";
 import { getSupabase, supabaseConfigured } from "@/lib/supabaseConfig";
 import { TOP10_MAX, setTop10, useTop10 } from "@/lib/top10";
+import { fuzzy, fuzzyMatch } from "@/lib/fuzzy";
 import { ReleaseRow, TYPE_LABEL, useAllReleases } from "./Discography";
 import ConfirmDialog from "./ConfirmDialog";
 import FavoritesAccount from "./FavoritesAccount";
@@ -18,7 +19,11 @@ import AlbumSwatches, { swatchAt } from "@/components/AlbumSwatches";
 
 const pill = "rounded-full px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] disabled:opacity-40";
 
-const metaOf = (r) => (r.type === "feature" ? featureCredit(r) : `${TYPE_LABEL[r.type]} · ${r.shownYear}`);
+const metaOf = (r) =>
+  r.type === "feature" ? featureCredit(r) : r.type === "song" ? `On ${r.album} · ${r.shownYear}` : `${TYPE_LABEL[r.type]} · ${r.shownYear}`;
+
+// A top 10 is songs: albums and EPs can't be picked (their songs can).
+const pickable = (r) => r.type !== "album" && r.type !== "ep";
 
 // Waits until `value` has stopped changing for `ms`, so the preview image
 // isn't rebuilt on every drag.
@@ -149,20 +154,15 @@ function Builder() {
     setTop10(next);
   };
 
-  // Punctuation-blind, so "aint" finds "Ain't".
-  const norm = (t) =>
-    t
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim();
-  const q = norm(query);
+  // Loose, like /music: "aint" finds "Ain't", "fucking" finds "Fuckin".
+  const q = fuzzy(query);
   const results = !q
     ? []
     : all
-        .filter((r) => !list.includes(releaseKey(r)) && norm(`${r.title} ${r.artist ?? ""}`).includes(q))
-        .sort((a, b) => Number(!norm(a.title).startsWith(q)) - Number(!norm(b.title).startsWith(q)))
+        .filter((r) => pickable(r) && !list.includes(releaseKey(r)) && fuzzyMatch(`${r.title} ${r.artist ?? ""} ${r.album ?? ""}`, q))
+        .sort((a, b) => Number(!fuzzy(a.title).startsWith(q)) - Number(!fuzzy(b.title).startsWith(q)))
         .slice(0, 8);
-  const fromFavorites = favorites.filter((k) => byKey.has(k) && !list.includes(k));
+  const fromFavorites = favorites.filter((k) => byKey.has(k) && pickable(byKey.get(k)) && !list.includes(k));
 
   return (
     <>
@@ -229,7 +229,7 @@ function Builder() {
           {!full && (
             <div className="mt-6">
               <label htmlFor="top10-search" className="mb-2 block text-sm text-era-muted">
-                Add a song, album or feature
+                Add a song or feature
               </label>
               <input
                 id="top10-search"

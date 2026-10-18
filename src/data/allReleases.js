@@ -2,6 +2,7 @@ import { ERAS } from "./eras";
 import { otherDrops, singlesWithDrops } from "./drops";
 import { CATALOG_SINGLES_BY_YEAR, sameSong } from "./catalog";
 import { VERSION_RELEASES } from "./versions";
+import { tracklistFor } from "./tracklists";
 import { FEATURE_RELEASES } from "./features";
 
 // Every album, EP, version, feature and single with the admin's drops
@@ -21,4 +22,38 @@ export function baseReleases(drops) {
     else listed[i] = { ...listed[i], ...added, era: undefined };
   }
   return [...listed, ...singles];
+}
+
+// Every album and EP song that isn't already listed as a single, feature or
+// version, as its own release (type "song") that plays the song itself and
+// carries its album's cover, colors and year. On two albums (a deluxe), the
+// first one wins.
+export function albumSongs(releases) {
+  const listed = releases.filter((r) => r.type !== "album" && r.type !== "ep");
+  const songs = [];
+  for (const r of releases) {
+    if (r.type !== "album" && r.type !== "ep") continue;
+    for (const t of tracklistFor(r)) {
+      if (listed.some((o) => sameSong(o.title, t.title)) || songs.some((o) => sameSong(o.title, t.title))) continue;
+      const others = t.artists
+        .split(", ")
+        .filter((a) => a !== "Russ")
+        .join(", ");
+      songs.push({
+        type: "song",
+        title: t.title,
+        year: r.year,
+        date: r.date,
+        shownYear: r.shownYear,
+        era: r.era,
+        palette: r.palette,
+        cover: r.cover,
+        spotify: { kind: "track", id: t.trackId },
+        album: r.title,
+        albumType: r.type,
+        withArtists: others || undefined,
+      });
+    }
+  }
+  return songs;
 }
