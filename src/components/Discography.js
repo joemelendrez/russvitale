@@ -12,6 +12,7 @@ import { clearNowPlaying, serviceOfPlayer, setNowPlaying, useListenOn } from "@/
 import { CoverEditor, DateEditor, SpotifyLinkEditor, useSpotifyLinks, withSavedLinks } from "./SpotifyLinks";
 import ListenToggle, { ServiceMark } from "./ListenToggle";
 import PlayerFrame from "./PlayerFrame";
+import LyricMatches, { looksLikeLyric } from "./LyricMatches";
 import { usePhonePlayer } from "./PhonePlayer";
 import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
@@ -197,7 +198,7 @@ export default function Discography() {
         <p>
           The list follows Wikipedia&apos;s Russ discography. Songs that only live on his albums are on the album pages of each service.
         </p>
-        <p>The counts on the buttons below show how many are left as you search.</p>
+        <p>The counts on the buttons below show how many are left as you search. Remember a line but not the title? Type the line and the matching song comes up.</p>
       </div>
 
       <div className="sticky top-16 z-30 -mx-4 mt-10 space-y-3 bg-era-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
@@ -212,7 +213,7 @@ export default function Discography() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search songs, albums, artists or years"
+              placeholder="Search songs, albums, years or a lyric"
               className="h-11 w-full rounded-full border border-era-fg/15 bg-era-fg/5 pl-10 pr-4 text-sm text-era-fg placeholder:text-era-muted focus:border-era-accent focus:outline-none"
             />
           </label>
@@ -247,7 +248,9 @@ export default function Discography() {
         {total === all.length ? `${total} releases` : `${total} of ${all.length} releases`}
       </p>
 
-      {shown.length === 0 && (
+      <LyricMatches query={search} releases={all} onOpen={openRelease} />
+
+      {shown.length === 0 && !looksLikeLyric(search) && (
         <div className="mt-10 rounded-2xl border border-era-fg/10 p-8 text-center text-era-muted">
           Nothing matches &ldquo;{query}&rdquo;.{" "}
           <button type="button" className="underline" onClick={() => setQuery("")}>
