@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { playlistHref } from "@/data/albums";
 
 // Playlists as rows split by a line, each in its own cover color, like the

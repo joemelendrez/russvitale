@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { notFound } from "next/navigation";
 import DefaultPalette from "@/components/DefaultPalette";
 import Footer from "@/components/Footer";

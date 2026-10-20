@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { getSupabase, supabaseConfigured } from "@/lib/supabaseConfig";
 import { applyPalette } from "./usePalette";
 import { DEFAULT_PALETTE } from "@/data/eras";
