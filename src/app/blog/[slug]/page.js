@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { notFound } from "next/navigation";
 import BlogFaq from "@/components/BlogFaq";
 import BlogToc from "@/components/BlogToc";

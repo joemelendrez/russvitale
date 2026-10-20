@@ -17,7 +17,7 @@ import { usePhonePlayer } from "./PhonePlayer";
 import FavoriteButton from "./FavoriteButton";
 import { applyPalette } from "./usePalette";
 import AlbumSwatches from "@/components/AlbumSwatches";
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { albumBySlug, albumHref, slugify } from "@/data/albums";
 import Tracklist from "./Tracklist";
 import { fuzzy, fuzzyMatch } from "@/lib/fuzzy";

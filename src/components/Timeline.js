@@ -6,7 +6,7 @@ import { singlesWithDrops } from "@/data/drops";
 import { useSpotifyLinks } from "./SpotifyLinks";
 import EraSection from "./EraSection";
 import YearSection from "./YearSection";
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import ListenToggle from "./ListenToggle";
 
 export const TAB_EVENT = "russ:music-tab";

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { sameSong } from "@/data/catalog";
 import { albumForSong, albumHref } from "@/data/albums";
 

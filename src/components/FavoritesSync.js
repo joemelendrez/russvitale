@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { getFavorites, setFavorites, subscribeFavorites } from "@/lib/favorites";
 import { getTop10, setTop10, subscribeTop10 } from "@/lib/top10";
-import { fanAccounts, getSupabase } from "@/lib/supabaseConfig";
+import { fanAccounts, whenSignedIn } from "@/lib/supabaseConfig";
 
 const strings = (v) => (Array.isArray(v) ? v.filter((k) => typeof k === "string") : []);
 
@@ -62,7 +62,7 @@ export default function FavoritesSync() {
     };
     const offFavorites = subscribeFavorites(later);
     const offTop10 = subscribeTop10(later);
-    getSupabase().then((client) => {
+    const cancel = whenSignedIn((client) => {
       if (!live) return;
       supabase = client;
       supabase.auth.getSession().then(({ data }) => start(data.session));
@@ -73,6 +73,7 @@ export default function FavoritesSync() {
     });
     return () => {
       live = false;
+      cancel();
       offFavorites();
       offTop10();
       clearTimeout(timer);

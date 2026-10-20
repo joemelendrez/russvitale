@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { ALL_RELEASES, CATALOG_RELEASES, releaseKey } from "@/data/releaseKey";
 import { expandSoundcloud, parsePlayerLink, playerFor, releaseFieldsFromRow, searchLinks } from "@/data/players";
 import { useListenOn } from "@/lib/listenOn";
-import { getSupabase, supabaseConfigured } from "@/lib/supabaseConfig";
+import { getSupabase, mightBeSignedIn, supabaseConfigured, whenSignedIn } from "@/lib/supabaseConfig";
 import { DROP_SELECT, LINK_SELECT } from "@/data/releaseColumns";
 import { TAB_EVENT } from "./Timeline";
 import DropBanner from "./DropBanner";
@@ -129,7 +129,11 @@ export function SpotifyLinksProvider({ children }) {
     }
 
     // Ask the database, the same check RLS uses on every save.
-    getSupabase().then((supabase) => {
+    // Visitors who never signed in on this browser can't be admins, so they
+    // skip loading Supabase for it (edit mode still asks, to say "sign in").
+    if (!editMode && !mightBeSignedIn()) Promise.resolve().then(() => !cancelled && setAdmin("no"));
+    const load = editMode ? (fn) => (getSupabase().then((client) => client && fn(client)), () => {}) : whenSignedIn;
+    const cancelCheck = load((supabase) => {
       if (cancelled) return;
       const check = async (session) => {
         if (!session) return !cancelled && setAdmin("no");
@@ -143,6 +147,7 @@ export function SpotifyLinksProvider({ children }) {
     });
     return () => {
       cancelled = true;
+      cancelCheck();
       sub?.unsubscribe();
     };
   }, []);

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { fanAccounts, getSupabase } from "./supabaseConfig";
+import { fanAccounts, mightBeSignedIn, whenSignedIn } from "./supabaseConfig";
 
 // The signed-in fan's session: undefined while it loads, then a session or
 // null. Always null when fan accounts are off.
@@ -10,13 +10,15 @@ export function useSession() {
     if (!fanAccounts) return;
     let live = true;
     let sub = null;
-    getSupabase().then((supabase) => {
-      if (!live) return;
+    // Never signed in on this browser: no session, without loading Supabase.
+    if (!mightBeSignedIn()) Promise.resolve().then(() => live && setSession(null));
+    const cancel = whenSignedIn((supabase) => {
       supabase.auth.getSession().then(({ data }) => live && setSession(data.session));
       sub = supabase.auth.onAuthStateChange((_e, s) => setSession(s)).data.subscription;
     });
     return () => {
       live = false;
+      cancel();
       sub?.unsubscribe();
     };
   }, []);

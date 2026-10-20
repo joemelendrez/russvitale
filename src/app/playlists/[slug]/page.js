@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import { notFound } from "next/navigation";
 import { ALBUM_SWATCHES } from "@/components/AlbumSwatches";
 import DefaultPalette from "@/components/DefaultPalette";

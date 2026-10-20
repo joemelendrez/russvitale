@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/QuietLink";
 import DefaultPalette from "@/components/DefaultPalette";
 import Footer from "@/components/Footer";
 import NewsletterForm from "@/components/NewsletterForm";
