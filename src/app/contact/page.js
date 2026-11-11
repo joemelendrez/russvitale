@@ -24,7 +24,7 @@ export default function ContactPage() {
         <p className="text-xs uppercase tracking-[0.35em] text-era-muted">Unofficial fan archive</p>
         <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">Contact</h1>
         <p className="mt-6 max-w-xl text-era-muted">
-          This is a fan site. It isn't connected to Russ, Diemon or any label, and it doesn't sell anything. Write in about any of the
+          This is a fan site. It isn&apos;t connected to Russ, Diemon or any label, and it doesn&apos;t sell anything. Write in about any of the
           below and a real person will reply.
         </p>
         <a

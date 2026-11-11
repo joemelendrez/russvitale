@@ -1,4 +1,4 @@
-// Line icons for blog covers, from Lucide (lucide.dev, ISC license).
+// Line icons for playlist covers, from Lucide (lucide.dev, ISC license).
 // Each value is the inside of a 24x24 SVG drawn with a stroke, no fill.
 // Generated from lucide-static; to add one, add it to a group and copy the
 // inside of its <svg> from lucide-static.

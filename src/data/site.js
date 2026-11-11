@@ -18,7 +18,6 @@ export const NAV = [
   { label: "Features", href: "/music#features", page: true, group: "Music" },
   { label: "Top 10", href: "/top10", page: true, group: "Music" },
   { label: "Playlists", href: "/playlists", page: true, group: "Music" },
-  { label: "Blog", href: "/blog", page: true },
   { label: "Favorites", href: "/favorites", page: true },
   { label: "Shows", href: "#shows" },
   { label: "Watch", href: "#watch" },

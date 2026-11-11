@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { PLAYLIST_IDEAS, playlistCoverUrl, playlistIcon, playlistIdFromLink, playlistUrl } from "@/data/playlists";
 import { CATALOG_RELEASES } from "@/data/releaseKey";
 import { COVER_COLORS, coverHex, swatchAt } from "./AlbumSwatches";
-import { IconPicker } from "./CoverMaker";
+import { IconPicker } from "./IconPicker";
 import AppIcon from "./AppIcon";
 import Link from "next/link";
 import { refreshSite } from "@/lib/refreshSite";

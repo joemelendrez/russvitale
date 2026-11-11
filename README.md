@@ -57,3 +57,7 @@ The Shows section embeds Bandsintown's own widget for Russ (`BANDSINTOWN` in `sr
 ## Ground rules
 
 This is a fan site. It stays labeled unofficial, plays music only through official Spotify, SoundCloud and YouTube embeds, hosts no audio, prints no full lyrics and sells nothing.
+
+## Retired: blog and newsletter
+
+The blog (WordPress subsite) and the email newsletter (Resend, with city show alerts) were taken down in November 2026 so the site can stay up without regular updates. Old `/blog`, `/blog/...` and `/newsletter` links redirect to the home page, and `/api/newsletter/unsubscribe` still works for emails already sent. The tables were left in place but nothing writes to them any more: `russ_subscribers`, `russ_newsletters` and `russ_settings` (with the `russ_subscribe`, `russ_subscribe_city`, `russ_confirm_subscriber`, `russ_newsletter_recipients`, `russ_newsletter_recipients_in`, `russ_newsletter_stats` and `russ_subscriber_cities` functions from migrations 0007 and 0014; `russ_unsubscribe` is still called by the unsubscribe link). The Netlify env vars `RESEND_API_KEY`, `RUSS_NEWSLETTER_FROM`, `RUSS_NEWSLETTER_ADDRESS`, `RUSS_NEWSLETTER_SECRET` and `RUSS_BLOG_WEBHOOK_SECRET` are no longer read and can be deleted.
