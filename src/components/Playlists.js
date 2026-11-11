@@ -7,7 +7,6 @@ import { DEFAULT_PALETTE } from "@/data/eras";
 import { playlistUrl } from "@/data/playlists";
 import { playlistHref } from "@/data/albums";
 import AlbumSwatches, { swatchAt } from "./AlbumSwatches";
-import NewsletterForm from "./NewsletterForm";
 import SpotifyEmbed from "./SpotifyEmbed";
 
 // /playlists: fan-made Spotify playlists by mood. Each card loads Spotify's
@@ -61,10 +60,7 @@ export default function Playlists({ initialLists = null, initialCovers = {} }) {
       ) : lists.length === 0 ? (
         <div className="mt-14 rounded-3xl border border-era-fg/10 p-6 sm:p-10">
           <p className="font-display text-4xl uppercase leading-none sm:text-5xl">Playlists are on the way</p>
-          <p className="mt-4 max-w-lg text-era-muted">Get them by email the day they go up, along with tour dates and new drops.</p>
-          <div className="mt-8 max-w-xl">
-            <NewsletterForm id="playlists-newsletter-email" />
-          </div>
+          <p className="mt-4 max-w-lg text-era-muted">Check back soon, or find Russ on Spotify in the meantime.</p>
         </div>
       ) : (
         <ul className="mt-14 grid gap-6 md:grid-cols-2">

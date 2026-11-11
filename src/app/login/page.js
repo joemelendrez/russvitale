@@ -12,7 +12,7 @@ export default function LoginPage() {
   return (
     <>
       <LoginForm />
-      <Footer newsletter={false} />
+      <Footer />
     </>
   );
 }

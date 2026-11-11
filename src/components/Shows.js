@@ -4,7 +4,6 @@ import { SHOWS, TOUR_LINKS } from "@/data/shows";
 import PaletteSection from "./PaletteSection";
 import SectionHeading from "./SectionHeading";
 import BandsintownWidget from "./BandsintownWidget";
-import NewsletterForm from "./NewsletterForm";
 import { swatchAt } from "./AlbumSwatches";
 
 function upcoming() {
@@ -69,17 +68,6 @@ export default function Shows() {
         )}
 
         <BandsintownWidget />
-
-        <div className="mt-14 grid gap-6 rounded-3xl border border-era-fg/10 bg-era-fg/[0.03] p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center [&>*]:min-w-0">
-          <div>
-            <p className="font-display text-3xl uppercase leading-none sm:text-4xl">Russ coming to your city?</p>
-            <p className="mt-3 max-w-md text-era-muted">
-              Leave your city and we&apos;ll email you when there&apos;s official show news near you, along with new drops. Dates always come from the
-              official listings.
-            </p>
-          </div>
-          <NewsletterForm id="shows-city-email" withCity label="Show news near you" />
-        </div>
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TOUR_LINKS.map((raw, i) => {

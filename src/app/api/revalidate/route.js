@@ -1,12 +1,12 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
-import { serverSupabase } from "@/lib/newsletterServer";
+import { serverSupabase } from "@/lib/supabaseServer";
 
-// The cache tags the site's pages read with (src/lib/releasesServer.js,
-// src/lib/blog.js). Admin calls this after a save so album pages, playlist
-// pages, the sitemap and the blog show the change on the next visit instead
-// of after their few-minute cache runs out.
-const TAGS = new Set(["drops", "links", "playlists", "blog"]);
+// The cache tags the site's pages read with (src/lib/releasesServer.js).
+// Admin calls this after a save so album pages, playlist pages and the
+// sitemap show the change on the next visit instead of after their
+// few-minute cache runs out.
+const TAGS = new Set(["drops", "links", "playlists"]);
 
 export async function POST(request) {
   const accessToken = request.headers.get("authorization")?.replace(/^Bearer /, "");

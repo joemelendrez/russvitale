@@ -3,9 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { refreshSite } from "@/lib/refreshSite";
 import AddSongWizard from "@/components/AddSongWizard";
-import NewsletterAdmin from "@/components/NewsletterAdmin";
 import FeaturesAdmin from "@/components/FeaturesAdmin";
-import CoverMaker from "@/components/CoverMaker";
 import PlaylistsAdmin from "@/components/PlaylistsAdmin";
 import Link from "next/link";
 import AppIcon from "@/components/AppIcon";
@@ -106,7 +104,7 @@ function TopBar({ section, onBack }) {
   );
 }
 
-const SECTION_KEYS = ["add", "songs", "features", "playlists", "newsletter", "covers"];
+const SECTION_KEYS = ["add", "songs", "features", "playlists"];
 
 // The open section, from the URL's #hash, so a reload or the back button lands right.
 function useHashSection() {
@@ -304,12 +302,6 @@ function Dashboard({ email }) {
   };
 
   const [playlistCount, setPlaylistCount] = useState(null);
-  const [blogRefresh, setBlogRefresh] = useState(null); // working | done | failed
-  const refreshBlog = async () => {
-    if (blogRefresh === "working") return;
-    setBlogRefresh("working");
-    setBlogRefresh((await refreshSite("blog")) ? "done" : "failed");
-  };
   const active = useHashSection();
   // Opening a section adds a history entry, so the phone's back button returns to the list.
   const go = (key) => {
@@ -388,8 +380,6 @@ function Dashboard({ email }) {
     { key: "songs", group: "Music", icon: "disc-3", title: "Added songs", sub: drops === null ? "Loading..." : `${songs.length} on the site` },
     { key: "features", group: "Music", icon: "mic-vocal", title: "Features", sub: "Songs Russ is featured on" },
     { key: "playlists", group: "Fans", icon: "list-music", title: "Playlists", sub: playlistCount === null ? "Mood playlists" : `${playlistCount} on /playlists` },
-    { key: "newsletter", group: "Fans", icon: "mail", title: "Newsletter", sub: "Subscribers and sending" },
-    { key: "covers", group: "Blog", icon: "image", title: "Blog covers", sub: "Make a cover image" },
   ];
   const open = sections.find((x) => x.key === active) ?? null;
   const groups = [...new Set(sections.map((x) => x.group))];
@@ -413,14 +403,6 @@ function Dashboard({ email }) {
             <ListGroup label="Quick fix">
               {/* A full page load, so the site picks up edit mode as it opens. */}
               <ListRow href="/?edit=1" icon="link" color={swatchAt(0)} title="Fix song links on the site" sub="Paste players into releases without one" external />
-              {/* WordPress can't tell the site a post went live, so this asks for the new posts now. */}
-              <ListRow
-                icon="refresh-cw"
-                color={swatchAt(6)}
-                title="Show new blog posts now"
-                sub={blogRefresh === "working" ? "Refreshing..." : blogRefresh === "done" ? "Done. New posts show on the next visit." : blogRefresh === "failed" ? "Couldn't refresh. Try again." : "Otherwise they show within 5 minutes"}
-                onClick={refreshBlog}
-              />
             </ListGroup>
 
             {groups.map((group) => (
@@ -476,12 +458,6 @@ function Dashboard({ email }) {
         </div>
         <div className="admin-pane mt-6" hidden={active !== "playlists"}>
           <PlaylistsAdmin onChange={setPlaylistCount} />
-        </div>
-        <div className="admin-pane mt-6" hidden={active !== "newsletter"}>
-          <NewsletterAdmin />
-        </div>
-        <div className="admin-pane mt-6" hidden={active !== "covers"}>
-          <CoverMaker />
         </div>
       </div>
     </div>
